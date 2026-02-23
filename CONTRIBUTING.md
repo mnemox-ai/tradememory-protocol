@@ -21,15 +21,23 @@ python -m venv venv
 source venv/bin/activate    # Linux/Mac
 # venv\Scripts\activate     # Windows
 
-pip install -r requirements.txt
+pip install -e ".[dev]"
 cp .env.example .env
 ```
 
-### 3. Verify Setup
+### 3. Install Pre-commit Hooks
+
+```bash
+pre-commit install
+```
+
+This runs ruff, mypy, and formatting checks automatically on every commit.
+
+### 4. Verify Setup
 
 ```bash
 python -m pytest tests/ -v
-# Expected: 36 passed
+# Expected: 67 passed
 ```
 
 ---
@@ -61,21 +69,26 @@ test: add integration tests for trade journal
 
 ### Code Style
 
-- **Python 3.10+** — Use modern syntax (type hints, f-strings, `match` statements where appropriate)
-- **Formatting** — We use [Black](https://black.readthedocs.io/) with default settings
-- **Linting** — [Flake8](https://flake8.pycqa.org/) for code quality
-- **Type hints** — Encouraged for public APIs
+- **Python 3.10+** — Use modern syntax (type hints, f-strings)
+- **Linting** — [Ruff](https://docs.astral.sh/ruff/) for linting and formatting
+- **Type checking** — [mypy](https://mypy-lang.org/) with `--ignore-missing-imports`
+- **Type hints** — Required for public function signatures
 
 ```bash
-# Format code
-black src/ tests/
+# Lint and auto-fix
+ruff check src/ tests/ --fix
 
-# Lint
-flake8 src/ tests/
+# Type check
+mypy src/tradememory/ --ignore-missing-imports
 
 # Run tests
 python -m pytest tests/ -v
+
+# Run tests with coverage
+python -m pytest tests/ --cov=src/tradememory
 ```
+
+If you installed pre-commit hooks (step 3 above), these checks run automatically on `git commit`.
 
 ### Testing Requirements
 
@@ -107,9 +120,9 @@ git push origin feat/your-feature
 
 Before submitting, confirm:
 
-- [ ] `python -m pytest tests/ -v` passes (36+ tests)
+- [ ] `python -m pytest tests/ -v` passes (67+ tests)
 - [ ] New features include tests
-- [ ] Code is formatted with Black
+- [ ] `ruff check` and `mypy` pass (or use pre-commit hooks)
 - [ ] Commit messages follow conventional commits
 - [ ] Documentation updated if behavior changed
 - [ ] No secrets, API keys, or credentials in the code
