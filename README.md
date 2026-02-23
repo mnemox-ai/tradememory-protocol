@@ -130,30 +130,60 @@ See it live in the [Streamlit Dashboard](#-interactive-dashboard) or read the [f
 
 ## 🚀 Quick Start
 
-### Installation
+### One-Line Install
 
 ```bash
-# Clone the repo
+curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/main/install.sh | bash
+```
+
+Or install manually:
+
+```bash
 git clone https://github.com/mnemox-ai/tradememory-protocol.git
 cd tradememory-protocol
-
-# Install dependencies
 pip install -r requirements.txt
-
-# Set up environment variables
 cp .env.example .env
-# Edit .env with your MT5 credentials (if using MT5)
+```
 
-# Start the MCP server
+### Try the Demo (No API Key Needed)
+
+```bash
+python demo.py
+```
+
+This runs **30 simulated XAUUSD trades** through the full L1 → L2 → L3 pipeline:
+
+```
+✓ Records 30 trades with session, strategy, confidence
+✓ Discovers 6 patterns (session win rates, strategy edge, confidence correlation)
+✓ Generates 3 strategy adjustments (lot sizing, confidence threshold)
+✓ Shows agent waking up with learned memory
+```
+
+### Before/After: The Difference Memory Makes
+
+| Trade | Without TradeMemory | With TradeMemory |
+|-------|-------------------|------------------|
+| Trade 1 | AI analyzes market, gives recommendation | Same |
+| Trade 5 | AI starts fresh, no memory of past trades | "Past 4 Asian trades: 3 losses. Reducing lot size by 50%." |
+| Trade 15 | AI has no idea what its win rate is | "London VolBreakout win rate: 73%. Going full size." |
+| Trade 30 | Same mistakes repeated. No learning. | Auto-adjusted strategy weights. Avoids low win-rate sessions. |
+
+### Full Tutorials
+
+- **English:** [Complete Tutorial](docs/TUTORIAL.md) — step-by-step from install to memory-powered trading
+- **中文：** [完整教學](docs/TUTORIAL_ZH.md) — 從安裝到記憶驅動交易的完整教學
+
+### Start the MCP Server
+
+```bash
 python -m src.tradememory.server
 # Server runs on http://localhost:8000
 ```
 
-### Running the 7-Day Demo
+### Connect to MT5 (Optional)
 
-**Option 1: MT5 Live Demo (Recommended)**
-
-If you have an MT5 account (demo or real):
+If you have an MT5 account:
 
 ```bash
 # 1. Start MCP server (in one terminal)
@@ -166,18 +196,6 @@ python mt5_sync.py
 # Windows: Import start_daily_reflection.bat into Task Scheduler
 # Linux/Mac: Add to crontab:
 55 23 * * * /path/to/tradememory-protocol/start_daily_reflection.sh
-```
-
-**Option 2: Mock Data Demo**
-
-If you don't have MT5, you can still see the dashboard with mock data:
-
-```bash
-# Install dashboard dependencies
-pip install -r requirements-dashboard.txt
-
-# Run dashboard (mock mode)
-streamlit run dashboard.py
 ```
 
 ### 📊 Interactive Dashboard
@@ -292,6 +310,8 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 
 ## 📖 Documentation
 
+- [Tutorial (English)](docs/TUTORIAL.md) — Complete step-by-step guide
+- [教學 (中文)](docs/TUTORIAL_ZH.md) — 完整教學指南
 - [Quick Start Guide](docs/QUICK_START.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [MCP Tools API Reference](docs/API.md)
