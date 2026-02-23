@@ -5,6 +5,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## Sprint 5 - 2026-02-23
+
+### Changed
+- Brand established as **Mnemox** (mnemox.ai)
+- All GitHub URLs updated from `sean-sys` to `mnemox`
+- OpenClaw references replaced with Mnemox branding
+- Social preview image regenerated with Mnemox URL
+- Architecture documentation (`docs/ARCHITECTURE.md`) added
+
+---
+
 ## [0.1.0] - 2026-02-23
 
 ### Added

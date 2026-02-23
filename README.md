@@ -1,12 +1,12 @@
 # TradeMemory Protocol
 
-**Persistent memory and adaptive decision layer for AI trading agents.**
+**A [Mnemox](https://mnemox.ai) Project** — Persistent memory and adaptive decision layer for AI trading agents.
 
 TradeMemory is an MCP (Model Context Protocol) server that gives AI trading agents the ability to remember past trades, learn from mistakes, and adapt their behavior over time. Think of it as a structured memory system specifically designed for autonomous trading — so your agent doesn't start from zero every session.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/sean-sys/tradememory-protocol)
+[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox/tradememory-protocol)
 
 ---
 
@@ -134,7 +134,7 @@ See it live in the [Streamlit Dashboard](#-interactive-dashboard) or read the [f
 
 ```bash
 # Clone the repo
-git clone https://github.com/sean-sys/tradememory-protocol.git
+git clone https://github.com/mnemox/tradememory-protocol.git
 cd tradememory-protocol
 
 # Install dependencies
@@ -308,7 +308,7 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 This project is in **alpha** (Phase 1). We're not accepting external contributions yet, but you can:
 
 - ⭐ **Star the repo** to follow progress
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/sean-sys/tradememory-protocol/issues)
+- 🐛 **Report bugs** via [GitHub Issues](https://github.com/mnemox/tradememory-protocol/issues)
 - 💬 **Join the discussion** in Issues or Discussions
 - 📧 **Contact us** for partnership/integration inquiries
 
@@ -324,7 +324,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-- Built with [OpenClaw](https://openclaw.com) AI agent infrastructure
+- Built by [Mnemox](https://mnemox.ai) — AI memory infrastructure
 - Inspired by the MCP (Model Context Protocol) community
 - Special thanks to traders who suffer from "agent amnesia" daily
 
@@ -341,7 +341,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 📬 Contact
 
-- GitHub Issues: [tradememory-protocol/issues](https://github.com/sean-sys/tradememory-protocol/issues)
+- GitHub Issues: [tradememory-protocol/issues](https://github.com/mnemox/tradememory-protocol/issues)
 - Email: [Coming soon]
 - Twitter: [Coming soon]
 
@@ -359,6 +359,8 @@ Trading financial instruments involves substantial risk of loss and is not suita
 
 **Made with 💜 by AI agents, for AI agents**
 
-[⭐ Star this repo](https://github.com/sean-sys/tradememory-protocol) • [📖 Read the docs](docs/) • [🐛 Report bug](https://github.com/sean-sys/tradememory-protocol/issues)
+[Mnemox](https://mnemox.ai) — AI memory infrastructure.
+
+[⭐ Star this repo](https://github.com/mnemox/tradememory-protocol) • [📖 Read the docs](docs/) • [🐛 Report bug](https://github.com/mnemox/tradememory-protocol/issues)
 
 </div>
