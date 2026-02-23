@@ -15,15 +15,18 @@ def real_client(tmp_path):
     from src.tradememory.journal import TradeJournal
     from src.tradememory.state import StateManager
     from src.tradememory.reflection import ReflectionEngine
+    from src.tradememory.adaptive_risk import AdaptiveRisk
 
     db = Database(db_path)
     journal = TradeJournal(db=db)
     state_mgr = StateManager(db=db)
     reflection = ReflectionEngine(journal=journal)
+    risk = AdaptiveRisk(journal=journal, state_manager=state_mgr)
 
     with patch("src.tradememory.server.journal", journal), \
          patch("src.tradememory.server.state_manager", state_mgr), \
-         patch("src.tradememory.server.reflection_engine", reflection):
+         patch("src.tradememory.server.reflection_engine", reflection), \
+         patch("src.tradememory.server.adaptive_risk", risk):
 
         from src.tradememory.server import app
         yield TestClient(app)
@@ -214,3 +217,44 @@ class TestReflectionEndpoint:
         resp = real_client.post("/reflect/run_daily?date=2026-02-20")
         assert resp.status_code == 200
         assert resp.json()["date"] == "2026-02-20"
+
+
+class TestRiskEndpoints:
+    """Tests for /risk/* endpoints."""
+
+    def test_get_constraints_default(self, real_client):
+        """POST /risk/get_constraints for new agent returns defaults."""
+        resp = real_client.post("/risk/get_constraints", json={
+            "agent_id": "test-risk-agent",
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["constraints"]["status"] == "active"
+
+    def test_get_constraints_recalculate(self, real_client):
+        """POST /risk/get_constraints with recalculate=True runs calculation."""
+        resp = real_client.post("/risk/get_constraints", json={
+            "agent_id": "test-risk-recalc",
+            "recalculate": True,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert "constraints" in data
+
+    def test_check_trade_approved(self, real_client):
+        """POST /risk/check_trade approves normal trade."""
+        resp = real_client.post("/risk/check_trade", json={
+            "agent_id": "test-risk-check",
+            "symbol": "XAUUSD",
+            "direction": "long",
+            "lot_size": 0.05,
+            "strategy": "VolBreakout",
+            "confidence": 0.7,
+        })
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["approved"] is True
+        assert data["adjusted_lot_size"] == 0.05

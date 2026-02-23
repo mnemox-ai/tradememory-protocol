@@ -11,7 +11,8 @@ from .journal import TradeJournal
 from .state import StateManager
 from .reflection import ReflectionEngine
 from .mt5_connector import MT5Connector
-from .models import SessionState
+from .adaptive_risk import AdaptiveRisk
+from .models import SessionState, TradeProposal, TradeDirection
 
 
 app = FastAPI(
@@ -25,6 +26,7 @@ journal = TradeJournal()
 state_manager = StateManager()
 reflection_engine = ReflectionEngine(journal=journal)
 mt5_connector = MT5Connector(journal=journal, state_manager=state_manager)
+adaptive_risk = AdaptiveRisk(journal=journal, state_manager=state_manager)
 
 
 # ========== MCP Tool Request/Response Models ==========
@@ -288,6 +290,85 @@ async def mt5_connect(req: MT5ConnectRequest):
             "message": "Connected to MT5" if success else "Connection failed"
         }
     
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ========== Risk Endpoints ==========
+
+class GetConstraintsRequest(BaseModel):
+    """Request for risk.get_constraints"""
+    agent_id: str
+    symbol: Optional[str] = None
+    strategy: Optional[str] = None
+    recalculate: bool = False
+
+
+class CheckTradeRequest(BaseModel):
+    """Request for risk.check_trade"""
+    agent_id: str
+    symbol: str
+    direction: str
+    lot_size: float
+    strategy: str
+    confidence: float
+    session: Optional[str] = None
+
+
+@app.post("/risk/get_constraints")
+async def risk_get_constraints(req: GetConstraintsRequest):
+    """
+    MCP Tool: risk.get_constraints
+    Get current dynamic risk constraints for an agent.
+    """
+    try:
+        if req.recalculate:
+            constraints = adaptive_risk.calculate_constraints(
+                agent_id=req.agent_id,
+                symbol=req.symbol,
+                strategy=req.strategy,
+            )
+        else:
+            constraints = adaptive_risk.get_constraints(req.agent_id)
+
+        return {
+            "success": True,
+            "agent_id": req.agent_id,
+            "constraints": constraints.model_dump(mode="json"),
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/risk/check_trade")
+async def risk_check_trade(req: CheckTradeRequest):
+    """
+    MCP Tool: risk.check_trade
+    Check a proposed trade against current risk constraints.
+    """
+    try:
+        proposal = TradeProposal(
+            symbol=req.symbol,
+            direction=TradeDirection(req.direction),
+            lot_size=req.lot_size,
+            strategy=req.strategy,
+            confidence=req.confidence,
+            session=req.session,
+        )
+        result = adaptive_risk.check_trade(
+            agent_id=req.agent_id,
+            proposal=proposal,
+        )
+
+        return {
+            "success": True,
+            "approved": result.approved,
+            "adjusted_lot_size": result.adjusted_lot_size,
+            "reasons": result.reasons,
+            "constraints": result.constraints_applied.model_dump(mode="json"),
+        }
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
