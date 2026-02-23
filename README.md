@@ -50,6 +50,13 @@ python demo.py
 
 Output shows: trade recording (L1) → pattern discovery (L2) → strategy adjustments (L3) → agent reloading state with memory.
 
+<details>
+<summary>Demo output preview (click to expand)</summary>
+
+<img src="docs/demo.svg" alt="TradeMemory Protocol demo output" width="800">
+
+</details>
+
 > All demo data is simulated. See [Before/After Comparison](docs/BEFORE_AFTER.md) for detailed breakdown.
 
 ### Start the Server
