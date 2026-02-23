@@ -26,25 +26,25 @@ Tools for recording and querying trade decisions and outcomes.
 Tools for analyzing trading patterns and retrieving insights.
 
 - `reflect.run_daily` — Trigger daily summary
-- `reflect.run_weekly` — Trigger weekly reflection
-- `reflect.get_insights` — Get curated insights (L2 memory)
-- `reflect.query_patterns` — Ask specific questions about patterns
+- `reflect.run_weekly` — Trigger weekly reflection *(Coming Soon)*
+- `reflect.get_insights` — Get curated insights (L2 memory) *(Coming Soon)*
+- `reflect.query_patterns` — Ask specific questions about patterns *(Coming Soon)*
 
-### ⚠️ Risk Management
+### ⚠️ Risk Management *(Coming Soon)*
 Tools for checking and managing risk parameters.
 
-- `risk.get_constraints` — Get current dynamic risk parameters
-- `risk.check_trade` — Validate proposed trade against constraints
-- `risk.get_performance` — Get performance metrics
-- `risk.override` — Human override of risk parameters (requires auth)
+- `risk.get_constraints` — Get current dynamic risk parameters *(Coming Soon)*
+- `risk.check_trade` — Validate proposed trade against constraints *(Coming Soon)*
+- `risk.get_performance` — Get performance metrics *(Coming Soon)*
+- `risk.override` — Human override of risk parameters (requires auth) *(Coming Soon)*
 
 ### 💾 State Management
 Tools for session persistence and agent identity.
 
 - `state.load` — Load agent state at session start
 - `state.save` — Persist current state
-- `state.get_identity` — Get agent identity context
-- `state.heartbeat` — Keep-alive signal for long-running agents
+- `state.get_identity` — Get agent identity context *(Coming Soon)*
+- `state.heartbeat` — Keep-alive signal for long-running agents *(Coming Soon)*
 
 ---
 

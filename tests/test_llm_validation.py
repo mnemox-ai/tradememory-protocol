@@ -3,7 +3,7 @@ Unit tests for LLM output validation (DEC-010).
 """
 
 import pytest
-from datetime import date
+from datetime import date, datetime, timezone
 
 from src.tradememory.reflection import ReflectionEngine
 
@@ -161,7 +161,6 @@ def test_validate_empty_or_short_output(reflection):
 
 def test_llm_fallback_on_invalid_output(reflection):
     """Test that invalid LLM output triggers rule-based fallback"""
-    from datetime import datetime
     from src.tradememory.journal import TradeJournal
     from src.tradememory.db import Database
     import tempfile
@@ -175,7 +174,7 @@ def test_llm_fallback_on_invalid_output(reflection):
     reflection = ReflectionEngine(journal=journal)
     
     # Create a test trade
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     journal.record_decision(
         trade_id="T-VALIDATION-001",
         symbol="XAUUSD",

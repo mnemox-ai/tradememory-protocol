@@ -3,7 +3,7 @@ StateManager - Cross-session state persistence for AI agents.
 Implements Blueprint Section 2.1 StateManager functionality.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 from .models import SessionState
 from .db import Database
@@ -43,7 +43,7 @@ class StateManager:
         # Create new state if doesn't exist
         new_state = SessionState(
             agent_id=agent_id,
-            last_active=datetime.utcnow(),
+            last_active=datetime.now(timezone.utc),
             warm_memory={},
             active_positions=[],
             risk_constraints={}
@@ -63,7 +63,7 @@ class StateManager:
             True if successful
         """
         # Update last_active timestamp
-        state.last_active = datetime.utcnow()
+        state.last_active = datetime.now(timezone.utc)
         
         success = self.db.save_session_state(state.model_dump())
         

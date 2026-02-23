@@ -3,7 +3,7 @@ TradeJournal module - Structured trade memory with full context.
 Implements Blueprint Section 2.1 TradeJournal functionality.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
 from .models import TradeRecord, MarketContext
 from .db import Database
@@ -67,7 +67,7 @@ class TradeJournal:
         # Create TradeRecord
         trade = TradeRecord(
             id=trade_id,
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             symbol=symbol,
             direction=direction,
             lot_size=lot_size,
@@ -123,7 +123,7 @@ class TradeJournal:
             raise ValueError(f"Execution quality must be 0.0-1.0, got {execution_quality}")
         
         outcome_data = {
-            'exit_timestamp': datetime.utcnow(),
+            'exit_timestamp': datetime.now(timezone.utc),
             'exit_price': exit_price,
             'pnl': pnl,
             'exit_reasoning': exit_reasoning
