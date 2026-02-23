@@ -86,6 +86,23 @@ streamlit run dashboard/app.py
 - English + Chinese tutorials, Before/After doc, demo.py, install.sh all complete
 - GitHub Discussions enabled (Ideas, Show & Tell, Q&A templates)
 
+## Lessons Learned
+- 預設分支是 master 不是 main，所有 GitHub URL 都要用 master
+- .env.example 不要放真實憑證
+- README 不要用過多 emoji 和行銷語調，保持開發者風格
+- 不要承諾還沒實作的功能（Phase 2 不打勾）
+- CHANGELOG 要誠實，不要假裝多個 sprint
+- Before/After 數據如果是模擬的，要在最上面明確標註
+- 刪除的檔案如果曾 commit 過敏感資訊，git 歷史裡還是看得到，要用 filter-branch 清除
+
+## Rules
+- 每個任務完成前必須跑 pytest 確認沒壞東西
+- commit 前用 git diff 檢查改動範圍是否合理
+- 不要一次開太多 MCP tools，會吃 context window
+- 寫文件用開發者語調，不要用行銷語調
+- 所有模擬數據必須標註 "Simulated"
+- 簡單方案優先，不要 over-engineer
+
 ## Compact Instructions
 
-When compacting, preserve: key design decisions (LLM validation, UTC enforcement, platform-agnostic core), current task progress, security rules.
+When compacting, preserve: key design decisions (LLM validation, UTC enforcement, platform-agnostic core), current task progress, security rules, lessons learned, rules.
