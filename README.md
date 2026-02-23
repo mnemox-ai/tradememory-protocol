@@ -53,7 +53,43 @@ Output shows: trade recording (L1) → pattern discovery (L2) → strategy adjus
 <details>
 <summary>Demo output preview (click to expand)</summary>
 
-<img src="docs/demo.svg" alt="TradeMemory Protocol demo output" width="800">
+```
+┌───────────────────────────────────────────────┐
+│                                               │
+│    TradeMemory Protocol                       │
+│    Persistent memory for AI trading agents    │
+│                                               │
+└───────────────────────────────────────────────┘
+
+── Step 1: L1 — Recording trades to TradeJournal ──
+
+  # │ Result │ Session │ Strategy    │ P&L      │ R
+  1 │ LOSS   │ Asia    │ Pullback    │ $-15.00  │ -1.0
+  2 │ WIN    │ London  │ VolBreakout │ $+42.00  │ +2.1
+  3 │ WIN    │ London  │ VolBreakout │ $+28.50  │ +1.5
+  ...
+  30 │ WIN   │ London  │ Pullback    │ $+28.00  │ +1.4
+
+  Total: 30 trades | Winners: 19 | Win rate: 63% | Net P&L: $+499.50
+
+── Step 2: L2 — Reflection Engine discovers patterns ──
+
+  Pattern             │ Win Rate │ Record    │ Net P&L   │ Assessment
+  London session      │     100% │ 14W / 0L  │ $+608.50  │ HIGH EDGE
+  Asian session       │      10% │  1W / 9L  │ $-156.00  │ WEAK
+  VolBreakout strategy│      73% │ 11W / 4L  │ $+429.50  │ HIGH EDGE
+
+  Confidence correlation:
+    High (>0.75): 100% win rate
+    Low  (<0.55):   0% win rate
+
+── Step 3: L3 — Strategy adjustments generated ──
+
+  Parameter                │ Old  │ New  │ Reason
+  london_max_lot           │ 0.05 │ 0.08 │ London WR 100% — earned more room
+  asian_max_lot            │ 0.05 │ 0.025│ Asian WR 10% — reduce exposure
+  min_confidence_threshold │ 0.40 │ 0.55 │ Trades below 0.55 have 0% WR
+```
 
 </details>
 
