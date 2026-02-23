@@ -4,6 +4,7 @@
 
 TradeMemory is an MCP (Model Context Protocol) server that gives AI trading agents the ability to remember past trades, learn from mistakes, and adapt their behavior over time. Think of it as a structured memory system specifically designed for autonomous trading — so your agent doesn't start from zero every session.
 
+[![CI](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox-ai/tradememory-protocol)
@@ -225,6 +226,16 @@ streamlit run dashboard.py
 - 🔥 **Session Heatmap**: Performance by trading session (Asian/European/US)
 
 Screenshots: [Coming soon]
+
+### Recording a Demo GIF
+
+```bash
+pip install rich
+# Record with asciinema:
+asciinema rec demo.cast -c "python scripts/record_demo.py"
+# Convert to GIF (requires agg):
+agg demo.cast demo.gif
+```
 
 ---
 
