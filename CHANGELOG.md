@@ -1,23 +1,80 @@
 # TradeMemory Protocol - Changelog
 
-> Both agents append to this after making significant changes.
-> Format: [Date] [Agent] What changed
+All notable changes to this project will be documented in this file.
+Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## 2026-02-23
-- **MaoMao (Product Lead):** Completed all Sprint 1 product tasks:
-  - ✅ Answered BLK-001: Proposed "Watch Your Agent Evolve" as the ONE wow feature
-  - ✅ Created README.md with architecture diagram and quick start
-  - ✅ Created docs/SCHEMA.md with full JSON examples
-  - ✅ Created docs/REFLECTION_FORMAT.md with report templates
-  - ✅ Created docs/API.md skeleton
-  - ✅ Created LICENSE (MIT), CONTRIBUTING.md, .github/ templates
-- **XiaoKe (Infrastructure Lead):** Completed all Sprint 1 infrastructure tasks:
-  - ✅ Project structure + FastAPI + MCP SDK setup
-  - ✅ TradeRecord and SessionState data models
-  - ✅ SQLite database with schema initialization
-  - ✅ TradeJournal module (record_decision, record_outcome)
-  - ✅ StateManager for session persistence
-  - ✅ Test suite (13 tests passing)
-- **Sean + Claude (CIO):** Project initialized. Blueprint v0.1 completed. Team roles assigned. Project files created. Sprint 1 begins.
+## [0.1.0] - 2026-02-23
+
+### Added
+- Initial open-source release
+- Guarded `import MetaTrader5` for cross-platform compatibility
+- Quick Start guide (`docs/QUICK_START.md`)
+- Financial disclaimer in README
+- GitHub issue templates and PR template
+
+### Fixed
+- Python 3.14 `datetime.utcnow()` deprecation warnings (replaced with `datetime.now(timezone.utc)`)
+- README test count updated from 27 to 36
+
+---
+
+## Sprint 4 - 2026-02-23
+
+### Added
+- Daily reflection runner (`daily_reflection.py`) with Task Scheduler / cron support
+- LLM output validation (DEC-010) with rule-based fallback
+- 9 new LLM validation tests (total: 36 tests)
+- Streamlit monitoring dashboard (`dashboard.py`)
+- MT5 sync setup guide (`MT5_SYNC_SETUP.md`)
+- Daily reflection setup guide (`DAILY_REFLECTION_SETUP.md`)
+
+### Changed
+- ReflectionEngine now validates LLM output before storing in L2 memory
+- Improved error handling in trade adapter sync loop
+
+---
+
+## Sprint 3 - 2026-02-23
+
+### Added
+- ReflectionEngine with daily summary generation (LLM + rule-based)
+- MT5 trade adapter (`trade_adapter.py`) - converts MT5 deals to TradeRecord format
+- MT5 sync service (`mt5_sync.py`) - polls for closed trades every 60s
+- UTC timezone enforcement for all MT5 timestamps (DEC-014)
+- Reflection tests (5 tests)
+- Architecture decision records (DEC-001 through DEC-016)
+
+### Changed
+- TradeJournal query_history now supports strategy and symbol filters
+
+---
+
+## Sprint 2 - 2026-02-23
+
+### Added
+- StateManager for cross-session persistence
+- Warm memory (L2) read/write operations
+- Active position tracking
+- Dynamic risk constraint storage
+- State persistence tests (9 tests)
+- `.env.example` with all configuration variables
+
+### Changed
+- Database schema extended for session state table
+
+---
+
+## Sprint 1 - 2026-02-23
+
+### Added
+- Project structure with FastAPI + MCP SDK
+- TradeRecord and SessionState data models (Pydantic)
+- SQLite database with schema initialization
+- TradeJournal module (record_decision, record_outcome, query_history)
+- MarketContext model (price, ATR, session, indicators)
+- Initial test suite (13 tests)
+- README with architecture diagram
+- docs/SCHEMA.md, docs/API.md, docs/REFLECTION_FORMAT.md
+- MIT License, CONTRIBUTING.md

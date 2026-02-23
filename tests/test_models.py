@@ -3,7 +3,7 @@ Unit tests for data models.
 """
 
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from src.tradememory.models import (
     TradeRecord,
     MarketContext,
@@ -30,7 +30,7 @@ def test_trade_record_minimal():
     """Test TradeRecord with minimal required fields"""
     trade = TradeRecord(
         id="T-2026-0001",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         symbol="XAUUSD",
         direction=TradeDirection.LONG,
         lot_size=0.05,
@@ -52,7 +52,7 @@ def test_trade_record_with_outcome():
     """Test TradeRecord with outcome data"""
     trade = TradeRecord(
         id="T-2026-0002",
-        timestamp=datetime.utcnow(),
+        timestamp=datetime.now(timezone.utc),
         symbol="XAUUSD",
         direction=TradeDirection.SHORT,
         lot_size=0.1,
@@ -60,7 +60,7 @@ def test_trade_record_with_outcome():
         confidence=0.85,
         reasoning="Strong pullback setup",
         market_context=MarketContext(price=2900.00, atr=30.0),
-        exit_timestamp=datetime.utcnow(),
+        exit_timestamp=datetime.now(timezone.utc),
         exit_price=2895.00,
         pnl=25.00,
         pnl_r=1.5,
@@ -78,7 +78,7 @@ def test_trade_record_confidence_validation():
     with pytest.raises(ValueError):
         TradeRecord(
             id="T-2026-0003",
-            timestamp=datetime.utcnow(),
+            timestamp=datetime.now(timezone.utc),
             symbol="XAUUSD",
             direction=TradeDirection.LONG,
             lot_size=0.05,
@@ -93,7 +93,7 @@ def test_session_state_creation():
     """Test SessionState model"""
     state = SessionState(
         agent_id="ng-gold-agent",
-        last_active=datetime.utcnow(),
+        last_active=datetime.now(timezone.utc),
         warm_memory={"last_strategy": "VolBreakout"},
         active_positions=["T-2026-0001"],
         risk_constraints={"max_lot": 0.1}
@@ -109,7 +109,7 @@ def test_session_state_defaults():
     """Test SessionState with defaults"""
     state = SessionState(
         agent_id="test-agent",
-        last_active=datetime.utcnow()
+        last_active=datetime.now(timezone.utc)
     )
     
     assert state.warm_memory == {}

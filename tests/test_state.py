@@ -5,7 +5,7 @@ Unit tests for StateManager module.
 import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.tradememory.state import StateManager
 from src.tradememory.db import Database
@@ -43,7 +43,7 @@ def test_save_and_load_state(state_manager):
     # Create and save state
     state = SessionState(
         agent_id="agent-002",
-        last_active=datetime.utcnow(),
+        last_active=datetime.now(timezone.utc),
         warm_memory={"last_strategy": "VolBreakout", "win_rate": 0.65},
         active_positions=["T-2026-001", "T-2026-002"],
         risk_constraints={"max_lot": 0.1, "daily_loss_limit": 100.0}
