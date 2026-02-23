@@ -82,16 +82,21 @@ reflections/
 
 ## 整合 LLM（可選）
 
-### OpenClaw Agent 整合
+### Anthropic SDK 整合
 
-如果要使用 LLM 而非 rule-based，需要在 OpenClaw agent session 中註冊 callback：
+如果要使用 LLM 而非 rule-based，可以透過 Anthropic SDK 註冊 callback：
 
 ```python
-# 在 OpenClaw agent 中
-def openclaw_llm_provider(model, prompt):
-    from openclaw import llm
-    response = llm.chat(model=model, messages=[{"role": "user", "content": prompt}])
-    return response.content
+import anthropic
+
+def anthropic_llm_provider(model, prompt):
+    client = anthropic.Anthropic()
+    message = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return message.content[0].text
 
 # 傳遞給 TradeMemory server（需要修改 server.py）
 ```

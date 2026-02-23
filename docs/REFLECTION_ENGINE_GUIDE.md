@@ -36,7 +36,7 @@ from tradememory.reflection import ReflectionEngine
 
 # 定義 LLM provider function
 def my_llm_provider(model: str, prompt: str) -> str:
-    # 呼叫你的 LLM API（OpenClaw, Anthropic, OpenAI 等）
+    # 呼叫你的 LLM API（Anthropic, OpenAI 等）
     response = your_llm_api.call(model=model, prompt=prompt)
     return response.text
 
@@ -80,18 +80,22 @@ def llm_provider(model: str, prompt: str) -> str:
     pass
 ```
 
-### OpenClaw 整合範例
+### Anthropic SDK 整合範例
 
 ```python
-# 在 OpenClaw agent session 中
-def openclaw_llm_provider(model, prompt):
-    # OpenClaw 會自動路由到配置的 LLM
-    from openclaw import llm
-    response = llm.chat(model=model, messages=[{"role": "user", "content": prompt}])
-    return response.content
+import anthropic
+
+def anthropic_llm_provider(model, prompt):
+    client = anthropic.Anthropic()
+    message = client.messages.create(
+        model=model,
+        max_tokens=1024,
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return message.content[0].text
 
 engine = ReflectionEngine()
-summary = engine.generate_daily_summary(llm_provider=openclaw_llm_provider)
+summary = engine.generate_daily_summary(llm_provider=anthropic_llm_provider)
 ```
 
 ---
