@@ -1,0 +1,10 @@
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.10.0
+pytest>=8.3.0
+pytest-asyncio>=0.24.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+
+# Optional: MT5 integration (required for mt5_sync.py)
+# MetaTrader5>=5.0.45

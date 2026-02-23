@@ -1,0 +1,68 @@
+name: ❓ Question
+description: Ask a question about TradeMemory usage or architecture
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Got a question? We're here to help!
+        
+        Before submitting:
+        - Check the [README.md](https://github.com/sean-sys/tradememory-protocol/blob/main/README.md)
+        - Check the [docs/](https://github.com/sean-sys/tradememory-protocol/tree/main/docs) folder
+        - Search existing [Discussions](https://github.com/sean-sys/tradememory-protocol/discussions)
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Question Category
+      description: What is your question about?
+      options:
+        - "Installation & Setup"
+        - "Usage & Configuration"
+        - "MCP Tools & API"
+        - "MT5 Integration"
+        - "Dashboard"
+        - "Reflection Engine"
+        - "Architecture & Design"
+        - "Roadmap & Features"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know?
+      placeholder: Be as specific as possible
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: What Have You Tried?
+      description: What documentation have you checked? What have you attempted?
+      placeholder: |
+        Example: "I read the MT5_SYNC_SETUP.md but I'm still not sure how to configure the .env file for my broker."
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Your Use Case (Optional)
+      description: Help us understand your trading setup
+      placeholder: |
+        Example: "I'm running a breakout strategy on XAUUSD with 3 trades per day."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm
+      options:
+        - label: I have searched the documentation
+          required: true
+        - label: I have searched existing issues and discussions
+          required: true
