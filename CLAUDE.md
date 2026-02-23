@@ -31,7 +31,7 @@ TradeMemory Protocol (this repo)
 - `src/reflection_engine.py` — LLM-powered trade analysis
 - `src/adaptive_risk.py` — Dynamic risk management
 - `src/mt5_sync.py` — Polls MT5 for closed trades (60s interval)
-- `src/daily_reflection.py` — Scheduled reflection runner (23:55 daily)
+- `src/daily_reflection.py` — Scheduled reflection runner (daily/weekly/monthly)
 - `dashboard/` — Streamlit monitoring dashboard
 
 ## Commands
@@ -47,7 +47,11 @@ python -m src.server
 python src/mt5_sync.py
 
 # Run daily reflection manually
-python src/daily_reflection.py
+python daily_reflection.py
+
+# Run weekly/monthly reflection
+python daily_reflection.py --weekly
+python daily_reflection.py --monthly
 
 # Start dashboard
 streamlit run dashboard/app.py
