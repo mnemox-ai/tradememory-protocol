@@ -3,8 +3,8 @@ ReflectionEngine - AI-powered pattern discovery and learning.
 Implements Blueprint Section 2.1 ReflectionEngine functionality.
 """
 
-from typing import List, Dict, Any, Optional
-from datetime import datetime, date
+from typing import Callable, List, Dict, Any, Optional
+from datetime import date
 import json
 
 from .models import TradeRecord
@@ -29,7 +29,7 @@ class ReflectionEngine:
     def generate_daily_summary(
         self,
         target_date: Optional[date] = None,
-        llm_provider: Optional[callable] = None
+        llm_provider: Optional[Callable[..., str]] = None
     ) -> str:
         """
         Generate daily trading summary with AI reflection.
@@ -186,7 +186,7 @@ Net P&L: ${metrics['total_pnl']:.2f} | Win Rate: {metrics['win_rate']:.1f}% | Av
         target_date: date,
         trades: List[TradeRecord],
         metrics: Dict[str, Any],
-        llm_provider: callable
+        llm_provider: Callable[..., str]
     ) -> str:
         """
         Generate summary using LLM.

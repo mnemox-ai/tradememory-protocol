@@ -5,7 +5,7 @@ Implements Blueprint Section 2.1 TradeJournal functionality.
 
 from datetime import datetime, timezone
 from typing import Optional, List, Dict, Any
-from .models import TradeRecord, MarketContext
+from .models import TradeRecord, TradeDirection, MarketContext
 from .db import Database
 
 
@@ -69,7 +69,7 @@ class TradeJournal:
             id=trade_id,
             timestamp=datetime.now(timezone.utc),
             symbol=symbol,
-            direction=direction,
+            direction=TradeDirection(direction),
             lot_size=lot_size,
             strategy=strategy,
             confidence=confidence,

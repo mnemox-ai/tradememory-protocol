@@ -8,8 +8,7 @@ from src.tradememory.models import (
     TradeRecord,
     MarketContext,
     SessionState,
-    TradeDirection,
-    TradeGrade
+    TradeDirection
 )
 
 

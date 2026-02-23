@@ -65,7 +65,7 @@ class TradeRecord(BaseModel):
     exit_reasoning: Optional[str] = None
     slippage: Optional[float] = None  # Entry slippage in pips
     execution_quality: Optional[float] = Field(
-        None, ge=0.0, le=1.0, description="0.0 - 1.0 score"
+        default=None, ge=0.0, le=1.0, description="0.0 - 1.0 score"
     )
     
     # Post-trade reflection (filled by ReflectionEngine)

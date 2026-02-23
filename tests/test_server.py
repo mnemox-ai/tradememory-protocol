@@ -1,30 +1,9 @@
 """Tests for the FastAPI MCP server endpoints."""
 
 import pytest
-import tempfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-
-
-@pytest.fixture
-def client(tmp_path):
-    """Create a test client with isolated temp database."""
-    db_path = str(tmp_path / "test.db")
-
-    with patch("src.tradememory.server.TradeJournal") as MockJournal, \
-         patch("src.tradememory.server.StateManager") as MockState, \
-         patch("src.tradememory.server.ReflectionEngine") as MockReflection, \
-         patch("src.tradememory.server.MT5Connector") as MockMT5:
-
-        # Import after patching to use mocked constructors
-        import importlib
-        import src.tradememory.server as server_module
-        importlib.reload(server_module)
-
-        from src.tradememory.server import app
-        yield TestClient(app)
 
 
 @pytest.fixture

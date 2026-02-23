@@ -4,7 +4,7 @@ Implements Blueprint Section 2.1 StateManager functionality.
 """
 
 from datetime import datetime, timezone
-from typing import Optional, Dict, Any, List
+from typing import Optional, Dict, Any
 from .models import SessionState
 from .db import Database
 

@@ -5,7 +5,6 @@ Records real demo trades into TradeJournal automatically.
 
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-import json
 
 from .journal import TradeJournal
 from .state import StateManager
@@ -180,9 +179,9 @@ class MT5Connector:
         
         return {"synced": synced, "skipped": skipped, "errors": errors}
     
-    def _group_deals_by_position(self, deals: tuple) -> Dict[int, List]:
-        """Group MT5 deals by position ticket"""
-        positions = {}
+    def _group_deals_by_position(self, deals: tuple) -> Dict[int, List[Any]]:
+        """Group MT5 deals by position ticket."""
+        positions: Dict[int, List[Any]] = {}
         
         for deal in deals:
             ticket = deal.position_id

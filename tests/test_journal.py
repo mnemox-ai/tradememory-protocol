@@ -5,7 +5,6 @@ Unit tests for TradeJournal module.
 import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime
 
 from src.tradememory.journal import TradeJournal
 from src.tradememory.db import Database

@@ -6,13 +6,12 @@ Implements MCP tools from Blueprint Section 3.1.
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
-from datetime import datetime
 
 from .journal import TradeJournal
 from .state import StateManager
 from .reflection import ReflectionEngine
 from .mt5_connector import MT5Connector
-from .models import TradeRecord, SessionState
+from .models import SessionState
 
 
 app = FastAPI(
