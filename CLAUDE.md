@@ -75,7 +75,7 @@ streamlit run dashboard/app.py
 ## Current Status
 
 - v0.1.0 released. Core pipeline operational: NG_Gold EA → mt5_sync.py → TradeJournal → daily_reflection.py → reflections/
-- 36 unit tests passing.
+- 111 unit tests passing.
 - Open-source repo live at github.com/mnemox-ai/tradememory-protocol
 - Default branch is `master` (not main). All URLs use `/master/`.
 
