@@ -7,6 +7,7 @@ TradeMemory is an MCP (Model Context Protocol) server that gives AI trading agen
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox-ai/tradememory-protocol)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mnemox-ai/tradememory-protocol)
 
 ---
 
@@ -181,6 +182,17 @@ python -m src.tradememory.server
 # Server runs on http://localhost:8000
 ```
 
+### Docker
+
+```bash
+# Build and run with Docker Compose
+docker compose up -d
+
+# Or build manually
+docker build -t tradememory .
+docker run -p 8000:8000 -e ANTHROPIC_API_KEY=your-key tradememory
+```
+
 ### Connect to MT5 (Optional)
 
 If you have an MT5 account:
@@ -312,6 +324,7 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 
 - [Tutorial (English)](docs/TUTORIAL.md) — Complete step-by-step guide
 - [教學 (中文)](docs/TUTORIAL_ZH.md) — 完整教學指南
+- [Before/After Comparison](docs/BEFORE_AFTER.md) — Quantified impact of memory
 - [Quick Start Guide](docs/QUICK_START.md)
 - [Architecture Overview](docs/ARCHITECTURE.md)
 - [MCP Tools API Reference](docs/API.md)

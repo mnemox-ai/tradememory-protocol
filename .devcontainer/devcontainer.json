@@ -1,0 +1,27 @@
+{
+  "name": "TradeMemory Protocol",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "postCreateCommand": "pip install -r requirements.txt && cp -n .env.example .env 2>/dev/null; python -m pytest tests/ -q",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance"
+      ],
+      "settings": {
+        "python.testing.pytestEnabled": true,
+        "python.testing.pytestArgs": ["tests/"]
+      }
+    }
+  },
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": {
+      "label": "TradeMemory MCP Server",
+      "onAutoForward": "notify"
+    }
+  }
+}
