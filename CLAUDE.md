@@ -70,10 +70,21 @@ streamlit run dashboard/app.py
 
 ## Current Status
 
-- Sprint 4 complete. Core pipeline operational: NG_Gold EA → mt5_sync.py → TradeJournal → daily_reflection.py → reflections/
+- v0.1.0 released. Core pipeline operational: NG_Gold EA → mt5_sync.py → TradeJournal → daily_reflection.py → reflections/
 - 36 unit tests passing.
-- Preparing for open-source launch (Sprint 5).
-- GitHub issue templates and launch strategy docs ready in `docs/`.
+- Open-source repo live at github.com/mnemox-ai/tradememory-protocol
+- Default branch is `master` (not main). All URLs use `/master/`.
+
+## Completed Promotion & Infrastructure (2026-02-23)
+
+- mnemox.ai landing page live (GitHub Pages + custom domain)
+- Listed on mcpservers.org (approved), mcp.so, punkpeye/awesome-mcp-servers PR #2312
+- Dev.to article published
+- HN Show HN posted
+- CI pipeline (GitHub Actions) enabled — Python 3.10/3.11/3.12 matrix
+- Docker + GitHub Codespaces support added
+- English + Chinese tutorials, Before/After doc, demo.py, install.sh all complete
+- GitHub Discussions enabled (Ideas, Show & Tell, Q&A templates)
 
 ## Compact Instructions
 
