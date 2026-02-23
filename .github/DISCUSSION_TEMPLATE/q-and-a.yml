@@ -1,0 +1,46 @@
+title: "[Q&A]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask the community a question about TradeMemory Protocol.
+
+        Before asking:
+        - Check the [Tutorial](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/TUTORIAL.md)
+        - Check the [API docs](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/API.md)
+        - Search existing discussions
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Installation & Setup
+        - Usage & Configuration
+        - MCP Tools & API
+        - Broker Integration (MT5, Binance, etc.)
+        - Reflection Engine
+        - Dashboard
+        - Architecture & Design
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Be as specific as possible
+      placeholder: |
+        Example: "How do I configure the reflection engine to run weekly instead of daily?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context (optional)
+      description: What have you tried? What's your setup?
+      placeholder: |
+        Example: "I'm running on Windows 11 with Python 3.11, connected to MT5 demo account."

@@ -1,0 +1,31 @@
+title: "[Idea]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share your idea for improving TradeMemory Protocol!
+        Feature requests with implementation details go to [Issues](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=feature_request.yml).
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What's your idea?
+      description: Describe your idea or suggestion
+      placeholder: |
+        Example: "What if TradeMemory could share learned patterns between multiple agents?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Why would this be useful?
+      description: What problem does this solve or what opportunity does it create?
+      placeholder: Describe the use case or benefit
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Examples or references (optional)
+      description: Any examples from other projects, papers, or tools that inspired this idea?
