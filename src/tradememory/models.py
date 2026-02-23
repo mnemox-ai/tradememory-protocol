@@ -5,7 +5,7 @@ Based on Blueprint Section 5: Trade Journal Data Schema
 
 from datetime import datetime
 from typing import Optional, List, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from enum import Enum
 
 
@@ -73,25 +73,24 @@ class TradeRecord(BaseModel):
     tags: List[str] = Field(default_factory=list, description="Auto-generated pattern tags")
     grade: Optional[TradeGrade] = None  # Quality of decision, not result
     
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "id": "T-2026-0001",
-                "timestamp": "2026-02-23T10:30:00Z",
-                "symbol": "XAUUSD",
-                "direction": "long",
-                "lot_size": 0.05,
-                "strategy": "VolBreakout",
-                "confidence": 0.72,
-                "reasoning": "London session open with strong momentum above 20-period high",
-                "market_context": {
-                    "price": 2891.50,
-                    "atr": 28.3,
-                    "session": "london"
-                },
-                "references": []
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "id": "T-2026-0001",
+            "timestamp": "2026-02-23T10:30:00Z",
+            "symbol": "XAUUSD",
+            "direction": "long",
+            "lot_size": 0.05,
+            "strategy": "VolBreakout",
+            "confidence": 0.72,
+            "reasoning": "London session open with strong momentum above 20-period high",
+            "market_context": {
+                "price": 2891.50,
+                "atr": 28.3,
+                "session": "london"
+            },
+            "references": []
         }
+    })
 
 
 class SessionState(BaseModel):
