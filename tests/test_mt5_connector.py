@@ -1,10 +1,8 @@
 """Tests for MT5Connector with mocked MetaTrader5 library."""
 
 import pytest
-import tempfile
-from pathlib import Path
 from unittest.mock import MagicMock, patch
-from datetime import datetime, timezone
+from datetime import datetime
 
 from src.tradememory.db import Database
 from src.tradememory.journal import TradeJournal

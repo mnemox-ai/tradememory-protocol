@@ -217,7 +217,7 @@ class Database:
         conn = self._get_connection()
         try:
             query = "SELECT * FROM trade_records WHERE 1=1"
-            params = []
+            params: list[Any] = []
             
             if strategy:
                 query += " AND strategy = ?"
