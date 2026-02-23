@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/sean-sys/tradememory-protocol/discussions
+    about: For general discussions, ideas, and community chat
+  - name: 📖 Documentation
+    url: https://github.com/sean-sys/tradememory-protocol/tree/main/docs
+    about: Read the documentation before opening an issue
+  - name: 🚀 Roadmap
+    url: https://github.com/sean-sys/tradememory-protocol/blob/main/README.md#project-status--roadmap
+    about: Check what's planned for future phases
