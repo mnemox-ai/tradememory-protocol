@@ -19,7 +19,7 @@ By the end of this tutorial, you'll see an AI agent go from "stateless calculato
 ### Option A: One-line install
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/master/install.sh | bash
 cd tradememory-protocol
 ```
 

@@ -9,8 +9,8 @@ body:
         Got a question? We're here to help!
         
         Before submitting:
-        - Check the [README.md](https://github.com/mnemox-ai/tradememory-protocol/blob/main/README.md)
-        - Check the [docs/](https://github.com/mnemox-ai/tradememory-protocol/tree/main/docs) folder
+        - Check the [README.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/README.md)
+        - Check the [docs/](https://github.com/mnemox-ai/tradememory-protocol/tree/master/docs) folder
         - Search existing [Discussions](https://github.com/mnemox-ai/tradememory-protocol/discussions)
 
   - type: dropdown
