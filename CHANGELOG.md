@@ -56,7 +56,7 @@ Initial open-source release. Built over 2 days of intensive development.
 - API reference, schema docs, reflection format docs
 - GitHub issue templates (bug report, feature request, question)
 - CONTRIBUTING.md, SECURITY.md
-- 36 unit tests (journal, state, reflection, models, LLM validation)
+- 111 unit tests (journal, state, reflection, models, LLM validation, adaptive risk, server)
 - Guarded `import MetaTrader5` for cross-platform compatibility
 - UTC timezone enforcement for all timestamps
 

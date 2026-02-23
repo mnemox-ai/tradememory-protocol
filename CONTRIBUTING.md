@@ -120,7 +120,7 @@ git push origin feat/your-feature
 
 Before submitting, confirm:
 
-- [ ] `python -m pytest tests/ -v` passes (67+ tests)
+- [ ] `python -m pytest tests/ -v` passes (111+ tests)
 - [ ] New features include tests
 - [ ] `ruff check` and `mypy` pass (or use pre-commit hooks)
 - [ ] Commit messages follow conventional commits

@@ -192,12 +192,12 @@ Full API reference: [docs/API.md](docs/API.md)
 - Daily reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 36 unit tests passing
+- 111 unit tests passing
 - Interactive demo (`demo.py`)
-
-### Planned (Phase 2 — Q2 2026)
 - Weekly/monthly reflection cycles
 - Adaptive risk algorithms
+
+### Planned (Phase 2 — Q2 2026)
 - Multi-strategy portfolio support
 - Agent-to-agent learning
 - Public beta
@@ -216,7 +216,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (36 tests)
+- **Testing:** pytest (111 tests)
 
 ---
 
