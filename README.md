@@ -254,7 +254,7 @@ Full API documentation: [docs/API.md](docs/API.md)
 - ✅ State persistence (cross-session memory)
 - ✅ Streamlit dashboard ("Watch Your Agent Evolve")
 - ✅ 7-day demo storyline validation
-- ✅ All 27 unit tests passing
+- ✅ All 36 unit tests passing
 
 **Status:** Ready for real-world testing with demo accounts
 
@@ -286,13 +286,13 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 - **Reflection:** LLM API calls (Claude Sonnet 4.5 default) for pattern analysis
 - **Broker Integration:** MT5 Python API (Phase 1), REST APIs for exchanges (Phase 2+)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (27 tests, 100% passing)
+- **Testing:** pytest (36 tests, 100% passing)
 
 ---
 
 ## 📖 Documentation
 
-- [Quick Start Guide](docs/QUICK_START.md) *(coming soon)*
+- [Quick Start Guide](docs/QUICK_START.md)
 - [Architecture Overview](docs/ARCHITECTURE.md) *(coming soon)*
 - [MCP Tools API Reference](docs/API.md)
 - [Data Schema & Examples](docs/SCHEMA.md)
@@ -344,6 +344,14 @@ MIT License - see [LICENSE](LICENSE) for details.
 - GitHub Issues: [tradememory-protocol/issues](https://github.com/sean-sys/tradememory-protocol/issues)
 - Email: [Coming soon]
 - Twitter: [Coming soon]
+
+---
+
+## ⚠️ Disclaimer
+
+This software is provided for **educational and research purposes only**. TradeMemory Protocol does not constitute financial advice, investment advice, or trading advice. No aspect of this software should be interpreted as a recommendation to buy, sell, or hold any financial instrument.
+
+Trading financial instruments involves substantial risk of loss and is not suitable for all investors. Past performance is not indicative of future results. You are solely responsible for any trading decisions you make. The authors and contributors of this project accept no liability for any losses incurred through the use of this software.
 
 ---
 

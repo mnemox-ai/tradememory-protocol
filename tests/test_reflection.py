@@ -5,7 +5,7 @@ Unit tests for ReflectionEngine module.
 import pytest
 import tempfile
 from pathlib import Path
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 
 from src.tradememory.reflection import ReflectionEngine
 from src.tradememory.journal import TradeJournal
@@ -45,8 +45,7 @@ def test_daily_summary_no_trades(reflection):
 def test_daily_summary_with_trades(reflection, journal):
     """Test daily summary with real trades"""
     # Create some test trades for today (UTC)
-    from datetime import datetime
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     # Winner
     journal.record_decision(
@@ -99,8 +98,7 @@ def test_daily_summary_with_trades(reflection, journal):
 
 def test_daily_summary_insufficient_data(reflection, journal):
     """Test summary with <3 trades shows warning"""
-    from datetime import datetime
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     # Only 1 trade
     journal.record_decision(
@@ -121,8 +119,7 @@ def test_daily_summary_insufficient_data(reflection, journal):
 
 def test_metrics_calculation(reflection, journal):
     """Test performance metrics calculation"""
-    from datetime import datetime
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     # Create 5 trades: 3 winners, 2 losers
     for i in range(5):
@@ -162,8 +159,7 @@ def test_metrics_calculation(reflection, journal):
 
 def test_high_confidence_mistakes_detected(reflection, journal):
     """Test that high-confidence losers are flagged as mistakes"""
-    from datetime import datetime
-    today = datetime.utcnow().date()
+    today = datetime.now(timezone.utc).date()
     
     # High confidence loser
     journal.record_decision(
