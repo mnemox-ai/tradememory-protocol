@@ -109,3 +109,47 @@ class SessionState(BaseModel):
         default_factory=dict,
         description="Current dynamic risk parameters"
     )
+
+
+# ========== Adaptive Risk Models ==========
+
+class RiskStatus(str, Enum):
+    """Risk management status level"""
+    ACTIVE = "active"
+    REDUCED = "reduced"
+    STOPPED = "stopped"
+
+
+class RiskConstraints(BaseModel):
+    """Dynamic risk parameters calculated from trade history"""
+    max_lot_size: float = Field(default=0.1, description="Maximum allowed lot size")
+    risk_per_trade_pct: float = Field(default=2.0, ge=0.5, le=5.0, description="Risk per trade as % of equity")
+    daily_loss_limit: float = Field(default=500.0, description="Maximum daily loss in account currency")
+    scale_factor: float = Field(default=1.0, ge=0.0, le=1.0, description="Global position scale factor")
+    session_adjustments: Dict[str, float] = Field(
+        default_factory=lambda: {"asian": 1.0, "london": 1.0, "newyork": 1.0},
+        description="Per-session lot multipliers"
+    )
+    consecutive_loss_limit: int = Field(default=5, description="Max consecutive losses before stop")
+    kelly_fraction: float = Field(default=0.0, ge=0.0, le=0.25, description="Quarter-Kelly fraction")
+    status: RiskStatus = Field(default=RiskStatus.ACTIVE)
+    reason: str = Field(default="Default constraints - insufficient trade history")
+    updated_at: datetime = Field(default_factory=lambda: datetime.now())
+
+
+class TradeProposal(BaseModel):
+    """A proposed trade to be checked against risk constraints"""
+    symbol: str
+    direction: TradeDirection
+    lot_size: float = Field(gt=0)
+    strategy: str
+    confidence: float = Field(ge=0.0, le=1.0)
+    session: Optional[str] = None  # asian/london/newyork
+
+
+class TradeCheckResult(BaseModel):
+    """Result of checking a trade proposal against risk constraints"""
+    approved: bool
+    adjusted_lot_size: float
+    reasons: List[str] = Field(default_factory=list)
+    constraints_applied: RiskConstraints

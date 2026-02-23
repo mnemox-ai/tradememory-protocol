@@ -170,6 +170,23 @@ def load_reflections(days=7):
     return sorted(reflections, key=lambda x: x['date'])
 
 
+def fetch_risk_constraints(agent_id="ng-gold-agent"):
+    """Fetch risk constraints from MCP Server."""
+    try:
+        with httpx.Client(timeout=API_TIMEOUT) as client:
+            response = client.post(
+                f"{API_BASE_URL}/risk/get_constraints",
+                json={"agent_id": agent_id}
+            )
+            response.raise_for_status()
+            data = response.json()
+            if data.get("success"):
+                return data.get("constraints", {})
+            return None
+    except Exception:
+        return None
+
+
 def parse_reflection_insights(reflection_text):
     """從 reflection 文本中解析關鍵洞察"""
     insights = {
@@ -656,11 +673,56 @@ def main():
         else:
             st.info("No reflection reports found. Reports are generated daily at 23:55.")
     
+    # ========== Section: Risk Constraints ==========
+    st.markdown("---")
+    st.markdown("## Risk Constraints")
+
+    risk_data = None
+    if use_real_data:
+        risk_data = fetch_risk_constraints()
+
+    if risk_data is None:
+        st.caption("*Simulated* - MCP Server offline or no constraints stored")
+        risk_data = {
+            "status": "active",
+            "max_lot_size": 0.1,
+            "risk_per_trade_pct": 2.0,
+            "scale_factor": 1.0,
+            "kelly_fraction": 0.0,
+            "session_adjustments": {"asian": 1.0, "london": 1.0, "newyork": 1.0},
+            "reason": "Default constraints (simulated)",
+        }
+
+    # Status indicator
+    status = risk_data.get("status", "active")
+    status_colors = {"active": "green", "reduced": "orange", "stopped": "red"}
+    status_labels = {"active": "ACTIVE", "reduced": "REDUCED", "stopped": "STOPPED"}
+    st.markdown(
+        f"**Status:** :{status_colors.get(status, 'gray')}[{status_labels.get(status, status.upper())}]"
+        f" &mdash; {risk_data.get('reason', '')}"
+    )
+
+    # Metric cards
+    rc1, rc2, rc3, rc4 = st.columns(4)
+    rc1.metric("Max Lot", f"{risk_data.get('max_lot_size', 0.1):.2f}")
+    rc2.metric("Risk %", f"{risk_data.get('risk_per_trade_pct', 2.0):.1f}%")
+    rc3.metric("Scale Factor", f"{risk_data.get('scale_factor', 1.0):.2f}")
+    rc4.metric("Kelly", f"{risk_data.get('kelly_fraction', 0.0):.2%}")
+
+    # Session adjustments
+    sess = risk_data.get("session_adjustments", {})
+    if sess:
+        st.markdown("**Session Adjustments:**")
+        sc1, sc2, sc3 = st.columns(3)
+        sc1.metric("Asian", f"{sess.get('asian', 1.0):.2f}x")
+        sc2.metric("London", f"{sess.get('london', 1.0):.2f}x")
+        sc3.metric("New York", f"{sess.get('newyork', 1.0):.2f}x")
+
     # ========== Footer ==========
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #888; padding: 2rem 0;">
-        <p>🧠 TradeMemory Protocol v0.1.0</p>
+        <p>TradeMemory Protocol v0.1.0</p>
         <p>AI-Powered Trading Memory & Adaptive Decision Layer</p>
     </div>
     """, unsafe_allow_html=True)
