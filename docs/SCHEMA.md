@@ -505,5 +505,4 @@ TradeMemory enforces these rules when recording trades:
 ## See Also
 
 - [README.md](../README.md) — Project overview
-- [API.md](API.md) — Full MCP tool reference *(coming soon)*
-- [Blueprint](blueprint.docx) — Original design document
+- [API.md](API.md) — HTTP endpoint documentation
