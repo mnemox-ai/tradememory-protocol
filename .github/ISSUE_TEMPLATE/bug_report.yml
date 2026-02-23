@@ -1,0 +1,129 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior in TradeMemory
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the form below to help us understand and fix the issue.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear description of what the bug is
+      placeholder: Tell us what went wrong
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Start MCP server with `python -m src.tradememory.server`
+        2. Run mt5_sync.py
+        3. Execute a trade on MT5
+        4. See error in console
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What did you expect to happen?
+      placeholder: Trade should sync to TradeMemory database
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened?
+      placeholder: Error message appeared / Trade not synced / Server crashed
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Please paste any relevant error messages or logs
+      placeholder: Paste error logs here
+      render: shell
+
+  - type: input
+    id: version
+    attributes:
+      label: TradeMemory Version
+      description: Which version are you using?
+      placeholder: e.g., v0.1.0, commit hash, or "main branch"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running TradeMemory on?
+      options:
+        - Windows 10
+        - Windows 11
+        - Linux (Ubuntu)
+        - Linux (other)
+        - macOS
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python Version
+      description: Output of `python --version`
+      placeholder: e.g., Python 3.10.5
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mt5
+    attributes:
+      label: Are you using MT5?
+      description: Does this bug involve MetaTrader 5?
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+
+  - type: input
+    id: broker
+    attributes:
+      label: MT5 Broker (if applicable)
+      description: Which broker are you using?
+      placeholder: e.g., ForexTime, Pepperstone, IC Markets
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information that might help us debug
+      placeholder: Screenshots, related issues, attempted solutions
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues to avoid duplicates
+          required: true
+        - label: I have included error logs if available
+          required: false
+        - label: I can reproduce this bug consistently
+          required: false

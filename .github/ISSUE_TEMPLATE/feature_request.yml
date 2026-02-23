@@ -1,0 +1,97 @@
+name: ✨ Feature Request
+description: Suggest a new feature or improvement for TradeMemory
+title: "[Feature]: "
+labels: ["enhancement", "needs-discussion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea to make TradeMemory better? We'd love to hear it!
+        
+        Please note: TradeMemory is currently in **Phase 1 (Alpha)**. Some features may be planned for future phases.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem You're Trying to Solve
+      description: What problem does this feature address? Why do you need it?
+      placeholder: |
+        Example: "As a trader running multiple strategies, I need to track P&L by strategy, but currently TradeMemory only shows total P&L."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: How would you like this feature to work?
+      placeholder: |
+        Example: "Add a 'strategy' filter in the dashboard that breaks down P&L by strategy name."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives Considered
+      description: Have you thought of other ways to solve this problem?
+      placeholder: Any workarounds you're currently using or other approaches
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority (from your perspective)
+      description: How important is this feature to you?
+      options:
+        - "Critical - I can't use TradeMemory without this"
+        - "High - Significantly impacts my workflow"
+        - "Medium - Nice to have"
+        - "Low - Minor improvement"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Suggested Phase
+      description: When do you think this should be implemented?
+      options:
+        - "Phase 1 (Alpha) - Core functionality"
+        - "Phase 2 (Beta) - Intelligence layer"
+        - "Phase 3 (Public) - Multi-market expansion"
+        - "Future / Not sure"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: willingness
+    attributes:
+      label: Would you be willing to contribute?
+      description: Could you help implement this feature?
+      options:
+        - "Yes, I can submit a PR"
+        - "Yes, I can help test"
+        - "Yes, I can provide feedback"
+        - "No, but I'd love to see it"
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other information, mockups, or examples?
+      placeholder: Screenshots, links to similar features in other projects, use cases
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm the following
+      options:
+        - label: I have searched existing issues and discussions
+          required: true
+        - label: This feature aligns with TradeMemory's core mission (trading memory for AI agents)
+          required: true
+        - label: I have read the Roadmap in README.md
+          required: false
