@@ -127,7 +127,7 @@ will trigger risk parameter adjustment.
 
 ## What I Learned This Week
 
-### 🟢 What's Working
+### What's Working
 [List of positive patterns discovered]
 
 **Example:**
@@ -138,7 +138,7 @@ will trigger risk parameter adjustment.
 >
 > *Evidence: T-2026-0241, T-2026-0243, T-2026-0247, T-2026-0249, T-2026-0251*
 
-### 🔴 What's Not Working
+### What's Not Working
 [List of negative patterns discovered]
 
 **Example:**
@@ -152,7 +152,7 @@ will trigger risk parameter adjustment.
 > next week. If the pattern doesn't improve in 2 weeks, I'll stop trading 
 > Asian session entirely.
 
-### 🟡 Things to Test
+### Things to Test
 [Hypotheses to explore next week]
 
 **Example:**
@@ -183,13 +183,13 @@ will trigger risk parameter adjustment.
 
 ## Top Trades of the Week
 
-**🏆 Best Trade: T-2026-0251**
+**Best Trade: T-2026-0251**
 - **Strategy:** VolBreakout
 - **P&L:** +$28.50 (+2.1R)
 - **What went right:** Perfect entry on London open, volume confirmation, exited at 2R target
 - **Lesson:** This is the template for a great trade
 
-**💀 Worst Trade: T-2026-0245**
+**Worst Trade: T-2026-0245**
 - **Strategy:** VolBreakout
 - **P&L:** -$15.20 (-1.0R)
 - **What went wrong:** Asian session false breakout, stopped out before reversal
@@ -234,7 +234,7 @@ actively hurting my performance. Making significant risk adjustments.
 
 ## What I Learned This Week
 
-### 🟢 What's Working
+### What's Working
 
 **London session VolBreakout is exceptionally strong**
 
@@ -253,7 +253,7 @@ trades from 0.05 to 0.08. I've earned this.
 
 ---
 
-### 🔴 What's Not Working
+### What's Not Working
 
 **Asian session is killing me**
 
@@ -274,7 +274,7 @@ I'll stop trading Asian session entirely.
 
 ---
 
-### 🟡 Things to Test
+### Things to Test
 
 **Exit timing might be too aggressive**
 
@@ -316,7 +316,7 @@ if this improves my average R.
 
 ## Top Trades of the Week
 
-**🏆 Best Trade: T-2026-0251**
+**Best Trade: T-2026-0251**
 - **Date:** February 21, 09:03
 - **Strategy:** VolBreakout (London session)
 - **P&L:** +$28.50 (+2.1R)
@@ -324,7 +324,7 @@ if this improves my average R.
 - **What went right:** Perfect timing on volume confirmation. High confidence (0.72) was justified. Exited at 2R target as planned.
 - **Lesson:** This is the template for my best setups. Wait for the confirmation, trust high confidence, execute cleanly.
 
-**💀 Worst Trade: T-2026-0245**
+**Worst Trade: T-2026-0245**
 - **Date:** February 20, 02:47
 - **Strategy:** VolBreakout (Asian session)
 - **P&L:** -$15.20 (-1.0R)
@@ -411,4 +411,4 @@ This is handled by `risk.override` MCP tool (requires authentication).
 
 - [SCHEMA.md](SCHEMA.md) — Data structure reference
 - [README.md](../README.md) — Project overview
-- [Blueprint Section 6](blueprint.docx) — Original reflection engine design
+- [Reflection Engine Guide](REFLECTION_ENGINE_GUIDE.md) — Implementation details

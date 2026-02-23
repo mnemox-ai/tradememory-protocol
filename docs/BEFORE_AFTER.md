@@ -1,6 +1,8 @@
 # Before/After: The Difference Memory Makes
 
-This document shows the concrete difference between an AI trading agent **without** persistent memory versus **with** TradeMemory Protocol. All data is based on the 30-trade XAUUSD simulation from `demo.py`.
+> **Note:** All data below is from a simulation (`demo.py`). These are projected improvements based on simulated trades, not real trading results. Real performance data will be added as the project matures.
+
+This document shows the difference between an AI trading agent **without** persistent memory versus **with** TradeMemory Protocol, using 30 simulated XAUUSD trades.
 
 ---
 

@@ -14,7 +14,7 @@ TradeMemory exposes its functionality via MCP (Model Context Protocol) tools. An
 
 ## Tool Categories
 
-### 📔 Trade Journal
+### Trade Journal
 Tools for recording and querying trade decisions and outcomes.
 
 - `trade.record_decision` — Log a trade entry decision
@@ -22,29 +22,29 @@ Tools for recording and querying trade decisions and outcomes.
 - `trade.query_history` — Search past trades
 - `trade.get_active` — Get current open positions
 
-### 🧠 Reflection
+### Reflection
 Tools for analyzing trading patterns and retrieving insights.
 
 - `reflect.run_daily` — Trigger daily summary
-- `reflect.run_weekly` — Trigger weekly reflection *(Coming Soon)*
-- `reflect.get_insights` — Get curated insights (L2 memory) *(Coming Soon)*
-- `reflect.query_patterns` — Ask specific questions about patterns *(Coming Soon)*
+- `reflect.run_weekly` — Trigger weekly reflection *(Not Yet Implemented)*
+- `reflect.get_insights` — Get curated insights (L2 memory) *(Not Yet Implemented)*
+- `reflect.query_patterns` — Ask specific questions about patterns *(Not Yet Implemented)*
 
-### ⚠️ Risk Management *(Coming Soon)*
+### Risk Management *(Not Yet Implemented)*
 Tools for checking and managing risk parameters.
 
-- `risk.get_constraints` — Get current dynamic risk parameters *(Coming Soon)*
-- `risk.check_trade` — Validate proposed trade against constraints *(Coming Soon)*
-- `risk.get_performance` — Get performance metrics *(Coming Soon)*
-- `risk.override` — Human override of risk parameters (requires auth) *(Coming Soon)*
+- `risk.get_constraints` — Get current dynamic risk parameters *(Not Yet Implemented)*
+- `risk.check_trade` — Validate proposed trade against constraints *(Not Yet Implemented)*
+- `risk.get_performance` — Get performance metrics *(Not Yet Implemented)*
+- `risk.override` — Human override of risk parameters (requires auth) *(Not Yet Implemented)*
 
-### 💾 State Management
+### State Management
 Tools for session persistence and agent identity.
 
 - `state.load` — Load agent state at session start
 - `state.save` — Persist current state
-- `state.get_identity` — Get agent identity context *(Coming Soon)*
-- `state.heartbeat` — Keep-alive signal for long-running agents *(Coming Soon)*
+- `state.get_identity` — Get agent identity context *(Not Yet Implemented)*
+- `state.heartbeat` — Keep-alive signal for long-running agents *(Not Yet Implemented)*
 
 ---
 
