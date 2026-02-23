@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  tradememory:
+    build: .
+    container_name: tradememory-server
+    ports:
+      - "8000:8000"
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - TRADEMEMORY_API=http://0.0.0.0:8000
+    volumes:
+      - tradememory-data:/app/data
+      - ./reflections:/app/reflections
+    restart: unless-stopped
+
+volumes:
+  tradememory-data:

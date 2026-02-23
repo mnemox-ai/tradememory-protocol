@@ -1,106 +1,176 @@
 # Contributing to TradeMemory Protocol
 
-Thanks for your interest in TradeMemory! 🎉
+We welcome contributions! Whether it's bug fixes, new features, documentation improvements, or broker integrations — every contribution helps make AI trading agents smarter.
 
 ---
 
-## Current Status
+## Getting Started
 
-**This project is in early development (Phase 1).** We are not accepting external contributions yet while we build the core foundation.
-
-However, you can still help:
-
-### How to Help Right Now
-
-1. **⭐ Star the repo** — Shows interest and helps us prioritize
-2. **🐛 Report bugs** — If you find issues, open a GitHub Issue with:
-   - What you expected to happen
-   - What actually happened
-   - Steps to reproduce
-   - Your environment (OS, Python version, etc.)
-3. **💬 Join the discussion** — Comment on open issues with your ideas
-4. **📖 Improve documentation** — Found a typo or unclear explanation? Let us know via Issues
-
----
-
-## When We'll Accept Contributions
-
-**Phase 2 (planned for March 2026):** We'll open up contributions once the core architecture is stable. At that point we'll need help with:
-- Additional broker integrations (Binance, Bybit, Alpaca)
-- Advanced reflection algorithms
-- Dashboard UI improvements
-- Documentation translations
-- Example trading strategies
-
-We'll update this file when we're ready for external PRs.
-
----
-
-## Development Setup (For Future Contributors)
-
-Once we open contributions, here's how to set up your dev environment:
-
-### Prerequisites
-- Python 3.10+
-- Git
-
-### Setup Steps
+### 1. Fork & Clone
 
 ```bash
-# Fork and clone the repo
+# Fork the repo on GitHub, then:
 git clone https://github.com/YOUR_USERNAME/tradememory-protocol.git
 cd tradememory-protocol
+```
 
-# Create a virtual environment
+### 2. Set Up Development Environment
+
+```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate    # Linux/Mac
+# venv\Scripts\activate     # Windows
 
-# Install dependencies
 pip install -r requirements.txt
+cp .env.example .env
+```
 
-# Install dev dependencies
-pip install pytest black flake8
+### 3. Verify Setup
 
-# Run tests to verify setup
-pytest tests/
+```bash
+python -m pytest tests/ -v
+# Expected: 36 passed
+```
 
-# Initialize database
-python -m tradememory.db init
+---
+
+## Making Changes
+
+### Branch Naming
+
+Create a branch from `master` for your work:
+
+```bash
+git checkout -b feat/your-feature    # New feature
+git checkout -b fix/your-bugfix      # Bug fix
+git checkout -b docs/your-change     # Documentation
+git checkout -b refactor/your-change # Refactoring
+```
+
+### Commit Messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+feat: add Binance exchange connector
+fix: correct timezone handling in reflection engine
+docs: update API reference for risk tools
+refactor: simplify state persistence logic
+test: add integration tests for trade journal
 ```
 
 ### Code Style
 
-We use:
-- **Black** for Python formatting
-- **Flake8** for linting
-- **Pytest** for testing
+- **Python 3.10+** — Use modern syntax (type hints, f-strings, `match` statements where appropriate)
+- **Formatting** — We use [Black](https://black.readthedocs.io/) with default settings
+- **Linting** — [Flake8](https://flake8.pycqa.org/) for code quality
+- **Type hints** — Encouraged for public APIs
 
-Run before committing:
 ```bash
+# Format code
 black src/ tests/
+
+# Lint
 flake8 src/ tests/
-pytest tests/
+
+# Run tests
+python -m pytest tests/ -v
 ```
 
----
+### Testing Requirements
 
-## Pull Request Guidelines (When We Open)
+**All PRs must pass tests.** No exceptions.
 
-When we start accepting PRs, we'll expect:
-
-1. **One feature per PR** — Small, focused changes are easier to review
-2. **Tests included** — New features need tests
-3. **Documentation updated** — If you change behavior, update the docs
-4. **No breaking changes** — Without discussion first
-5. **Clean commit history** — Squash WIP commits before submitting
+- Add tests for new features in `tests/`
+- Ensure existing tests still pass: `python -m pytest tests/ -v`
+- Aim for meaningful test coverage, not 100% line coverage
 
 ---
 
-## Questions?
+## Submitting a Pull Request
 
-- **General questions:** Open a GitHub Discussion (coming soon)
-- **Bug reports:** Open a GitHub Issue
-- **Security issues:** Email security@sean.sys (do not open public issues)
+### 1. Push Your Branch
+
+```bash
+git push origin feat/your-feature
+```
+
+### 2. Create the PR
+
+- Open a PR against the `master` branch
+- Use a clear title (e.g., "feat: add Binance connector")
+- Fill in the PR template with:
+  - **Summary** — What does this PR do?
+  - **Test plan** — How did you verify it works?
+
+### 3. PR Checklist
+
+Before submitting, confirm:
+
+- [ ] `python -m pytest tests/ -v` passes (36+ tests)
+- [ ] New features include tests
+- [ ] Code is formatted with Black
+- [ ] Commit messages follow conventional commits
+- [ ] Documentation updated if behavior changed
+- [ ] No secrets, API keys, or credentials in the code
+
+### 4. Review Process
+
+- A maintainer will review your PR
+- Address any feedback with additional commits
+- Once approved, we'll merge it
+
+---
+
+## What We're Looking For
+
+### High Priority
+
+- **Broker integrations** — Binance, Bybit, Alpaca, Interactive Brokers
+- **Reflection algorithms** — Better pattern detection, multi-timeframe analysis
+- **Performance optimizations** — Faster queries, better caching
+
+### Also Welcome
+
+- Documentation improvements and translations
+- Dashboard UI enhancements
+- Example trading strategies
+- Bug reports and fixes
+- Test coverage improvements
+
+---
+
+## Issue Guidelines
+
+### Bug Reports
+
+Use the [Bug Report template](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=bug_report.yml) and include:
+
+- Steps to reproduce
+- Expected vs actual behavior
+- Environment (OS, Python version)
+- Error messages or logs
+
+### Feature Requests
+
+Use the [Feature Request template](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=feature_request.yml) and include:
+
+- Problem description
+- Proposed solution
+- Use case
+
+---
+
+## Architecture Notes
+
+Before contributing, understand the key design principles:
+
+1. **Platform-agnostic core** — TradeMemory does NOT connect to brokers directly. Broker-specific code stays in adapters (`trade_adapter.py`, `mt5_sync.py`).
+2. **3-Layer Memory** — L1 (Hot/RAM), L2 (Warm/JSON), L3 (Cold/SQLite). Respect the layer boundaries.
+3. **All timestamps in UTC** — No exceptions.
+4. **LLM outputs are untrusted** — Always validate and provide fallback defaults.
+
+See [Architecture Overview](docs/ARCHITECTURE.md) for the full design.
 
 ---
 
@@ -108,7 +178,7 @@ When we start accepting PRs, we'll expect:
 
 Be respectful. We're all here to build something useful.
 
-- **DO:** Ask questions, propose ideas, point out bugs
+- **DO:** Ask questions, propose ideas, report bugs, share insights
 - **DON'T:** Be rude, spam, or demand features
 
 We reserve the right to block contributors who don't follow basic courtesy.
@@ -117,8 +187,10 @@ We reserve the right to block contributors who don't follow basic courtesy.
 
 ## License
 
-By contributing to TradeMemory, you agree that your contributions will be licensed under the MIT License.
+By contributing to TradeMemory Protocol, you agree that your contributions will be licensed under the [MIT License](LICENSE).
 
 ---
 
-**Thanks for reading! We'll update this guide as the project matures. 🚀**
+**Thanks for contributing! Every PR makes AI trading agents a little smarter.**
+
+Built by [Mnemox](https://mnemox.ai) — AI memory infrastructure.
