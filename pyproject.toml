@@ -1,21 +1,60 @@
 [project]
-name = "tradememory"
+name = "tradememory-protocol"
 version = "0.1.0"
-description = "AI Agent Trading Memory & Adaptive Decision Layer"
-authors = [{name = "sean.sys", email = "sean@sean.sys"}]
-requires-python = ">=3.11"
+description = "Persistent memory and adaptive decision layer for AI trading agents"
+authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["mcp", "trading", "ai", "memory", "agent", "reflection"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
     "pydantic>=2.5.3",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.4",
     "pytest-asyncio>=0.23.3",
+    "black",
+    "flake8",
 ]
+dashboard = [
+    "streamlit",
+    "plotly",
+]
+
+[project.urls]
+Homepage = "https://github.com/mnemox-ai/tradememory-protocol"
+Documentation = "https://github.com/mnemox-ai/tradememory-protocol/tree/master/docs"
+Repository = "https://github.com/mnemox-ai/tradememory-protocol"
+Issues = "https://github.com/mnemox-ai/tradememory-protocol/issues"
+Changelog = "https://github.com/mnemox-ai/tradememory-protocol/blob/master/CHANGELOG.md"
+
+[project.scripts]
+tradememory = "src.tradememory.server:main"
 
 [build-system]
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "strict"

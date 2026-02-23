@@ -1,0 +1,39 @@
+title: "[Show & Tell]: "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Show the community what you've built with TradeMemory Protocol!
+        We'd love to see your trading setups, custom integrations, and results.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What did you build?
+      description: Describe your project, setup, or integration
+      placeholder: |
+        Example: "I connected TradeMemory to my Binance bot and it discovered that my RSI entries work best during London session."
+    validations:
+      required: true
+
+  - type: textarea
+    id: how
+    attributes:
+      label: How does it work?
+      description: Technical details, architecture, or code snippets
+      placeholder: Share relevant code, configuration, or architecture decisions
+
+  - type: textarea
+    id: results
+    attributes:
+      label: Results (optional)
+      description: Any performance data, screenshots, or metrics to share?
+      placeholder: |
+        Example: "Win rate improved from 52% to 64% after 2 weeks of L2 memory."
+
+  - type: textarea
+    id: lessons
+    attributes:
+      label: Lessons learned (optional)
+      description: What would you do differently? Any tips for others?
