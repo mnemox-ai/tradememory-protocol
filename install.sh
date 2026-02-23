@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # TradeMemory Protocol — One-Click Install Script
-# Usage: curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/main/install.sh | bash
+# Usage: curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/master/install.sh | bash
 # Or:    bash install.sh
 
 set -e
