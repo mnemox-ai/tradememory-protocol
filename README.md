@@ -133,7 +133,7 @@ See it live in the [Streamlit Dashboard](#-interactive-dashboard) or read the [f
 ### One-Line Install
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/main/install.sh | bash
+curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/master/install.sh | bash
 ```
 
 Or install manually:
@@ -325,14 +325,12 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 
 ## 🤝 Contributing
 
-This project is in **alpha** (Phase 1). We're not accepting external contributions yet, but you can:
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 - ⭐ **Star the repo** to follow progress
 - 🐛 **Report bugs** via [GitHub Issues](https://github.com/mnemox-ai/tradememory-protocol/issues)
+- 🔧 **Submit PRs** for bug fixes or new features
 - 💬 **Join the discussion** in Issues or Discussions
-- 📧 **Contact us** for partnership/integration inquiries
-
-We'll open contributions in Phase 2 (Q2 2026).
 
 ---
 
