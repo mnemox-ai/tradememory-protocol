@@ -75,13 +75,6 @@ streamlit run dashboard/app.py
 - Preparing for open-source launch (Sprint 5).
 - GitHub issue templates and launch strategy docs ready in `docs/`.
 
-## Open Source Launch Checklist (Sprint 5)
-
-See `docs/LAUNCH_STRATEGY.md` for full plan. Key targets:
-- Reddit r/algotrading, Hacker News, Discord MCP community
-- Success metric: 200+ GitHub stars within 30 days
-- Differentiator: Only MCP-native trading memory framework. Vertical specialization vs general-purpose memory tools.
-
 ## Compact Instructions
 
-When compacting, preserve: architecture decisions (DEC-001 through DEC-016), current sprint status, security rules, and platform-agnostic design principle.
+When compacting, preserve: key design decisions (LLM validation, UTC enforcement, platform-agnostic core), current task progress, security rules.
