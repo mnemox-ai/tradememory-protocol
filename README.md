@@ -293,7 +293,7 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 ## 📖 Documentation
 
 - [Quick Start Guide](docs/QUICK_START.md)
-- [Architecture Overview](docs/ARCHITECTURE.md) *(coming soon)*
+- [Architecture Overview](docs/ARCHITECTURE.md)
 - [MCP Tools API Reference](docs/API.md)
 - [Data Schema & Examples](docs/SCHEMA.md)
 - [Reflection Report Format](docs/REFLECTION_FORMAT.md)
