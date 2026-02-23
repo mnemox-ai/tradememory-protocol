@@ -6,7 +6,7 @@ TradeMemory is an MCP (Model Context Protocol) server that gives AI trading agen
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox/tradememory-protocol)
+[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox-ai/tradememory-protocol)
 
 ---
 
@@ -134,7 +134,7 @@ See it live in the [Streamlit Dashboard](#-interactive-dashboard) or read the [f
 
 ```bash
 # Clone the repo
-git clone https://github.com/mnemox/tradememory-protocol.git
+git clone https://github.com/mnemox-ai/tradememory-protocol.git
 cd tradememory-protocol
 
 # Install dependencies
@@ -308,7 +308,7 @@ See [STATUS.md](STATUS.md) for detailed sprint-by-sprint progress.
 This project is in **alpha** (Phase 1). We're not accepting external contributions yet, but you can:
 
 - ⭐ **Star the repo** to follow progress
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/mnemox/tradememory-protocol/issues)
+- 🐛 **Report bugs** via [GitHub Issues](https://github.com/mnemox-ai/tradememory-protocol/issues)
 - 💬 **Join the discussion** in Issues or Discussions
 - 📧 **Contact us** for partnership/integration inquiries
 
@@ -341,7 +341,7 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ## 📬 Contact
 
-- GitHub Issues: [tradememory-protocol/issues](https://github.com/mnemox/tradememory-protocol/issues)
+- GitHub Issues: [tradememory-protocol/issues](https://github.com/mnemox-ai/tradememory-protocol/issues)
 - Email: [Coming soon]
 - Twitter: [Coming soon]
 
@@ -361,6 +361,6 @@ Trading financial instruments involves substantial risk of loss and is not suita
 
 [Mnemox](https://mnemox.ai) — AI memory infrastructure.
 
-[⭐ Star this repo](https://github.com/mnemox/tradememory-protocol) • [📖 Read the docs](docs/) • [🐛 Report bug](https://github.com/mnemox/tradememory-protocol/issues)
+[⭐ Star this repo](https://github.com/mnemox-ai/tradememory-protocol) • [📖 Read the docs](docs/) • [🐛 Report bug](https://github.com/mnemox-ai/tradememory-protocol/issues)
 
 </div>

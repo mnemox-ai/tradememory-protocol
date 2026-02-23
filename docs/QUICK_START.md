@@ -12,7 +12,7 @@ Get TradeMemory Protocol running in 5 minutes.
 ## 1. Clone & Install
 
 ```bash
-git clone https://github.com/mnemox/tradememory-protocol.git
+git clone https://github.com/mnemox-ai/tradememory-protocol.git
 cd tradememory-protocol
 pip install -r requirements.txt
 ```
