@@ -241,6 +241,63 @@ async def reflect_run_daily(date: Optional[str] = None):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@app.post("/reflect/run_weekly")
+async def reflect_run_weekly(week_ending: Optional[str] = None):
+    """
+    MCP Tool: reflect.run_weekly
+    Generate weekly reflection summary.
+
+    Args:
+        week_ending: Optional YYYY-MM-DD string (default: last Sunday)
+    """
+    try:
+        from datetime import date as date_type
+
+        target = None
+        if week_ending:
+            target = date_type.fromisoformat(week_ending)
+
+        summary = reflection_engine.generate_weekly_summary(week_ending=target)
+
+        return {
+            "success": True,
+            "week_ending": (target or date_type.today()).isoformat(),
+            "summary": summary,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/reflect/run_monthly")
+async def reflect_run_monthly(year: Optional[int] = None, month: Optional[int] = None):
+    """
+    MCP Tool: reflect.run_monthly
+    Generate monthly reflection summary.
+
+    Args:
+        year: Optional year (default: current)
+        month: Optional month (default: current)
+    """
+    try:
+        from datetime import date as date_type
+
+        summary = reflection_engine.generate_monthly_summary(year=year, month=month)
+
+        effective_year = year or date_type.today().year
+        effective_month = month or date_type.today().month
+
+        return {
+            "success": True,
+            "year": effective_year,
+            "month": effective_month,
+            "summary": summary,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.post("/mt5/sync")
 async def mt5_sync(agent_id: str = "ng-gold-agent"):
     """

@@ -218,6 +218,26 @@ class TestReflectionEndpoint:
         assert resp.status_code == 200
         assert resp.json()["date"] == "2026-02-20"
 
+    def test_run_weekly_no_trades(self, real_client):
+        """POST /reflect/run_weekly with no trades returns weekly summary."""
+        resp = real_client.post("/reflect/run_weekly?week_ending=2026-02-16")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert "WEEKLY SUMMARY" in data["summary"]
+        assert "No trades this week" in data["summary"]
+
+    def test_run_monthly_no_trades(self, real_client):
+        """POST /reflect/run_monthly with no trades returns monthly summary."""
+        resp = real_client.post("/reflect/run_monthly?year=2026&month=1")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["year"] == 2026
+        assert data["month"] == 1
+        assert "MONTHLY SUMMARY" in data["summary"]
+        assert "No trades this month" in data["summary"]
+
 
 class TestRiskEndpoints:
     """Tests for /risk/* endpoints."""

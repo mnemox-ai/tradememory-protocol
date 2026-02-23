@@ -170,6 +170,42 @@ def load_reflections(days=7):
     return sorted(reflections, key=lambda x: x['date'])
 
 
+def load_weekly_reflections(weeks=8):
+    """讀取最近 N 週的 weekly reflection 報告"""
+    reflections = []
+    if not REFLECTIONS_DIR.exists():
+        return reflections
+
+    for filepath in sorted(REFLECTIONS_DIR.glob("reflection_weekly_*.txt"), reverse=True):
+        try:
+            content = filepath.read_text(encoding='utf-8')
+            # Extract date from filename: reflection_weekly_2026-02-23.txt
+            date_str = filepath.stem.replace("reflection_weekly_", "")
+            reflections.append({'date': date_str, 'content': content})
+        except Exception:
+            pass
+
+    return reflections[:weeks]
+
+
+def load_monthly_reflections(months=12):
+    """讀取最近 N 個月的 monthly reflection 報告"""
+    reflections = []
+    if not REFLECTIONS_DIR.exists():
+        return reflections
+
+    for filepath in sorted(REFLECTIONS_DIR.glob("reflection_monthly_*.txt"), reverse=True):
+        try:
+            content = filepath.read_text(encoding='utf-8')
+            # Extract month from filename: reflection_monthly_2026-02.txt
+            month_str = filepath.stem.replace("reflection_monthly_", "")
+            reflections.append({'month': month_str, 'content': content})
+        except Exception:
+            pass
+
+    return reflections[:months]
+
+
 def fetch_risk_constraints(agent_id="ng-gold-agent"):
     """Fetch risk constraints from MCP Server."""
     try:
@@ -673,6 +709,34 @@ def main():
         else:
             st.info("No reflection reports found. Reports are generated daily at 23:55.")
     
+    # ========== Section: Weekly & Monthly Reflections ==========
+    st.markdown("---")
+    st.markdown("## Weekly & Monthly Reflections")
+
+    weekly_refs = load_weekly_reflections()
+    monthly_refs = load_monthly_reflections()
+
+    if weekly_refs or monthly_refs:
+        tab_weekly, tab_monthly = st.tabs(["Weekly", "Monthly"])
+
+        with tab_weekly:
+            if weekly_refs:
+                for ref in weekly_refs:
+                    with st.expander(f"Week ending {ref['date']}"):
+                        st.text(ref['content'])
+            else:
+                st.info("No weekly reflection reports yet. Run: python daily_reflection.py --weekly")
+
+        with tab_monthly:
+            if monthly_refs:
+                for ref in monthly_refs:
+                    with st.expander(f"Month {ref['month']}"):
+                        st.text(ref['content'])
+            else:
+                st.info("No monthly reflection reports yet. Run: python daily_reflection.py --monthly")
+    else:
+        st.info("No weekly/monthly reflection reports found. Generate them with --weekly or --monthly flags.")
+
     # ========== Section: Risk Constraints ==========
     st.markdown("---")
     st.markdown("## Risk Constraints")
