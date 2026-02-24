@@ -30,17 +30,14 @@ def init_mt5() -> bool:
     """Initialize MT5 connection"""
     try:
         import MetaTrader5 as MT5
-        
-        if not MT5.initialize():
-            print(f"[ERROR] MT5 initialize() failed")
-            return False
-        
-        # Login
-        authorized = MT5.login(login=MT5_LOGIN, password=MT5_PASSWORD, server=MT5_SERVER)
-        
-        if not authorized:
-            print(f"[ERROR] MT5 login failed for account {MT5_LOGIN}")
-            MT5.shutdown()
+
+        mt5_path = os.getenv('MT5_PATH', '')
+        init_kwargs = dict(login=MT5_LOGIN, password=MT5_PASSWORD, server=MT5_SERVER, timeout=30000)
+        if mt5_path:
+            init_kwargs['path'] = mt5_path
+
+        if not MT5.initialize(**init_kwargs):
+            print(f"[ERROR] MT5 initialize() failed: {MT5.last_error()}")
             return False
         
         account_info = MT5.account_info()
@@ -226,11 +223,9 @@ def main_loop():
                 print(f"[SCAN] Found {len(new_trades)} new closed trade(s)")
                 
                 for position in new_trades:
-                    success = sync_trade_to_memory(position)
-                    
-                    if success:
-                        # Update last synced ticket
-                        last_synced_ticket = max(last_synced_ticket, position['ticket'])
+                    sync_trade_to_memory(position)
+                    # Always advance ticket to avoid retrying
+                    last_synced_ticket = max(last_synced_ticket, position['ticket'])
                 
                 print(f"[OK] Sync complete. Last ticket: {last_synced_ticket}\n")
             

@@ -110,7 +110,7 @@ class Database:
             trade_data['tags'] = json.dumps(trade_data.get('tags', []))
             
             conn.execute("""
-                INSERT INTO trade_records VALUES (
+                INSERT OR IGNORE INTO trade_records VALUES (
                     :id, :timestamp, :symbol, :direction, :lot_size, :strategy,
                     :confidence, :reasoning, :market_context, :trade_references,
                     :exit_timestamp, :exit_price, :pnl, :pnl_r, :hold_duration,

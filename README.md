@@ -199,7 +199,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - Daily reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 111 unit tests passing
+- 100+ unit tests passing
 - Interactive demo (`demo.py`)
 - Weekly/monthly reflection cycles
 - Adaptive risk algorithms
@@ -224,7 +224,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (123 tests)
+- **Testing:** pytest (100+ tests)
 
 ---
 
@@ -245,25 +245,65 @@ Full API reference: [docs/API.md](docs/API.md)
 
 ## Connect to MT5 (Optional)
 
+Sync live trades from MetaTrader 5 into TradeMemory automatically.
+
+### Prerequisites
+
+1. **MetaTrader 5** running with your broker account
+2. **Python 3.12** (system Python 3.13+ is not supported by the MT5 package)
+3. **Enable API access** in MT5: `Tools → Options → Expert Advisors → Allow Algo Trading`
+   - Also set `Api=1` in `common.ini` under `[Experts]` section
+
+### Quick Start
+
 ```bash
-# Terminal 1: Start MCP server
-python -m src.tradememory.server
+# 1. Install dependencies
+pip install MetaTrader5 python-dotenv requests fastapi uvicorn pydantic
 
-# Terminal 2: Start MT5 sync
+# 2. Configure .env
+cp .env.example .env
+# Edit .env with your MT5 credentials
+
+# 3. Start both services
+scripts/start_services.bat
+```
+
+### Auto-Start on Login (Windows)
+
+```bash
+# Run as Administrator:
+scripts\install_autostart.bat
+```
+
+This registers a Windows Task Scheduler task that starts the tradememory server and mt5_sync.py 30 seconds after login.
+
+```
+scripts/
+├── start_services.bat       # Start tradememory server + mt5_sync.py
+├── stop_services.bat        # Stop all services
+├── install_autostart.bat    # Register auto-start task (run as admin)
+└── TradeMemory_AutoStart.xml # Task Scheduler config
+```
+
+### Manual Start
+
+```bash
+# Terminal 1: Start API server
+python -c "import sys; sys.path.insert(0, 'src'); from tradememory.server import main; main()"
+# Runs on http://localhost:8000
+
+# Terminal 2: Start MT5 sync (scans every 60s)
 python mt5_sync.py
+```
 
-# Set up daily reflection at 23:55
-# Windows: Import start_daily_reflection.bat into Task Scheduler
+### Daily Reflection
+
+```bash
+# Windows: Import start_daily_reflection.bat into Task Scheduler (23:55 daily)
 # Linux/Mac: 55 23 * * * /path/to/daily_reflection.sh
 ```
 
-### Recording a Demo GIF
-
-```bash
-pip install rich
-asciinema rec demo.cast -c "python scripts/record_demo.py"
-agg demo.cast demo.gif
-```
+See [MT5 Setup Guide](MT5_SYNC_SETUP.md) for detailed configuration.
 
 ---
 
