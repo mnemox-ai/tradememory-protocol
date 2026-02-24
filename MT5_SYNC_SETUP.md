@@ -161,7 +161,7 @@ sqlite3 data/tradememory.db "SELECT id, symbol, pnl FROM trade_records ORDER BY 
 ```bash
 # MT5 帳戶資訊（從 MEMORY.md 取得）
 MT5_LOGIN=your_login_here
-MT5_PASSWORD=REDACTED_PASSWORD
+MT5_PASSWORD=your_password_here
 MT5_SERVER=YourBroker-Server
 
 # TradeMemory API endpoint
