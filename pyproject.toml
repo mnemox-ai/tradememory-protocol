@@ -1,7 +1,7 @@
 [project]
 name = "tradememory-protocol"
-version = "0.1.0"
-description = "Persistent memory and adaptive decision layer for AI trading agents"
+version = "0.2.0"
+description = "MCP memory system for AI trading agents. Store, recall, and learn from past trades."
 authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
 license = {text = "MIT"}
 readme = "README.md"
@@ -18,6 +18,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
+    "fastmcp>=2.0.0",
     "fastapi>=0.109.0",
     "uvicorn>=0.27.0",
     "pydantic>=2.5.3",
@@ -53,7 +54,8 @@ Issues = "https://github.com/mnemox-ai/tradememory-protocol/issues"
 Changelog = "https://github.com/mnemox-ai/tradememory-protocol/blob/master/CHANGELOG.md"
 
 [project.scripts]
-tradememory = "src.tradememory.server:main"
+tradememory-protocol = "src.tradememory:main"
+tradememory-api = "src.tradememory.server:main"
 
 [build-system]
 requires = ["setuptools>=68.0"]

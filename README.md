@@ -25,19 +25,30 @@ What it does NOT do yet: adaptive risk algorithms, weekly/monthly reflection, mu
 
 ## Quick Start
 
-### Install
+### As MCP Server (Claude Desktop / Claude Code / Cursor)
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/mnemox-ai/tradememory-protocol/master/install.sh | bash
+uvx tradememory-protocol
 ```
 
-Or manually:
+Add to your MCP client config:
+```json
+{
+  "mcpServers": {
+    "tradememory": {
+      "command": "uvx",
+      "args": ["tradememory-protocol"]
+    }
+  }
+}
+```
+
+### From Source
 
 ```bash
 git clone https://github.com/mnemox-ai/tradememory-protocol.git
 cd tradememory-protocol
-pip install -r requirements.txt
-cp .env.example .env
+pip install -e .
 ```
 
 ### Run the Demo
@@ -156,28 +167,24 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=your-key tradememory
 
 ---
 
-## MCP Tools
+## MCP Tools (v0.2.0)
 
-### Trade Journal (implemented)
-- `trade.record_decision` — Log entry decision with full context
-- `trade.record_outcome` — Log trade result (P&L, exit reason)
-- `trade.query_history` — Search past trades by strategy/date/result
-- `trade.get_active` — Get current open positions
+### Core Memory Tools (MCP — via `uvx tradememory-protocol`)
+- `store_trade_memory` — Store a trade decision with full context into memory
+- `recall_similar_trades` — Find past trades with similar market context
+- `get_strategy_performance` — Aggregate performance stats per strategy
+- `get_trade_reflection` — Deep-dive into a specific trade's reasoning and lessons
 
-### Reflection (implemented)
-- `reflect.run_daily` — Trigger daily summary (rule-based, or LLM with API key)
-
-### State Management (implemented)
-- `state.load` — Load agent state at session start
-- `state.save` — Persist current state
-
-### Not Yet Implemented (Phase 2)
-- `reflect.run_weekly` — Weekly deep reflection
-- `reflect.get_insights` — Query curated insights
-- `risk.get_constraints` — Dynamic risk parameters
-- `risk.check_trade` — Validate trade against constraints
-- Adaptive risk algorithms (dynamic position sizing)
-- Agent-to-agent learning
+### REST API (FastAPI — via `tradememory-api`)
+- `POST /trade/record_decision` — Log entry decision with full context
+- `POST /trade/record_outcome` — Log trade result (P&L, exit reason)
+- `POST /trade/query_history` — Search past trades by strategy/date/result
+- `POST /reflect/run_daily` — Trigger daily summary (rule-based, or LLM with API key)
+- `POST /reflect/run_weekly` — Weekly deep reflection
+- `POST /reflect/run_monthly` — Monthly reflection
+- `POST /risk/get_constraints` — Dynamic risk parameters
+- `POST /risk/check_trade` — Validate trade against constraints
+- `POST /mt5/sync` — Sync trades from MetaTrader 5
 
 Full API reference: [docs/API.md](docs/API.md)
 
@@ -211,12 +218,13 @@ Full API reference: [docs/API.md](docs/API.md)
 
 ## Technical Stack
 
-- **Server:** FastAPI + Python MCP SDK
+- **MCP Server:** FastMCP 3.x (stdio transport)
+- **REST API:** FastAPI + uvicorn
 - **Storage:** SQLite (L3), JSON (L2)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (111 tests)
+- **Testing:** pytest (123 tests)
 
 ---
 
