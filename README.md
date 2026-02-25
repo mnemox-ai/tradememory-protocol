@@ -199,7 +199,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - Daily reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 100+ unit tests passing
+- 111 unit tests passing
 - Interactive demo (`demo.py`)
 - Weekly/monthly reflection cycles
 - Adaptive risk algorithms
@@ -224,7 +224,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (100+ tests)
+- **Testing:** pytest (111 tests)
 
 ---
 
