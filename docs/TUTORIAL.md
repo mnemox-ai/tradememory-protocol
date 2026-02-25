@@ -41,7 +41,7 @@ Verify installation:
 
 ```bash
 python -m pytest tests/ -q
-# Expected: 36 passed
+# Expected: 111 passed
 ```
 
 ---
