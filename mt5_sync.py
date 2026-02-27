@@ -6,11 +6,25 @@ Architecture: NG_Gold EA 不做任何修改，此腳本獨立運行監控交易
 """
 
 import os
+import sys
 import time
+import logging
 import requests
 from datetime import datetime
 from typing import Optional, Dict, Any
 from dotenv import load_dotenv
+
+# Setup logging to both file and console
+os.makedirs("logs", exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler("logs/mt5_sync.log", encoding="utf-8"),
+        logging.StreamHandler(sys.stdout),
+    ],
+)
+log = logging.getLogger("mt5_sync")
 
 # Load environment variables
 load_dotenv()
@@ -37,20 +51,20 @@ def init_mt5() -> bool:
             init_kwargs['path'] = mt5_path
 
         if not MT5.initialize(**init_kwargs):
-            print(f"[ERROR] MT5 initialize() failed: {MT5.last_error()}")
+            log.error(f"MT5 initialize() failed: {MT5.last_error()}")
             return False
-        
+
         account_info = MT5.account_info()
-        print(f"[OK] Connected to MT5: {account_info.name} ({account_info.server})")
-        print(f"[OK] Account: {account_info.login}, Balance: ${account_info.balance:.2f}")
-        
+        log.info(f"Connected to MT5: {account_info.name} ({account_info.server})")
+        log.info(f"Account: {account_info.login}, Balance: ${account_info.balance:.2f}")
+
         return True
-    
+
     except ImportError:
-        print("[ERROR] MetaTrader5 package not installed. Run: pip install MetaTrader5")
+        log.error("MetaTrader5 package not installed. Run: pip install MetaTrader5")
         return False
     except Exception as e:
-        print(f"[ERROR] MT5 initialization failed: {e}")
+        log.error(f"MT5 initialization failed: {e}")
         return False
 
 
@@ -167,7 +181,7 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
         )
         
         if decision_resp.status_code != 200:
-            print(f"[ERROR] Failed to record decision for {trade_id}: {decision_resp.text}")
+            log.error(f"Failed to record decision for {trade_id}: {decision_resp.text}")
             return False
         
         # Record outcome
@@ -184,59 +198,108 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
         )
         
         if outcome_resp.status_code != 200:
-            print(f"[ERROR] Failed to record outcome for {trade_id}: {outcome_resp.text}")
+            log.error(f"Failed to record outcome for {trade_id}: {outcome_resp.text}")
             return False
         
-        print(f"[SYNC] {trade_id}: {symbol} {direction} {lot_size} lots, P&L: ${pnl:.2f}, Duration: {hold_duration}min")
+        log.info(f"SYNC {trade_id}: {symbol} {direction} {lot_size} lots, P&L: ${pnl:.2f}, Duration: {hold_duration}min")
         return True
     
     except requests.exceptions.RequestException as e:
-        print(f"[ERROR] API request failed for {trade_id}: {e}")
+        log.error(f"API request failed for {trade_id}: {e}")
         return False
 
 
 def main_loop():
-    """Main synchronization loop"""
+    """Main synchronization loop — resilient to transient errors."""
     global last_synced_ticket
-    
-    print("=" * 60)
-    print("MT5 → TradeMemory Sync Script")
-    print("=" * 60)
-    print(f"API Endpoint: {TRADEMEMORY_API}")
-    print(f"Sync Interval: {SYNC_INTERVAL}s")
-    print(f"MT5 Account: {MT5_LOGIN} @ {MT5_SERVER}")
-    print("=" * 60)
-    
-    # Initialize MT5
-    if not init_mt5():
-        print("[FATAL] Cannot connect to MT5. Exiting.")
+
+    log.info("=" * 60)
+    log.info("MT5 → TradeMemory Sync Script")
+    log.info("=" * 60)
+    log.info(f"API Endpoint: {TRADEMEMORY_API}")
+    log.info(f"Sync Interval: {SYNC_INTERVAL}s")
+    log.info(f"MT5 Account: {MT5_LOGIN} @ {MT5_SERVER}")
+    log.info("=" * 60)
+
+    # Initial MT5 connection with retry
+    mt5_connected = False
+    MAX_INIT_RETRIES = 5
+    for attempt in range(1, MAX_INIT_RETRIES + 1):
+        if init_mt5():
+            mt5_connected = True
+            break
+        wait = min(60 * attempt, 300)  # 60s, 120s, 180s, 240s, 300s
+        log.warning(f"MT5 init attempt {attempt}/{MAX_INIT_RETRIES} failed, retry in {wait}s...")
+        time.sleep(wait)
+
+    if not mt5_connected:
+        log.error(f"Cannot connect to MT5 after {MAX_INIT_RETRIES} attempts. Exiting.")
         return
-    
-    print("\n[OK] Monitoring started. Press Ctrl+C to stop.\n")
-    
+
+    log.info("Monitoring started. Press Ctrl+C to stop.")
+
+    consecutive_errors = 0
+    heartbeat_counter = 0
+    HEARTBEAT_INTERVAL = 10  # Log heartbeat every 10 cycles (~10 min)
+
     try:
         while True:
-            # Check for new trades
-            new_trades = get_new_closed_trades()
-            
-            if len(new_trades) > 0:
-                print(f"[SCAN] Found {len(new_trades)} new closed trade(s)")
-                
-                for position in new_trades:
-                    sync_trade_to_memory(position)
-                    # Always advance ticket to avoid retrying
-                    last_synced_ticket = max(last_synced_ticket, position['ticket'])
-                
-                print(f"[OK] Sync complete. Last ticket: {last_synced_ticket}\n")
-            
-            # Sleep until next check
-            time.sleep(SYNC_INTERVAL)
-    
+            try:
+                # Check for new trades
+                new_trades = get_new_closed_trades()
+
+                if len(new_trades) > 0:
+                    log.info(f"Found {len(new_trades)} new closed trade(s)")
+
+                    for position in new_trades:
+                        sync_trade_to_memory(position)
+                        last_synced_ticket = max(last_synced_ticket, position['ticket'])
+
+                    log.info(f"Sync complete. Last ticket: {last_synced_ticket}")
+
+                # Reset error counter on success
+                consecutive_errors = 0
+
+                # Heartbeat log
+                heartbeat_counter += 1
+                if heartbeat_counter >= HEARTBEAT_INTERVAL:
+                    log.info(f"[HEARTBEAT] alive, last_ticket={last_synced_ticket}")
+                    heartbeat_counter = 0
+
+            except Exception as e:
+                consecutive_errors += 1
+                log.error(f"Sync cycle error ({consecutive_errors}): {e}")
+
+                # Try to reconnect MT5 after repeated failures
+                if consecutive_errors >= 3:
+                    log.warning("3+ consecutive errors, attempting MT5 reconnect...")
+                    try:
+                        import MetaTrader5 as MT5
+                        MT5.shutdown()
+                    except Exception:
+                        pass
+                    if init_mt5():
+                        log.info("MT5 reconnected successfully.")
+                        consecutive_errors = 0
+                    else:
+                        log.error("MT5 reconnect failed, will retry next cycle.")
+
+            # Backoff sleep on errors, normal sleep otherwise
+            if consecutive_errors > 0:
+                sleep_time = min(SYNC_INTERVAL * (2 ** consecutive_errors), 600)
+                log.info(f"Backoff sleep: {sleep_time}s")
+                time.sleep(sleep_time)
+            else:
+                time.sleep(SYNC_INTERVAL)
+
     except KeyboardInterrupt:
-        print("\n[STOP] Shutting down gracefully...")
-        import MetaTrader5 as MT5
-        MT5.shutdown()
-        print("[OK] Disconnected from MT5. Goodbye!")
+        log.info("Shutting down gracefully...")
+        try:
+            import MetaTrader5 as MT5
+            MT5.shutdown()
+        except Exception:
+            pass
+        log.info("Disconnected from MT5. Goodbye!")
 
 
 if __name__ == "__main__":
