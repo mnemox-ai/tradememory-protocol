@@ -18,7 +18,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TRADEMEMORY_API = os.getenv('TRADEMEMORY_API', 'http://localhost:8000')
-OUTPUT_DIR = os.getenv('REFLECTION_OUTPUT_DIR', 'reflections')
+_PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.getenv('REFLECTION_OUTPUT_DIR', os.path.join(_PROJECT_DIR, 'reflections'))
 
 
 def generate_daily_reflection(target_date: date = None) -> str:
