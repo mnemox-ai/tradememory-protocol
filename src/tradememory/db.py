@@ -78,10 +78,36 @@ class Database:
                 ON trade_records(timestamp DESC)
             """)
             conn.execute("""
-                CREATE INDEX IF NOT EXISTS idx_strategy 
+                CREATE INDEX IF NOT EXISTS idx_strategy
                 ON trade_records(strategy)
             """)
-            
+
+            # Patterns table (L2 layer)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS patterns (
+                    pattern_id TEXT PRIMARY KEY,
+                    pattern_type TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    confidence REAL NOT NULL,
+                    sample_size INTEGER NOT NULL,
+                    date_range TEXT NOT NULL,
+                    strategy TEXT,
+                    symbol TEXT,
+                    metrics TEXT NOT NULL,
+                    source TEXT NOT NULL DEFAULT 'backtest_auto',
+                    validation_status TEXT NOT NULL DEFAULT 'IN_SAMPLE',
+                    discovered_at TEXT NOT NULL
+                )
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_patterns_strategy_symbol
+                ON patterns(strategy, symbol)
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_patterns_type
+                ON patterns(pattern_type)
+            """)
+
             conn.commit()
         finally:
             conn.close()
@@ -302,7 +328,117 @@ class Database:
             state['warm_memory'] = json.loads(state['warm_memory'])
             state['active_positions'] = json.loads(state['active_positions'])
             state['risk_constraints'] = json.loads(state['risk_constraints'])
-            
+
             return state
+        finally:
+            conn.close()
+
+    # ========== Patterns (L2) ==========
+
+    def insert_pattern(self, pattern_data: Dict[str, Any]) -> bool:
+        """
+        Insert or replace a pattern record.
+
+        Args:
+            pattern_data: Pattern dictionary with pattern_id, description, etc.
+
+        Returns:
+            True if successful
+        """
+        conn = self._get_connection()
+        try:
+            pattern_data['metrics'] = json.dumps(pattern_data.get('metrics', {}))
+            conn.execute("""
+                INSERT OR REPLACE INTO patterns VALUES (
+                    :pattern_id, :pattern_type, :description, :confidence,
+                    :sample_size, :date_range, :strategy, :symbol,
+                    :metrics, :source, :validation_status, :discovered_at
+                )
+            """, pattern_data)
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error inserting pattern: {e}")
+            return False
+        finally:
+            conn.close()
+
+    def query_patterns(
+        self,
+        strategy: Optional[str] = None,
+        symbol: Optional[str] = None,
+        pattern_type: Optional[str] = None,
+        source: Optional[str] = None,
+        limit: int = 100,
+    ) -> List[Dict[str, Any]]:
+        """
+        Query patterns with filters.
+
+        Args:
+            strategy: Filter by strategy
+            symbol: Filter by symbol
+            pattern_type: Filter by pattern type
+            source: Filter by source (backtest_auto, manual)
+            limit: Maximum results
+
+        Returns:
+            List of pattern dicts
+        """
+        conn = self._get_connection()
+        try:
+            query = "SELECT * FROM patterns WHERE 1=1"
+            params: list[Any] = []
+
+            if strategy:
+                query += " AND strategy = ?"
+                params.append(strategy)
+            if symbol:
+                query += " AND symbol = ?"
+                params.append(symbol)
+            if pattern_type:
+                query += " AND pattern_type = ?"
+                params.append(pattern_type)
+            if source:
+                query += " AND source = ?"
+                params.append(source)
+
+            query += " ORDER BY discovered_at DESC LIMIT ?"
+            params.append(limit)
+
+            rows = conn.execute(query, params).fetchall()
+
+            patterns = []
+            for row in rows:
+                p = dict(row)
+                p['metrics'] = json.loads(p['metrics'])
+                patterns.append(p)
+
+            return patterns
+        finally:
+            conn.close()
+
+    def get_pattern(self, pattern_id: str) -> Optional[Dict[str, Any]]:
+        """
+        Get a single pattern by ID.
+
+        Args:
+            pattern_id: Pattern identifier
+
+        Returns:
+            Pattern dict or None
+        """
+        conn = self._get_connection()
+        try:
+            row = conn.execute(
+                "SELECT * FROM patterns WHERE pattern_id = ?",
+                (pattern_id,)
+            ).fetchone()
+
+            if not row:
+                return None
+
+            p = dict(row)
+            p['metrics'] = json.loads(p['metrics'])
+            return p
         finally:
             conn.close()

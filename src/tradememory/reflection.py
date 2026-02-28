@@ -4,12 +4,13 @@ Implements Blueprint Section 2.1 ReflectionEngine functionality.
 """
 
 from typing import Callable, List, Dict, Any, Optional
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from collections import defaultdict
 import json
 
 from .models import TradeRecord
 from .journal import TradeJournal
+from .db import Database
 
 
 class ReflectionEngine:
@@ -984,3 +985,524 @@ NEXT MONTH:
             return False
 
         return True
+
+    # ========== L2 Pattern Discovery ==========
+
+    def discover_patterns_from_backtest(
+        self,
+        db: Optional[Database] = None,
+        starting_balance: float = 10000.0,
+    ) -> List[Dict[str, Any]]:
+        """
+        Auto-discover L2 patterns from backtest data in trade_records.
+
+        Runs 5 pattern detectors via SQL aggregation, stores results
+        in the patterns table, and returns all discovered patterns.
+
+        Args:
+            db: Database instance pointing to the backtest DB.
+                Uses self.journal.db if None.
+            starting_balance: Baseline balance for PnL% calculation.
+
+        Returns:
+            List of pattern dicts that were discovered and stored.
+        """
+        target_db = db or self.journal.db
+        conn = target_db._get_connection()
+
+        try:
+            date_range = self._get_backtest_date_range(conn)
+            all_patterns: List[Dict[str, Any]] = []
+
+            all_patterns.extend(self._detect_strategy_ranking(conn, starting_balance, date_range))
+            all_patterns.extend(self._detect_direction_bias(conn, starting_balance, date_range))
+            all_patterns.extend(self._detect_symbol_fit(conn, starting_balance, date_range))
+            all_patterns.extend(self._detect_mr_analysis(conn, starting_balance, date_range))
+            all_patterns.extend(self._detect_top_variants(conn, starting_balance, date_range))
+
+        finally:
+            conn.close()
+
+        # Batch insert all patterns
+        for p in all_patterns:
+            target_db.insert_pattern(p)
+
+        return all_patterns
+
+    @staticmethod
+    def _get_backtest_date_range(conn) -> str:
+        """Get date range string from trade_records."""
+        row = conn.execute(
+            "SELECT MIN(timestamp), MAX(timestamp) FROM trade_records"
+        ).fetchone()
+        if row and row[0] and row[1]:
+            return f"{row[0][:10]} to {row[1][:10]}"
+        return "unknown"
+
+    @staticmethod
+    def _confidence_from_n(n: int, consistency_bonus: bool = False) -> float:
+        """Calculate confidence score from sample size."""
+        if n < 10:
+            base = 0.3
+        elif n <= 50:
+            base = 0.5
+        elif n <= 200:
+            base = 0.7
+        else:
+            base = 0.85
+
+        if consistency_bonus:
+            base = min(base + 0.1, 1.0)
+
+        return round(base, 2)
+
+    def _detect_strategy_ranking(
+        self, conn, starting_balance: float, date_range: str
+    ) -> List[Dict[str, Any]]:
+        """Detector A: rank strategies by overall performance."""
+        rows = conn.execute("""
+            SELECT strategy,
+                   COUNT(*) as n,
+                   ROUND(SUM(pnl), 2) as total_pnl,
+                   ROUND(SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as win_rate,
+                   ROUND(SUM(CASE WHEN pnl > 0 THEN pnl ELSE 0 END), 2) as gross_wins,
+                   ROUND(SUM(CASE WHEN pnl < 0 THEN ABS(pnl) ELSE 0 END), 2) as gross_losses
+            FROM trade_records
+            GROUP BY strategy
+            ORDER BY total_pnl DESC
+        """).fetchall()
+
+        # Variant-level profitability per strategy
+        variant_rows = conn.execute("""
+            SELECT strategy,
+                   SUBSTR(id, 4, LENGTH(id) - 8) as variant_tag,
+                   SUM(pnl) as variant_pnl
+            FROM trade_records
+            GROUP BY strategy, variant_tag
+        """).fetchall()
+
+        variant_stats: Dict[str, Dict[str, int]] = {}
+        for vr in variant_rows:
+            strat = vr[0]
+            if strat not in variant_stats:
+                variant_stats[strat] = {'total': 0, 'profitable': 0}
+            variant_stats[strat]['total'] += 1
+            if vr[2] and vr[2] > 0:
+                variant_stats[strat]['profitable'] += 1
+
+        now = datetime.now(timezone.utc).isoformat()
+        patterns = []
+        for i, row in enumerate(rows):
+            strat, n, total_pnl, wr, gw, gl = row
+            pf = round(gw / gl, 2) if gl and gl > 0 else 999.0
+            pnl_pct = round(total_pnl / (starting_balance / 100.0), 1)
+            vs = variant_stats.get(strat, {'total': 0, 'profitable': 0})
+            vp_pct = round(vs['profitable'] / vs['total'] * 100) if vs['total'] > 0 else 0
+
+            label = "profitable" if total_pnl > 0 else "unprofitable"
+            desc = (
+                f"{strat} avg PnL {pnl_pct:+.1f}% ({label}), "
+                f"WR {wr:.1f}%, PF {pf:.2f}, "
+                f"{vs['profitable']}/{vs['total']} variants profitable ({vp_pct}%)"
+            )
+
+            patterns.append({
+                'pattern_id': f'AUTO-RANK-{i+1:03d}',
+                'pattern_type': 'strategy_ranking',
+                'description': desc,
+                'confidence': self._confidence_from_n(n),
+                'sample_size': n,
+                'date_range': date_range,
+                'strategy': strat,
+                'symbol': None,
+                'metrics': {
+                    'pnl_pct': pnl_pct,
+                    'win_rate': wr,
+                    'profit_factor': pf,
+                    'total_pnl': total_pnl,
+                    'variants_total': vs['total'],
+                    'variants_profitable': vs['profitable'],
+                },
+                'source': 'backtest_auto',
+                'validation_status': 'IN_SAMPLE',
+                'discovered_at': now,
+            })
+
+        return patterns
+
+    def _detect_direction_bias(
+        self, conn, starting_balance: float, date_range: str
+    ) -> List[Dict[str, Any]]:
+        """Detector B: compare BUY-only vs BOTH per strategy+symbol."""
+        rows = conn.execute("""
+            SELECT strategy, symbol,
+                   json_extract(tags, '$[3]') as direction_filter,
+                   COUNT(*) as n,
+                   ROUND(SUM(pnl), 2) as total_pnl,
+                   ROUND(SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as win_rate
+            FROM trade_records
+            GROUP BY strategy, symbol, direction_filter
+            ORDER BY strategy, symbol, direction_filter
+        """).fetchall()
+
+        # Group by (strategy, symbol) to compare directions
+        groups: Dict[tuple, Dict[str, Any]] = {}
+        for row in rows:
+            strat, sym, dir_filter, n, total_pnl, wr = row
+            key = (strat, sym)
+            if key not in groups:
+                groups[key] = {}
+            groups[key][dir_filter] = {
+                'n': n, 'total_pnl': total_pnl, 'win_rate': wr,
+                'pnl_pct': round(total_pnl / (starting_balance / 100.0), 1),
+            }
+
+        now = datetime.now(timezone.utc).isoformat()
+        patterns = []
+        idx = 0
+        for (strat, sym), dirs in sorted(groups.items()):
+            buy = dirs.get('BUY')
+            both = dirs.get('BOTH')
+            if not buy or not both:
+                continue
+
+            delta = round(buy['pnl_pct'] - both['pnl_pct'], 1)
+            if abs(delta) < 5.0:
+                continue  # Not significant
+
+            idx += 1
+            better = "BUY-only" if delta > 0 else "BOTH"
+            desc = (
+                f"{strat} {sym}: BUY-only {buy['pnl_pct']:+.1f}% vs "
+                f"BOTH {both['pnl_pct']:+.1f}% (delta {delta:+.1f}%, {better} better)"
+            )
+
+            combined_n = buy['n'] + both['n']
+            consistency = abs(delta) > 10.0
+            patterns.append({
+                'pattern_id': f'AUTO-DIR-{idx:03d}',
+                'pattern_type': 'direction_bias',
+                'description': desc,
+                'confidence': self._confidence_from_n(min(buy['n'], both['n']), consistency),
+                'sample_size': combined_n,
+                'date_range': date_range,
+                'strategy': strat,
+                'symbol': sym,
+                'metrics': {
+                    'buy_pnl_pct': buy['pnl_pct'],
+                    'both_pnl_pct': both['pnl_pct'],
+                    'delta': delta,
+                    'buy_n': buy['n'],
+                    'both_n': both['n'],
+                    'buy_wr': buy['win_rate'],
+                    'both_wr': both['win_rate'],
+                },
+                'source': 'backtest_auto',
+                'validation_status': 'IN_SAMPLE',
+                'discovered_at': now,
+            })
+
+        return patterns
+
+    def _detect_symbol_fit(
+        self, conn, starting_balance: float, date_range: str
+    ) -> List[Dict[str, Any]]:
+        """Detector C: strategy x symbol performance matrix."""
+        rows = conn.execute("""
+            SELECT strategy, symbol,
+                   COUNT(*) as n,
+                   ROUND(SUM(pnl), 2) as total_pnl,
+                   ROUND(SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as win_rate,
+                   ROUND(SUM(CASE WHEN pnl > 0 THEN pnl ELSE 0 END), 2) as gross_wins,
+                   ROUND(SUM(CASE WHEN pnl < 0 THEN ABS(pnl) ELSE 0 END), 2) as gross_losses,
+                   SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) as n_wins,
+                   SUM(CASE WHEN pnl < 0 THEN 1 ELSE 0 END) as n_losses
+            FROM trade_records
+            GROUP BY strategy, symbol
+            ORDER BY strategy, symbol
+        """).fetchall()
+
+        # Group by strategy to compare symbols
+        strat_map: Dict[str, List[Dict]] = defaultdict(list)
+        for row in rows:
+            strat, sym, n, total_pnl, wr, gw, gl, nw, nl = row
+            pf = round(gw / gl, 2) if gl and gl > 0 else 999.0
+            avg_win = round(gw / nw, 2) if nw and nw > 0 else 0.0
+            avg_loss = round(gl / nl, 2) if nl and nl > 0 else 0.0
+            rr = round(avg_win / avg_loss, 2) if avg_loss > 0 else 0.0
+            strat_map[strat].append({
+                'symbol': sym, 'n': n, 'total_pnl': total_pnl,
+                'pnl_pct': round(total_pnl / (starting_balance / 100.0), 1),
+                'win_rate': wr, 'profit_factor': pf, 'rr': rr,
+                'avg_win': avg_win, 'avg_loss': avg_loss,
+            })
+
+        now = datetime.now(timezone.utc).isoformat()
+        patterns = []
+        idx = 0
+        for strat, symbols in sorted(strat_map.items()):
+            if len(symbols) < 2:
+                continue  # Need multiple symbols to compare
+
+            # Sort by PnL% to find best/worst
+            symbols.sort(key=lambda x: x['pnl_pct'], reverse=True)
+            best = symbols[0]
+            worst = symbols[-1]
+            delta = round(best['pnl_pct'] - worst['pnl_pct'], 1)
+
+            if delta < 10.0:
+                continue  # Not significant enough
+
+            idx += 1
+            desc = (
+                f"{strat}: {best['symbol']} {best['pnl_pct']:+.1f}% "
+                f"(WR {best['win_rate']:.1f}%, RR {best['rr']:.2f}) vs "
+                f"{worst['symbol']} {worst['pnl_pct']:+.1f}% "
+                f"(WR {worst['win_rate']:.1f}%, RR {worst['rr']:.2f}), "
+                f"delta {delta:+.1f}%"
+            )
+
+            combined_n = sum(s['n'] for s in symbols)
+            patterns.append({
+                'pattern_id': f'AUTO-SYM-{idx:03d}',
+                'pattern_type': 'symbol_fit',
+                'description': desc,
+                'confidence': self._confidence_from_n(min(s['n'] for s in symbols)),
+                'sample_size': combined_n,
+                'date_range': date_range,
+                'strategy': strat,
+                'symbol': None,
+                'metrics': {
+                    'symbols': {
+                        s['symbol']: {
+                            'pnl_pct': s['pnl_pct'],
+                            'win_rate': s['win_rate'],
+                            'profit_factor': s['profit_factor'],
+                            'rr': s['rr'],
+                            'n': s['n'],
+                        } for s in symbols
+                    },
+                    'best_symbol': best['symbol'],
+                    'worst_symbol': worst['symbol'],
+                    'delta': delta,
+                },
+                'source': 'backtest_auto',
+                'validation_status': 'IN_SAMPLE',
+                'discovered_at': now,
+            })
+
+        return patterns
+
+    def _detect_mr_analysis(
+        self, conn, starting_balance: float, date_range: str
+    ) -> List[Dict[str, Any]]:
+        """Detector D: MeanReversion-specific variant analysis."""
+        rows = conn.execute("""
+            SELECT
+                SUBSTR(id, 4, LENGTH(id) - 8) as variant_tag,
+                json_extract(tags, '$[3]') as direction_filter,
+                COUNT(*) as n,
+                ROUND(SUM(pnl), 2) as total_pnl,
+                ROUND(SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as win_rate,
+                ROUND(SUM(CASE WHEN pnl > 0 THEN pnl ELSE 0 END), 2) as gross_wins,
+                ROUND(SUM(CASE WHEN pnl < 0 THEN ABS(pnl) ELSE 0 END), 2) as gross_losses
+            FROM trade_records
+            WHERE strategy = 'MeanReversion'
+            GROUP BY variant_tag
+            ORDER BY total_pnl DESC
+        """).fetchall()
+
+        if not rows:
+            return []
+
+        now = datetime.now(timezone.utc).isoformat()
+        patterns = []
+
+        # Aggregate MR stats
+        all_variants = []
+        buy_variants = []
+        both_variants = []
+        for row in rows:
+            vtag, dir_filter, n, total_pnl, wr, gw, gl = row
+            pf = round(gw / gl, 2) if gl and gl > 0 else 999.0
+            pnl_pct = round(total_pnl / (starting_balance / 100.0), 1)
+            entry = {
+                'variant_tag': vtag, 'direction': dir_filter,
+                'n': n, 'total_pnl': total_pnl, 'pnl_pct': pnl_pct,
+                'win_rate': wr, 'profit_factor': pf,
+            }
+            all_variants.append(entry)
+            if dir_filter == 'BUY':
+                buy_variants.append(entry)
+            elif dir_filter == 'BOTH':
+                both_variants.append(entry)
+
+        total_n = sum(v['n'] for v in all_variants)
+        avg_pnl_pct = round(sum(v['pnl_pct'] for v in all_variants) / len(all_variants), 1)
+        profitable = [v for v in all_variants if v['total_pnl'] > 0]
+
+        # Pattern: MR overall assessment
+        desc = (
+            f"MeanReversion avg PnL {avg_pnl_pct:+.1f}% across {len(all_variants)} variants, "
+            f"{len(profitable)}/{len(all_variants)} profitable"
+        )
+        if profitable:
+            best = max(profitable, key=lambda v: v['pnl_pct'])
+            desc += f". Best: {best['variant_tag']} {best['pnl_pct']:+.1f}% (n={best['n']}, PF={best['profit_factor']})"
+
+        patterns.append({
+            'pattern_id': 'AUTO-MR-001',
+            'pattern_type': 'mr_analysis',
+            'description': desc,
+            'confidence': self._confidence_from_n(total_n),
+            'sample_size': total_n,
+            'date_range': date_range,
+            'strategy': 'MeanReversion',
+            'symbol': None,
+            'metrics': {
+                'avg_pnl_pct': avg_pnl_pct,
+                'variants_total': len(all_variants),
+                'variants_profitable': len(profitable),
+                'profitable_variants': [
+                    {'tag': v['variant_tag'], 'pnl_pct': v['pnl_pct'],
+                     'n': v['n'], 'pf': v['profit_factor']}
+                    for v in profitable
+                ],
+            },
+            'source': 'backtest_auto',
+            'validation_status': 'IN_SAMPLE',
+            'discovered_at': now,
+        })
+
+        # Pattern: MR BUY vs BOTH comparison
+        if buy_variants and both_variants:
+            avg_buy = round(sum(v['pnl_pct'] for v in buy_variants) / len(buy_variants), 1)
+            avg_both = round(sum(v['pnl_pct'] for v in both_variants) / len(both_variants), 1)
+            delta = round(avg_buy - avg_both, 1)
+            buy_prof = sum(1 for v in buy_variants if v['total_pnl'] > 0)
+            both_prof = sum(1 for v in both_variants if v['total_pnl'] > 0)
+
+            desc_dir = (
+                f"MR BUY-only avg {avg_buy:+.1f}% ({buy_prof}/{len(buy_variants)} profitable) "
+                f"vs BOTH avg {avg_both:+.1f}% ({both_prof}/{len(both_variants)} profitable), "
+                f"delta {delta:+.1f}%"
+            )
+
+            patterns.append({
+                'pattern_id': 'AUTO-MR-002',
+                'pattern_type': 'mr_analysis',
+                'description': desc_dir,
+                'confidence': self._confidence_from_n(
+                    min(sum(v['n'] for v in buy_variants), sum(v['n'] for v in both_variants))
+                ),
+                'sample_size': total_n,
+                'date_range': date_range,
+                'strategy': 'MeanReversion',
+                'symbol': None,
+                'metrics': {
+                    'buy_avg_pnl_pct': avg_buy,
+                    'both_avg_pnl_pct': avg_both,
+                    'delta': delta,
+                    'buy_variants': len(buy_variants),
+                    'both_variants': len(both_variants),
+                    'buy_profitable': buy_prof,
+                    'both_profitable': both_prof,
+                },
+                'source': 'backtest_auto',
+                'validation_status': 'IN_SAMPLE',
+                'discovered_at': now,
+            })
+
+        return patterns
+
+    def _detect_top_variants(
+        self, conn, starting_balance: float, date_range: str
+    ) -> List[Dict[str, Any]]:
+        """Detector E: top and bottom performing variants."""
+        rows = conn.execute("""
+            SELECT
+                SUBSTR(id, 4, LENGTH(id) - 8) as variant_tag,
+                strategy, symbol,
+                json_extract(tags, '$[3]') as direction_filter,
+                COUNT(*) as n,
+                ROUND(SUM(pnl), 2) as total_pnl,
+                ROUND(SUM(CASE WHEN pnl > 0 THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 1) as win_rate,
+                ROUND(SUM(CASE WHEN pnl > 0 THEN pnl ELSE 0 END), 2) as gross_wins,
+                ROUND(SUM(CASE WHEN pnl < 0 THEN ABS(pnl) ELSE 0 END), 2) as gross_losses
+            FROM trade_records
+            GROUP BY variant_tag
+            HAVING n >= 10
+            ORDER BY total_pnl DESC
+        """).fetchall()
+
+        if not rows:
+            return []
+
+        now = datetime.now(timezone.utc).isoformat()
+        patterns = []
+
+        # Build variant list
+        variants = []
+        for row in rows:
+            vtag, strat, sym, dir_filter, n, total_pnl, wr, gw, gl = row
+            pf = round(gw / gl, 2) if gl and gl > 0 else 999.0
+            pnl_pct = round(total_pnl / (starting_balance / 100.0), 1)
+            variants.append({
+                'tag': vtag, 'strategy': strat, 'symbol': sym,
+                'direction': dir_filter, 'n': n, 'pnl_pct': pnl_pct,
+                'win_rate': wr, 'profit_factor': pf,
+            })
+
+        # Top 5
+        top5 = variants[:5]
+        top_lines = [f"{v['tag']} {v['pnl_pct']:+.1f}% (n={v['n']}, PF={v['profit_factor']})" for v in top5]
+        top_desc = "Top 5 variants (n>=10): " + "; ".join(top_lines)
+        patterns.append({
+            'pattern_id': 'AUTO-TOP-001',
+            'pattern_type': 'top_variant',
+            'description': top_desc,
+            'confidence': self._confidence_from_n(min(v['n'] for v in top5)),
+            'sample_size': sum(v['n'] for v in top5),
+            'date_range': date_range,
+            'strategy': None,
+            'symbol': None,
+            'metrics': {
+                'ranking': [
+                    {'tag': v['tag'], 'pnl_pct': v['pnl_pct'], 'n': v['n'],
+                     'pf': v['profit_factor'], 'wr': v['win_rate'],
+                     'strategy': v['strategy'], 'symbol': v['symbol']}
+                    for v in top5
+                ]
+            },
+            'source': 'backtest_auto',
+            'validation_status': 'IN_SAMPLE',
+            'discovered_at': now,
+        })
+
+        # Bottom 5
+        bot5 = variants[-5:]
+        bot_lines = [f"{v['tag']} {v['pnl_pct']:+.1f}% (n={v['n']}, PF={v['profit_factor']})" for v in bot5]
+        bot_desc = "Bottom 5 variants (n>=10): " + "; ".join(bot_lines)
+        patterns.append({
+            'pattern_id': 'AUTO-BOT-001',
+            'pattern_type': 'top_variant',
+            'description': bot_desc,
+            'confidence': self._confidence_from_n(min(v['n'] for v in bot5)),
+            'sample_size': sum(v['n'] for v in bot5),
+            'date_range': date_range,
+            'strategy': None,
+            'symbol': None,
+            'metrics': {
+                'ranking': [
+                    {'tag': v['tag'], 'pnl_pct': v['pnl_pct'], 'n': v['n'],
+                     'pf': v['profit_factor'], 'wr': v['win_rate'],
+                     'strategy': v['strategy'], 'symbol': v['symbol']}
+                    for v in bot5
+                ]
+            },
+            'source': 'backtest_auto',
+            'validation_status': 'IN_SAMPLE',
+            'discovered_at': now,
+        })
+
+        return patterns

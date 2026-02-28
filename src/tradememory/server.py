@@ -7,6 +7,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 
+from .db import Database
 from .journal import TradeJournal
 from .state import StateManager
 from .reflection import ReflectionEngine
@@ -426,6 +427,69 @@ async def risk_check_trade(req: CheckTradeRequest):
             "constraints": result.constraints_applied.model_dump(mode="json"),
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ========== Pattern Discovery Endpoints ==========
+
+class DiscoverPatternsRequest(BaseModel):
+    """Request for reflect.discover_patterns"""
+    db_path: Optional[str] = None
+    starting_balance: float = 10000.0
+
+
+class QueryPatternsRequest(BaseModel):
+    """Request for patterns.query"""
+    strategy: Optional[str] = None
+    symbol: Optional[str] = None
+    pattern_type: Optional[str] = None
+
+
+@app.post("/reflect/discover_patterns")
+async def reflect_discover_patterns(req: DiscoverPatternsRequest):
+    """
+    Trigger L2 pattern discovery from backtest data.
+
+    Args:
+        db_path: Path to backtest database (default: tradememory.db)
+        starting_balance: Baseline for PnL% calculation
+    """
+    try:
+        db = Database(req.db_path) if req.db_path else None
+        patterns = reflection_engine.discover_patterns_from_backtest(
+            db=db, starting_balance=req.starting_balance
+        )
+        return {
+            "success": True,
+            "patterns_discovered": len(patterns),
+            "patterns": patterns,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/patterns/query")
+async def query_patterns(req: QueryPatternsRequest):
+    """
+    Query stored L2 patterns.
+
+    Args:
+        strategy: Filter by strategy name
+        symbol: Filter by symbol
+        pattern_type: Filter by detector type
+    """
+    try:
+        patterns = journal.db.query_patterns(
+            strategy=req.strategy,
+            symbol=req.symbol,
+            pattern_type=req.pattern_type,
+        )
+        return {
+            "success": True,
+            "count": len(patterns),
+            "patterns": patterns,
+        }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
