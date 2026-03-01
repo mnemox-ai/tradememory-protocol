@@ -1291,6 +1291,98 @@ NEXT MONTH:
                 'discovered_at': now,
             })
 
+        # Single-symbol specialization: detect strategies that only trade
+        # one symbol while others trade multiple.  Compare the solo strategy's
+        # performance on its symbol vs multi-symbol strategies' performance
+        # on the OTHER symbol(s) to confirm specialization.
+        multi_sym_strats = {s for s, syms in strat_map.items() if len(syms) >= 2}
+        if multi_sym_strats:
+            # Collect per-symbol performance from multi-symbol strategies
+            other_sym_data: Dict[str, List[Dict]] = defaultdict(list)
+            for ms in multi_sym_strats:
+                for s in strat_map[ms]:
+                    other_sym_data[s['symbol']].append(s)
+
+            for strat, symbols in sorted(strat_map.items()):
+                if len(symbols) != 1:
+                    continue
+                solo = symbols[0]
+                solo_sym = solo['symbol']
+                if solo['n'] < 10 or solo['pnl_pct'] <= 0:
+                    continue  # Only flag profitable specialists
+
+                # Get multi-symbol strategies' data on non-solo symbols
+                non_solo_entries = []
+                for sym_name, entries in other_sym_data.items():
+                    if sym_name != solo_sym:
+                        non_solo_entries.extend(entries)
+
+                if not non_solo_entries:
+                    continue
+
+                # Also get multi-symbol strategies' data on the SAME symbol
+                same_sym_entries = other_sym_data.get(solo_sym, [])
+                avg_same_rr = (
+                    round(sum(e['rr'] for e in same_sym_entries) / len(same_sym_entries), 2)
+                    if same_sym_entries else 0
+                )
+                avg_non_solo_rr = round(
+                    sum(e['rr'] for e in non_solo_entries) / len(non_solo_entries), 2
+                )
+
+                # Specialization signal: solo profitable on its symbol,
+                # and the solo symbol's RR (across all strategies) is meaningfully
+                # different from non-solo symbols' RR
+                rr_vs_other = round(solo['rr'] / avg_non_solo_rr, 1) if avg_non_solo_rr > 0 else 0
+
+                # Also check if solo strategy is significantly more profitable
+                # than other strategies on non-solo symbols
+                avg_non_solo_pnl = round(
+                    sum(e['pnl_pct'] for e in non_solo_entries) / len(non_solo_entries), 1
+                )
+                pnl_advantage = round(solo['pnl_pct'] - avg_non_solo_pnl, 1)
+
+                if pnl_advantage < 50:
+                    continue  # Not significant enough
+
+                idx += 1
+                desc = (
+                    f"{strat}: {solo_sym}-only, PnL {solo['pnl_pct']:+.1f}% "
+                    f"(RR {solo['rr']:.2f}, PF {solo['profit_factor']:.2f}) "
+                    f"vs other strategies on non-{solo_sym} avg PnL {avg_non_solo_pnl:+.1f}% "
+                    f"(avg RR {avg_non_solo_rr:.2f})"
+                )
+                patterns.append({
+                    'pattern_id': f'AUTO-SYM-{idx:03d}',
+                    'pattern_type': 'symbol_fit',
+                    'description': desc,
+                    'confidence': self._confidence_from_n(solo['n']),
+                    'sample_size': solo['n'],
+                    'date_range': date_range,
+                    'strategy': strat,
+                    'symbol': solo_sym,
+                    'metrics': {
+                        'symbols': {
+                            solo_sym: {
+                                'pnl_pct': solo['pnl_pct'],
+                                'win_rate': solo['win_rate'],
+                                'profit_factor': solo['profit_factor'],
+                                'rr': solo['rr'],
+                                'n': solo['n'],
+                            }
+                        },
+                        'best_symbol': solo_sym,
+                        'single_symbol': True,
+                        'rr': solo['rr'],
+                        'other_avg_rr': avg_non_solo_rr,
+                        'pnl_advantage': pnl_advantage,
+                        'other_avg_pnl_pct': avg_non_solo_pnl,
+                    },
+                    'source': 'backtest_auto',
+                    'validation_status': 'IN_SAMPLE',
+                    'discovered_at': now,
+                })
+
         return patterns
 
     def _detect_mr_analysis(
@@ -1413,6 +1505,56 @@ NEXT MONTH:
                 'discovered_at': now,
             })
 
+        # Pattern: MR lot_size shrinkage in recent high-ATR period
+        lot_rows = conn.execute("""
+            SELECT
+                CASE WHEN timestamp >= '2026-01-01' THEN 'recent' ELSE 'earlier' END as period,
+                COUNT(*) as n,
+                ROUND(AVG(lot_size), 4) as avg_lot,
+                MIN(lot_size) as min_lot,
+                MAX(lot_size) as max_lot
+            FROM trade_records
+            WHERE strategy = 'MeanReversion'
+            GROUP BY period
+            ORDER BY period
+        """).fetchall()
+
+        lot_by_period = {r[0]: {'n': r[1], 'avg_lot': r[2], 'min_lot': r[3], 'max_lot': r[4]} for r in lot_rows}
+        earlier = lot_by_period.get('earlier')
+        recent = lot_by_period.get('recent')
+
+        if earlier and recent and earlier['avg_lot'] > 0:
+            shrinkage = round((1 - recent['avg_lot'] / earlier['avg_lot']) * 100, 1)
+            if shrinkage > 25:  # >25% lot_size drop = significant
+                desc_lot = (
+                    f"MR lot_size shrinkage: recent avg {recent['avg_lot']:.3f} "
+                    f"vs earlier avg {earlier['avg_lot']:.3f} "
+                    f"({shrinkage:.0f}% smaller), "
+                    f"approaching min lot in high-ATR regime"
+                )
+                patterns.append({
+                    'pattern_id': 'AUTO-MR-003',
+                    'pattern_type': 'mr_analysis',
+                    'description': desc_lot,
+                    'confidence': self._confidence_from_n(recent['n']),
+                    'sample_size': recent['n'] + earlier['n'],
+                    'date_range': date_range,
+                    'strategy': 'MeanReversion',
+                    'symbol': None,
+                    'metrics': {
+                        'recent_avg_lot': recent['avg_lot'],
+                        'earlier_avg_lot': earlier['avg_lot'],
+                        'shrinkage_pct': shrinkage,
+                        'recent_min_lot': recent['min_lot'],
+                        'recent_max_lot': recent['max_lot'],
+                        'recent_n': recent['n'],
+                        'earlier_n': earlier['n'],
+                    },
+                    'source': 'backtest_auto',
+                    'validation_status': 'IN_SAMPLE',
+                    'discovered_at': now,
+                })
+
         return patterns
 
     def _detect_top_variants(
@@ -1506,3 +1648,189 @@ NEXT MONTH:
         })
 
         return patterns
+
+    # ========== L3 Strategy Adjustments ==========
+
+    def generate_l3_adjustments(
+        self,
+        db: Optional[Database] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate L3 strategy adjustments from L2 patterns.
+
+        Reads patterns with source='backtest_auto' from the patterns table
+        and applies 5 deterministic rules to produce adjustment proposals.
+        All adjustments are stored with status='proposed'.
+
+        Args:
+            db: Database instance. Uses self.journal.db if None.
+
+        Returns:
+            List of adjustment dicts that were generated and stored.
+        """
+        target_db = db or self.journal.db
+        now = datetime.now(timezone.utc).isoformat()
+
+        patterns = target_db.query_patterns(source='backtest_auto')
+        if not patterns:
+            return []
+
+        all_adjustments: List[Dict[str, Any]] = []
+        counters = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+
+        for pattern in patterns:
+            metrics = pattern.get('metrics', {})
+            confidence = pattern.get('confidence', 0.0)
+            pattern_id = pattern.get('pattern_id', '')
+            pattern_type = pattern.get('pattern_type', '')
+            strategy = pattern.get('strategy', '')
+
+            # Rule 1: Strategy Disable
+            # IF pattern_type='strategy_ranking' AND avg_pnl_pct < -5.0
+            # AND confidence >= 0.7
+            if (pattern_type == 'strategy_ranking'
+                    and metrics.get('pnl_pct', 0) < -5.0
+                    and confidence >= 0.7):
+                counters[1] += 1
+                all_adjustments.append({
+                    'adjustment_id': f'ADJ-1-{counters[1]:03d}',
+                    'adjustment_type': 'strategy_disable',
+                    'parameter': f'{strategy}.enabled',
+                    'old_value': 'true',
+                    'new_value': 'false',
+                    'reason': (
+                        f'{strategy} avg PnL {metrics["pnl_pct"]:+.1f}% — '
+                        f'consistently unprofitable, disable to avoid further losses'
+                    ),
+                    'source_pattern_id': pattern_id,
+                    'confidence': confidence,
+                    'status': 'proposed',
+                    'created_at': now,
+                    'applied_at': None,
+                })
+
+            # Rule 2: Strategy Prefer
+            # IF pattern_type='strategy_ranking' AND avg_pnl_pct > 0
+            # AND confidence >= 0.7
+            if (pattern_type == 'strategy_ranking'
+                    and metrics.get('pnl_pct', 0) > 0
+                    and confidence >= 0.7):
+                counters[2] += 1
+                all_adjustments.append({
+                    'adjustment_id': f'ADJ-2-{counters[2]:03d}',
+                    'adjustment_type': 'strategy_prefer',
+                    'parameter': f'{strategy}.priority',
+                    'old_value': 'normal',
+                    'new_value': 'high',
+                    'reason': (
+                        f'{strategy} avg PnL {metrics["pnl_pct"]:+.1f}% — '
+                        f'profitable with WR {metrics.get("win_rate", 0):.1f}%, '
+                        f'prefer this strategy'
+                    ),
+                    'source_pattern_id': pattern_id,
+                    'confidence': confidence,
+                    'status': 'proposed',
+                    'created_at': now,
+                    'applied_at': None,
+                })
+
+            # Rule 3: Session Reduce
+            # IF pattern_type='direction_bias' AND worst direction WR < 35%
+            # AND total n >= 30 AND confidence >= 0.7
+            if pattern_type == 'direction_bias':
+                buy_wr = metrics.get('buy_wr', 50)
+                both_wr = metrics.get('both_wr', 50)
+                buy_n = metrics.get('buy_n', 0)
+                both_n = metrics.get('both_n', 0)
+                total_n = buy_n + both_n
+                worst_wr = min(buy_wr, both_wr)
+
+                if worst_wr < 35 and total_n >= 30 and confidence >= 0.7:
+                    counters[3] += 1
+                    symbol = pattern.get('symbol', 'unknown')
+                    all_adjustments.append({
+                        'adjustment_id': f'ADJ-3-{counters[3]:03d}',
+                        'adjustment_type': 'session_reduce',
+                        'parameter': f'{strategy}.{symbol}.max_lot',
+                        'old_value': '1.0',
+                        'new_value': '0.5',
+                        'reason': (
+                            f'{strategy} {symbol} worst direction WR '
+                            f'{worst_wr:.1f}% (n={total_n}) — '
+                            f'reduce max lot by 50% to limit exposure'
+                        ),
+                        'source_pattern_id': pattern_id,
+                        'confidence': confidence,
+                        'status': 'proposed',
+                        'created_at': now,
+                        'applied_at': None,
+                    })
+
+            # Rule 4: Session Increase
+            # IF pattern_type='direction_bias' AND best direction WR > 60%
+            # AND total n >= 30 AND confidence >= 0.7
+            if pattern_type == 'direction_bias':
+                buy_wr = metrics.get('buy_wr', 50)
+                both_wr = metrics.get('both_wr', 50)
+                buy_n = metrics.get('buy_n', 0)
+                both_n = metrics.get('both_n', 0)
+                total_n = buy_n + both_n
+                best_wr = max(buy_wr, both_wr)
+
+                if best_wr > 60 and total_n >= 30 and confidence >= 0.7:
+                    counters[4] += 1
+                    symbol = pattern.get('symbol', 'unknown')
+                    all_adjustments.append({
+                        'adjustment_id': f'ADJ-4-{counters[4]:03d}',
+                        'adjustment_type': 'session_increase',
+                        'parameter': f'{strategy}.{symbol}.max_lot',
+                        'old_value': '1.0',
+                        'new_value': '1.5',
+                        'reason': (
+                            f'{strategy} {symbol} best direction WR '
+                            f'{best_wr:.1f}% (n={total_n}) — '
+                            f'increase max lot by 50% for profitable direction'
+                        ),
+                        'source_pattern_id': pattern_id,
+                        'confidence': confidence,
+                        'status': 'proposed',
+                        'created_at': now,
+                        'applied_at': None,
+                    })
+
+            # Rule 5: Direction Restrict
+            # IF pattern_type='direction_bias' AND BUY-only significantly better
+            # AND delta / abs(both_pnl) > 0.5 AND confidence >= 0.7
+            if pattern_type == 'direction_bias':
+                buy_pnl = metrics.get('buy_pnl_pct', 0)
+                both_pnl = metrics.get('both_pnl_pct', 0)
+                delta = metrics.get('delta', 0)
+
+                if delta > 0 and abs(both_pnl) > 0 and confidence >= 0.7:
+                    ratio = abs(delta) / abs(both_pnl)
+                    if ratio > 0.5:
+                        counters[5] += 1
+                        symbol = pattern.get('symbol', 'unknown')
+                        all_adjustments.append({
+                            'adjustment_id': f'ADJ-5-{counters[5]:03d}',
+                            'adjustment_type': 'direction_restrict',
+                            'parameter': f'{strategy}.{symbol}.allowed_direction',
+                            'old_value': 'BOTH',
+                            'new_value': 'BUY',
+                            'reason': (
+                                f'{strategy} {symbol}: BUY-only {buy_pnl:+.1f}% vs '
+                                f'BOTH {both_pnl:+.1f}% (delta {delta:+.1f}%) — '
+                                f'restrict to BUY-only to avoid SELL losses'
+                            ),
+                            'source_pattern_id': pattern_id,
+                            'confidence': confidence,
+                            'status': 'proposed',
+                            'created_at': now,
+                            'applied_at': None,
+                        })
+
+        # Store all adjustments (INSERT OR REPLACE → idempotent)
+        for adj in all_adjustments:
+            target_db.insert_adjustment(adj)
+
+        return all_adjustments

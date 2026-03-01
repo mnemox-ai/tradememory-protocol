@@ -108,10 +108,36 @@ class Database:
                 ON patterns(pattern_type)
             """)
 
+            # Strategy adjustments table (L3 layer)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS strategy_adjustments (
+                    adjustment_id TEXT PRIMARY KEY,
+                    adjustment_type TEXT NOT NULL,
+                    parameter TEXT NOT NULL,
+                    old_value TEXT NOT NULL,
+                    new_value TEXT NOT NULL,
+                    reason TEXT NOT NULL,
+                    source_pattern_id TEXT,
+                    confidence REAL NOT NULL,
+                    status TEXT NOT NULL DEFAULT 'proposed',
+                    created_at TEXT NOT NULL,
+                    applied_at TEXT,
+                    FOREIGN KEY (source_pattern_id) REFERENCES patterns(pattern_id)
+                )
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_adjustments_status
+                ON strategy_adjustments(status)
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_adjustments_type
+                ON strategy_adjustments(adjustment_type)
+            """)
+
             conn.commit()
         finally:
             conn.close()
-    
+
     def insert_trade(self, trade_data: Dict[str, Any]) -> bool:
         """
         Insert a trade record.
@@ -440,5 +466,111 @@ class Database:
             p = dict(row)
             p['metrics'] = json.loads(p['metrics'])
             return p
+        finally:
+            conn.close()
+
+    # ========== Strategy Adjustments (L3) ==========
+
+    def insert_adjustment(self, adjustment_data: Dict[str, Any]) -> bool:
+        """
+        Insert or replace a strategy adjustment record.
+
+        Args:
+            adjustment_data: Adjustment dictionary with adjustment_id, type, etc.
+
+        Returns:
+            True if successful
+        """
+        conn = self._get_connection()
+        try:
+            conn.execute("""
+                INSERT OR REPLACE INTO strategy_adjustments VALUES (
+                    :adjustment_id, :adjustment_type, :parameter,
+                    :old_value, :new_value, :reason,
+                    :source_pattern_id, :confidence, :status,
+                    :created_at, :applied_at
+                )
+            """, adjustment_data)
+            conn.commit()
+            return True
+        except Exception as e:
+            print(f"Error inserting adjustment: {e}")
+            return False
+        finally:
+            conn.close()
+
+    def query_adjustments(
+        self,
+        status: Optional[str] = None,
+        adjustment_type: Optional[str] = None,
+        limit: int = 50,
+    ) -> List[Dict[str, Any]]:
+        """
+        Query strategy adjustments with filters.
+
+        Args:
+            status: Filter by status (proposed, approved, applied, rejected)
+            adjustment_type: Filter by adjustment type
+            limit: Maximum results
+
+        Returns:
+            List of adjustment dicts
+        """
+        conn = self._get_connection()
+        try:
+            query = "SELECT * FROM strategy_adjustments WHERE 1=1"
+            params: list[Any] = []
+
+            if status:
+                query += " AND status = ?"
+                params.append(status)
+            if adjustment_type:
+                query += " AND adjustment_type = ?"
+                params.append(adjustment_type)
+
+            query += " ORDER BY created_at DESC LIMIT ?"
+            params.append(limit)
+
+            rows = conn.execute(query, params).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            conn.close()
+
+    def update_adjustment_status(
+        self,
+        adjustment_id: str,
+        status: str,
+        applied_at: Optional[str] = None,
+    ) -> bool:
+        """
+        Update the status of a strategy adjustment.
+
+        Args:
+            adjustment_id: Adjustment identifier
+            status: New status (proposed, approved, applied, rejected)
+            applied_at: ISO timestamp when applied (optional)
+
+        Returns:
+            True if successful (row was found and updated)
+        """
+        conn = self._get_connection()
+        try:
+            if applied_at:
+                result = conn.execute(
+                    "UPDATE strategy_adjustments SET status = ?, applied_at = ? "
+                    "WHERE adjustment_id = ?",
+                    (status, applied_at, adjustment_id),
+                )
+            else:
+                result = conn.execute(
+                    "UPDATE strategy_adjustments SET status = ? "
+                    "WHERE adjustment_id = ?",
+                    (status, adjustment_id),
+                )
+            conn.commit()
+            return result.rowcount > 0
+        except Exception as e:
+            print(f"Error updating adjustment status: {e}")
+            return False
         finally:
             conn.close()
