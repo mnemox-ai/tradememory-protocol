@@ -311,6 +311,25 @@ See [MT5 Setup Guide](MT5_SYNC_SETUP.md) for detailed configuration.
 
 ---
 
+## FAQ
+
+**Does TradeMemory connect directly to my broker?**
+No. TradeMemory is a memory layer, not a trading platform connector. It accepts standardized trade data from any source. For MT5 users, `mt5_sync.py` automatically polls and syncs closed trades every 60 seconds.
+
+**What trading platforms are supported?**
+Any platform that can output trade data. Built-in support exists for MetaTrader 5 via mt5_sync.py. For other platforms (Binance, Alpaca, Interactive Brokers), you send trades through the MCP `store_trade` tool or REST API using a standardized format.
+
+**What data does it store?**
+Three layers: L1 stores raw trade records (symbol, direction, lots, entry/exit price, PnL, timestamps). L2 stores discovered patterns (win rate by session, drawdown sequences). L3 stores strategy-level insights from LLM reflection.
+
+**Is it free to use?**
+Yes. MIT license, fully open source. The LLM reflection feature requires a Claude API key, but the core trade storage and performance analysis work without any API keys.
+
+**Can I use it without MetaTrader 5?**
+Yes. MT5 is just one data source. You can manually store trades via the MCP `store_trade` tool, send them through the REST API, or write a custom sync script for your platform.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

@@ -1,0 +1,34 @@
+# TradeMemory Protocol
+
+> Platform-agnostic 3-layer memory system for AI trading agents via MCP. Accepts standardized trade data from any source (MT5, Binance, Alpaca) and provides structured memory with LLM-powered reflection.
+
+TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. It does NOT connect to trading platforms directly — it accepts standardized trade data and organizes it into three layers:
+
+- L1 (Raw Trades): Every trade recorded automatically with full metadata
+- L2 (Patterns): AI discovers what works and what doesn't across trade history
+- L3 (Strategy): Memory becomes judgment — adaptive risk and strategy refinement
+
+Key capabilities:
+- 4 MCP tools: store_trade, recall_trades, get_performance, run_reflection
+- LLM-powered reflection engine (Claude API) for trade analysis
+- Adaptive risk management based on historical memory
+- Platform-agnostic: works with MT5, Binance, Alpaca, or any trading platform
+- MT5 auto-sync via mt5_sync.py (polls every 60 seconds)
+
+## Documentation
+
+- [README](https://github.com/mnemox-ai/tradememory-protocol#readme): Full documentation with architecture diagrams.
+- [PyPI](https://pypi.org/project/tradememory-protocol/): Install via `pip install tradememory-protocol`.
+- [Quick Start](https://github.com/mnemox-ai/tradememory-protocol#quick-start): Multiple installation methods (MCP, source, Docker).
+
+## MCP Tools
+
+- store_trade: Record a trade with standardized schema (symbol, direction, lots, entry/exit price, PnL)
+- recall_trades: Query trade history with filters (symbol, date range, strategy)
+- get_performance: Calculate performance metrics (win rate, profit factor, drawdown)
+- run_reflection: Trigger LLM-powered analysis of recent trades
+
+## Optional
+
+- [MT5 Setup Guide](https://github.com/mnemox-ai/tradememory-protocol#connect-to-mt5): How to connect MetaTrader 5 for automatic trade syncing.
+- [Dashboard](https://github.com/mnemox-ai/tradememory-protocol#dashboard): Streamlit-based monitoring dashboard.
