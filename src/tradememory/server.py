@@ -494,6 +494,107 @@ async def query_patterns(req: QueryPatternsRequest):
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# ========== L3 Strategy Adjustment Endpoints ==========
+
+class GenerateAdjustmentsRequest(BaseModel):
+    """Request for reflect.generate_adjustments"""
+    db_path: Optional[str] = None
+
+
+class QueryAdjustmentsRequest(BaseModel):
+    """Request for adjustments.query"""
+    status: Optional[str] = None
+    adjustment_type: Optional[str] = None
+
+
+class UpdateAdjustmentStatusRequest(BaseModel):
+    """Request for adjustments.update_status"""
+    adjustment_id: str
+    status: str
+    applied_at: Optional[str] = None
+
+
+@app.post("/reflect/generate_adjustments")
+async def reflect_generate_adjustments(req: GenerateAdjustmentsRequest):
+    """
+    Generate L3 strategy adjustments from L2 patterns.
+
+    Reads backtest_auto patterns and applies 5 deterministic rules
+    to produce adjustment proposals (status='proposed').
+
+    Args:
+        db_path: Path to database (default: tradememory.db)
+    """
+    try:
+        db = Database(req.db_path) if req.db_path else None
+        adjustments = reflection_engine.generate_l3_adjustments(db=db)
+        return {
+            "success": True,
+            "adjustments_generated": len(adjustments),
+            "adjustments": adjustments,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/adjustments/query")
+async def query_adjustments(
+    status: Optional[str] = None,
+    adjustment_type: Optional[str] = None,
+):
+    """
+    Query stored L3 strategy adjustments.
+
+    Args:
+        status: Filter by status (proposed, approved, applied, rejected)
+        adjustment_type: Filter by type (strategy_disable, strategy_prefer, etc.)
+    """
+    try:
+        adjustments = journal.db.query_adjustments(
+            status=status,
+            adjustment_type=adjustment_type,
+        )
+        return {
+            "success": True,
+            "count": len(adjustments),
+            "adjustments": adjustments,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.post("/adjustments/update_status")
+async def update_adjustment_status(req: UpdateAdjustmentStatusRequest):
+    """
+    Update the status of a strategy adjustment.
+
+    Args:
+        adjustment_id: Adjustment identifier
+        status: New status (proposed, approved, applied, rejected)
+        applied_at: ISO timestamp when applied (optional)
+    """
+    try:
+        success = journal.db.update_adjustment_status(
+            adjustment_id=req.adjustment_id,
+            status=req.status,
+            applied_at=req.applied_at,
+        )
+        if not success:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Adjustment '{req.adjustment_id}' not found",
+            )
+        return {
+            "success": True,
+            "adjustment_id": req.adjustment_id,
+            "status": req.status,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
