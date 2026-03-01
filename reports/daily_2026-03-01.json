@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-03-01T21:41:51.792681",
+  "period_days": 30,
+  "account": {
+    "balance": 9811.73,
+    "open_positions": 1,
+    "open_pnl": 557.69
+  },
+  "strategy_summary": {
+    "VolBreakout": {
+      "trades": 3,
+      "wins": 2,
+      "total_pnl": 1656.71
+    },
+    "NG_Gold": {
+      "trades": 2,
+      "wins": 2,
+      "total_pnl": 125.30000000000001
+    },
+    "Manual": {
+      "trades": 4,
+      "wins": 1,
+      "total_pnl": -152.0
+    }
+  },
+  "open_positions": [
+    {
+      "ticket": 2351006675,
+      "symbol": "XAUUSD",
+      "direction": "LONG",
+      "volume": 0.07,
+      "open_price": 5200.59,
+      "current_price": 5280.26,
+      "profit": 557.69,
+      "magic": 260112,
+      "strategy": "VolBreakout",
+      "open_time": "2026-02-27T15:58:37"
+    }
+  ],
+  "alerts": [
+    {
+      "level": "MEDIUM",
+      "type": "strategy_silent",
+      "strategy": "IntradayMomentum",
+      "days": 7,
+      "message": "IntradayMomentum: ZERO trades in the monitoring period"
+    },
+    {
+      "level": "MEDIUM",
+      "type": "strategy_silent",
+      "strategy": "Pullback",
+      "days": 7,
+      "message": "Pullback: ZERO trades in the monitoring period"
+    },
+    {
+      "level": "INFO",
+      "type": "large_position",
+      "strategy": "VolBreakout",
+      "profit": 557.69,
+      "pct_of_balance": 5.7,
+      "message": "VolBreakout: Open position PnL $557.69 (5.7% of balance)"
+    }
+  ],
+  "alert_counts": {
+    "HIGH": 0,
+    "MEDIUM": 2,
+    "INFO": 1
+  }
+}

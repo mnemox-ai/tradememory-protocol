@@ -1,0 +1,27 @@
+============================================================
+  Daily Trading Monitor — 2026-03-01
+============================================================
+
+Account Balance: $9,811.73
+Open Positions: 1 (PnL: $557.69)
+
+Open Positions:
+  VolBreakout          XAUUSD LONG 0.07 lots PnL: $557.69 (opened 2026-02-27)
+
+Strategy Performance (last 30 days):
+  Strategy              Trades   Wins     WR          PnL
+  -------------------- ------- ------ ------ ------------
+  VolBreakout                3      2    67% $  1,656.71
+  Manual                     4      1    25% $   -152.00
+  NG_Gold                    2      2   100% $    125.30
+
+Alerts: 0 HIGH / 2 MEDIUM / 1 INFO
+  [ ! ] IntradayMomentum: ZERO trades in the monitoring period
+  [ ! ] Pullback: ZERO trades in the monitoring period
+  [ i ] VolBreakout: Open position PnL $557.69 (5.7% of balance)
+
+------------------------------------------------------------
+Recommendations:
+  - IntradayMomentum: FIX PositionSelect bug in NG_IntradayMomentum.mqh
+  - Pullback: Consider lowering PB_PullbackPct (0.6→0.5)
+============================================================

@@ -1,0 +1,28 @@
+=================================================================
+  Weekly Trading Report
+  Period: 2026-02-15 → 2026-03-01
+=================================================================
+
+Overall: 9 trades, PnL: $1,630.01
+
+Strategy              Trades      WR      PF        PnL     vs Backtest
+-------------------- ------- ------- ------- ---------- ---------------
+VolBreakout                3     67%   39.27 $1,656.71       n=3 (low)
+IntradayMomentum           0     N/A     N/A      $0.00       NO TRADES
+Pullback                   0     N/A     N/A      $0.00       NO TRADES
+Manual                     4     25%    0.27 $ -152.00   (not tracked)
+NG_Gold                    2    100%     inf $  125.30   (not tracked)
+
+-----------------------------------------------------------------
+Known Issues:
+  [BUG] IntradayMomentum: PositionSelect blocks when VB has open position
+        Fix: Replace PositionSelect(_Symbol) with HasOpenPositionByMagic()
+  [TUNE] Pullback: Breakout detected but pullback level not reached
+         Fix: Lower PB_PullbackPct from 0.6 to 0.5
+
+Next Actions:
+  1. Fix IM PositionSelect bug (requires .mqh edit + recompile)
+  2. Lower PB threshold (requires .set file update)
+  3. OOS backtest 2022-2023 to validate BATCH-001 results
+  4. After fixes: monitor for 1 week before go-live
+=================================================================

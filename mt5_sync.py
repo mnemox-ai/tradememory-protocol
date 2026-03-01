@@ -36,6 +36,16 @@ MT5_SERVER = os.getenv('MT5_SERVER', '')
 TRADEMEMORY_API = os.getenv('TRADEMEMORY_API', 'http://localhost:8000')
 SYNC_INTERVAL = int(os.getenv('SYNC_INTERVAL', '60'))  # seconds
 
+# Magic number → strategy name mapping
+# Each EA instance on MT5 uses a unique MagicNumber to identify its trades
+MAGIC_TO_STRATEGY = {
+    0: "Manual",                   # Manual trades (MT5 default, no EA)
+    260111: "NG_Gold",             # Default (legacy, before per-strategy magic)
+    260112: "VolBreakout",         # NG_Gold.mq5 Strategy_Mode=2
+    260113: "IntradayMomentum",    # NG_Gold.mq5 Strategy_Mode=8
+    20260217: "Pullback",          # NG_Pullback_Entry.mq5
+}
+
 # State tracking
 last_synced_ticket = 0
 
@@ -129,7 +139,7 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
     
     entry_deal = deals[0]
     exit_deal = deals[-1]
-    
+
     # Extract data
     trade_id = f"MT5-{ticket}"
     symbol = entry_deal.symbol
@@ -137,17 +147,23 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
     direction = "long" if entry_deal.type == 0 else "short"  # 0=BUY, 1=SELL
     entry_price = entry_deal.price
     exit_price = exit_deal.price
-    
+
+    # Resolve strategy from magic number
+    magic = entry_deal.magic
+    strategy = MAGIC_TO_STRATEGY.get(magic, f"Unknown_Magic_{magic}")
+    if magic not in MAGIC_TO_STRATEGY:
+        log.warning(f"Unknown magic number {magic} for ticket {ticket}. Update MAGIC_TO_STRATEGY.")
+
     # Calculate P&L
     pnl = sum(d.profit for d in deals)
-    
+
     # Timestamps
     entry_time = datetime.fromtimestamp(entry_deal.time).isoformat()
     exit_time = datetime.fromtimestamp(exit_deal.time).isoformat()
-    
+
     # Hold duration (minutes)
     hold_duration = int((exit_deal.time - entry_deal.time) / 60)
-    
+
     # Market context
     hour = datetime.fromtimestamp(entry_deal.time).hour
     if 0 <= hour < 8:
@@ -156,10 +172,11 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
         session = "london"
     else:
         session = "newyork"
-    
+
     market_context = {
         "price": entry_price,
-        "session": session
+        "session": session,
+        "magic_number": magic
     }
     
     # Record decision
@@ -171,9 +188,9 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
                 "symbol": symbol,
                 "direction": direction,
                 "lot_size": lot_size,
-                "strategy": "NG_Gold",
+                "strategy": strategy,
                 "confidence": 0.5,  # Default - MT5 doesn't store this
-                "reasoning": "Auto-synced from MT5 - reasoning not captured",
+                "reasoning": f"Auto-synced from MT5 (magic={magic})",
                 "market_context": market_context,
                 "references": []
             },
@@ -201,7 +218,7 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
             log.error(f"Failed to record outcome for {trade_id}: {outcome_resp.text}")
             return False
         
-        log.info(f"SYNC {trade_id}: {symbol} {direction} {lot_size} lots, P&L: ${pnl:.2f}, Duration: {hold_duration}min")
+        log.info(f"SYNC {trade_id}: {strategy} {symbol} {direction} {lot_size} lots, P&L: ${pnl:.2f}, Duration: {hold_duration}min")
         return True
     
     except requests.exceptions.RequestException as e:

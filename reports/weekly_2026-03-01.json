@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-03-01T21:41:56.841800",
+  "period_start": "2026-02-15T21:41:56.839780",
+  "strategy_metrics": {
+    "Manual": {
+      "total_trades": 4,
+      "wins": 1,
+      "losses": 3,
+      "win_rate": 0.25,
+      "total_pnl": -152.0,
+      "profit_factor": 0.27,
+      "avg_win": 55.0,
+      "avg_loss": 69.0,
+      "expectancy": -38.0
+    },
+    "NG_Gold": {
+      "total_trades": 2,
+      "wins": 2,
+      "losses": 0,
+      "win_rate": 1.0,
+      "total_pnl": 125.3,
+      "profit_factor": Infinity,
+      "avg_win": 62.65,
+      "avg_loss": 0,
+      "expectancy": 62.65
+    },
+    "VolBreakout": {
+      "total_trades": 3,
+      "wins": 2,
+      "losses": 1,
+      "win_rate": 0.6666666666666666,
+      "total_pnl": 1656.71,
+      "profit_factor": 39.27,
+      "avg_win": 850.0,
+      "avg_loss": 43.29,
+      "expectancy": 552.24
+    }
+  },
+  "total_trades": 9,
+  "backtest_baselines": {
+    "VolBreakout": {
+      "avg_pnl_pct": 29.2,
+      "profit_rate": 1.0,
+      "avg_pf": 1.17,
+      "best_pf": 1.36,
+      "avg_wr": 0.55
+    },
+    "IntradayMomentum": {
+      "avg_pnl_pct": 47.0,
+      "profit_rate": 0.94,
+      "avg_pf": 1.78,
+      "best_pf": 2.11,
+      "avg_wr": 0.58
+    },
+    "Pullback": {
+      "avg_pnl_pct": 40.9,
+      "profit_rate": 1.0,
+      "avg_pf": 1.45,
+      "best_pf": 1.62,
+      "avg_wr": 0.52
+    }
+  }
+}

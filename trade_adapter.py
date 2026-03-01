@@ -27,6 +27,15 @@ MT5_PATH = os.getenv('MT5_PATH', r'C:\Program Files\MetaTrader 5\terminal64.exe'
 SYNC_INTERVAL = int(os.getenv('SYNC_INTERVAL', '60'))
 TRADEMEMORY_API = os.getenv('TRADEMEMORY_API', 'http://localhost:8000')
 
+# Magic number → strategy name mapping
+MAGIC_TO_STRATEGY = {
+    0: "Manual",                   # Manual trades (MT5 default, no EA)
+    260111: "NG_Gold",             # Default (legacy)
+    260112: "VolBreakout",         # NG_Gold.mq5 Strategy_Mode=2
+    260113: "IntradayMomentum",    # NG_Gold.mq5 Strategy_Mode=8
+    20260217: "Pullback",          # NG_Pullback_Entry.mq5
+}
+
 # State tracking
 last_synced_position_id = 0
 
@@ -149,6 +158,10 @@ def convert_to_trade_record(position_id: int, deals: List) -> Dict[str, Any]:
         "session": session
     }
     
+    # Resolve strategy from magic number
+    magic = entry_deal.magic
+    strategy = MAGIC_TO_STRATEGY.get(magic, f"Unknown_Magic_{magic}")
+
     # Build TradeRecord
     trade_record = {
         # Decision phase (when trade was opened)
@@ -156,10 +169,10 @@ def convert_to_trade_record(position_id: int, deals: List) -> Dict[str, Any]:
         "symbol": entry_deal.symbol,
         "direction": direction,
         "lot_size": entry_deal.volume,
-        "strategy": "NG_Gold",  # Default - MT5 doesn't store this
+        "strategy": strategy,
         "confidence": 0.5,       # Default - MT5 doesn't store this
-        "reasoning": f"Auto-synced from MT5 - position {position_id}",
-        "market_context": market_context,
+        "reasoning": f"Auto-synced from MT5 (magic={magic}, position={position_id})",
+        "market_context": {**market_context, "magic_number": magic},
         "references": [],
         
         # Outcome phase (when trade was closed)
