@@ -349,6 +349,48 @@ def main():
     time.sleep(1)
 
     # ──────────────────────────────────────────────────
+    # STEP 6: Production Pipeline (L1 → L2 → L3)
+    # ──────────────────────────────────────────────────
+    print_step(6, "Production Pipeline — L1 \u2192 L2 \u2192 L3")
+    slow_print("  Running the REAL 3-layer pipeline on the demo data:\n")
+    time.sleep(0.5)
+
+    # L2: discover patterns from recorded trades
+    print("  [L2] Discovering patterns from 30 trades...")
+    l2_patterns = reflection.discover_patterns_from_backtest(db=db)
+    print(f"       Found {len(l2_patterns)} patterns")
+    for p in l2_patterns[:5]:
+        print(f"       - {p['pattern_id']}: {p['description'][:70]}...")
+    if len(l2_patterns) > 5:
+        print(f"       ... and {len(l2_patterns) - 5} more")
+    print()
+    time.sleep(0.5)
+
+    # L3: generate strategy adjustments from patterns
+    print("  [L3] Generating strategy adjustments from patterns...")
+    l3_adjustments = reflection.generate_l3_adjustments(db=db)
+    print(f"       Generated {len(l3_adjustments)} adjustments")
+    for adj in l3_adjustments:
+        type_emoji = {
+            'strategy_disable': '🚫',
+            'strategy_prefer': '⭐',
+            'session_reduce': '📉',
+            'session_increase': '📈',
+            'direction_restrict': '🔒',
+        }.get(adj['adjustment_type'], '📊')
+        print(f"       {type_emoji} [{adj['adjustment_type']}] "
+              f"{adj['parameter']}: {adj['old_value']} \u2192 {adj['new_value']}")
+        print(f"          Reason: {adj['reason'][:80]}")
+    print()
+
+    # Show stored adjustments
+    stored_adj = db.query_adjustments()
+    proposed = [a for a in stored_adj if a['status'] == 'proposed']
+    print(f"  [{len(proposed)} adjustments stored as 'proposed', awaiting approval]")
+    print()
+    time.sleep(1)
+
+    # ──────────────────────────────────────────────────
     # Final summary
     # ──────────────────────────────────────────────────
     print_header("Demo complete!")
@@ -357,8 +399,9 @@ def main():
     london_wr = session_stats["london"]["wins"] / (session_stats["london"]["wins"] + session_stats["london"]["losses"]) * 100
 
     print(f"  Trades recorded:        {len(SIMULATED_TRADES)}")
-    print(f"  Patterns discovered:    {pattern_num}")
-    print(f"  Strategy adjustments:   {len(adjustments)}")
+    print(f"  L2 patterns discovered: {len(l2_patterns)}")
+    print(f"  L3 adjustments:         {len(l3_adjustments)} (rule-based)")
+    print(f"  Mock adjustments:       {len(adjustments)} (session-based)")
     print()
     print(f"  Key insight: London session ({london_wr:.0f}% WR) >> Asian session ({asian_wr:.0f}% WR)")
     print(f"  Action taken: Asian lot size reduced 0.05 --> 0.025")
