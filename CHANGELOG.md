@@ -8,6 +8,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- **L3 Strategy Adjustments** — Rule-based strategy tuning from L2 patterns
+  - `strategy_adjustments` table in SQLite with proposed/approved/applied/rejected lifecycle
+  - 5 deterministic rules: strategy_disable, strategy_prefer, session_reduce, session_increase, direction_restrict
+  - `generate_l3_adjustments()` in ReflectionEngine — reads L2 patterns, outputs proposed adjustments
+  - 3 CRUD methods in Database: `insert_adjustment`, `query_adjustments`, `update_adjustment_status`
+  - 3 REST API endpoints: `POST /reflect/generate_adjustments`, `GET /adjustments/query`, `POST /adjustments/update_status`
+  - 21 new tests (CRUD, 5 rules, edge cases, integration) — total 181 tests passing
+  - `demo.py` Step 6: production L1→L2→L3 pipeline
 - GitHub Actions CI — Python 3.10/3.11/3.12 matrix testing on push/PR
 - `scripts/record_demo.py` — Rich-formatted demo for terminal recording
 - `docs/AWESOME_LISTS.md` — Awesome list submission tracker

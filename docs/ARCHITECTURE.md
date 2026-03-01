@@ -104,9 +104,9 @@ L2 is the agent's learned knowledge. The ReflectionEngine writes here after dail
 | **Storage** | SQLite database (`data/tradememory.db`) |
 | **Lifetime** | Permanent |
 | **Access speed** | Standard DB query |
-| **Contents** | Every trade record, full history, session state snapshots |
+| **Contents** | Every trade record, full history, session state snapshots, strategy adjustments |
 
-Every `record_decision` and `record_outcome` call writes to L3. The ReflectionEngine queries L3 to discover patterns. In production, L3 can be swapped for PostgreSQL without changing the application layer.
+Every `record_decision` and `record_outcome` call writes to L3. The ReflectionEngine queries L3 to discover L2 patterns and generate L3 strategy adjustments. Strategy adjustments follow a lifecycle: proposed → approved → applied (or rejected). In production, L3 can be swapped for PostgreSQL without changing the application layer.
 
 ### Memory Lifecycle
 
@@ -192,6 +192,27 @@ CREATE TABLE session_state (
     active_positions  TEXT NOT NULL,         -- JSON array of trade IDs
     risk_constraints  TEXT NOT NULL          -- JSON object
 );
+```
+
+### `strategy_adjustments` table
+
+```sql
+CREATE TABLE strategy_adjustments (
+    adjustment_id     TEXT PRIMARY KEY,      -- ADJ-{rule}-{seq}
+    adjustment_type   TEXT NOT NULL,         -- strategy_disable, strategy_prefer, session_reduce, session_increase, direction_restrict
+    parameter         TEXT NOT NULL,         -- e.g. "MeanReversion.enabled", "IM.XAUUSD.max_lot"
+    old_value         TEXT NOT NULL,
+    new_value         TEXT NOT NULL,
+    reason            TEXT NOT NULL,         -- Human-readable explanation with data
+    source_pattern_id TEXT,                  -- FK → patterns.pattern_id
+    confidence        REAL NOT NULL,         -- Inherited from source pattern
+    status            TEXT NOT NULL DEFAULT 'proposed',  -- proposed → approved → applied | rejected
+    created_at        TEXT NOT NULL,         -- ISO 8601 UTC
+    applied_at        TEXT                   -- Set when status = 'applied'
+);
+
+CREATE INDEX idx_adjustments_status ON strategy_adjustments(status);
+CREATE INDEX idx_adjustments_type ON strategy_adjustments(adjustment_type);
 ```
 
 ### Storage notes

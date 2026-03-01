@@ -17,9 +17,10 @@ AI trading agents are stateless by default. Every session starts from zero. Trad
 - **Trade journaling** — Records every decision with reasoning, confidence, market context, and outcome
 - **Reflection engine** — Analyzes trade history to find session/strategy/confidence patterns (rule-based, with optional LLM)
 - **State persistence** — Agent loads its learned patterns and risk constraints when starting a new session
-- **3-layer memory** — L1 (active trades), L2 (discovered patterns), L3 (full history in SQLite)
+- **3-layer memory** — L1 (active trades), L2 (discovered patterns), L3 (strategy adjustments in SQLite)
+- **Strategy adjustments (L3)** — Rule-based tuning from L2 patterns: disable losing strategies, prefer winners, adjust lot sizes, restrict directions
 
-What it does NOT do yet: adaptive risk algorithms, weekly/monthly reflection, multi-agent learning. These are planned for Phase 2.
+What it does NOT do yet: multi-agent learning, cryptocurrency exchange support. These are planned for future phases.
 
 ---
 
@@ -185,6 +186,9 @@ docker run -p 8000:8000 -e ANTHROPIC_API_KEY=your-key tradememory
 - `POST /risk/get_constraints` — Dynamic risk parameters
 - `POST /risk/check_trade` — Validate trade against constraints
 - `POST /mt5/sync` — Sync trades from MetaTrader 5
+- `POST /reflect/generate_adjustments` — Generate L3 strategy adjustments from L2 patterns
+- `GET /adjustments/query` — Query strategy adjustments by status/type
+- `POST /adjustments/update_status` — Update adjustment lifecycle (proposed→approved→applied)
 
 Full API reference: [docs/API.md](docs/API.md)
 
@@ -199,7 +203,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - Daily reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 111 unit tests passing
+- 181 unit tests passing
 - Interactive demo (`demo.py`)
 - Weekly/monthly reflection cycles
 - Adaptive risk algorithms
@@ -224,7 +228,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (111 tests)
+- **Testing:** pytest (181 tests)
 
 ---
 
