@@ -6,12 +6,12 @@
     "url": "https://github.com/mnemox-ai/tradememory-protocol",
     "source": "github"
   },
-  "version": "0.3.0",
+  "version": "0.3.1",
   "packages": [
     {
       "registryType": "pypi",
       "identifier": "tradememory-protocol",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "transport": { "type": "stdio" },
       "environmentVariables": []
     }
