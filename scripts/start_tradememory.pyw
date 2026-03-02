@@ -105,7 +105,7 @@ log("mt5_sync watchdog thread started")
 t = threading.Thread(target=reflection_scheduler, daemon=True)
 t.start()
 
-log(f"All services started: server={server_pid}, sync={sync_pid}, scheduler=thread")
+log(f"All services started: server={server_pid}, sync=watchdog_thread, scheduler=thread")
 
 # Keep this process alive (scheduler needs it)
 try:
