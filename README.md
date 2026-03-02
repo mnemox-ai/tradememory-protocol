@@ -11,6 +11,8 @@ AI trading agents are stateless by default. Every session starts from zero. Trad
 [![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox-ai/tradememory-protocol)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mnemox-ai/tradememory-protocol)
 
+**Works with:** Claude Desktop · Claude Code · Cursor · Windsurf · any MCP client
+
 ---
 
 ## What It Does
@@ -27,13 +29,50 @@ What it does NOT do yet: multi-agent learning, cryptocurrency exchange support. 
 
 ## Quick Start
 
-### As MCP Server (Claude Desktop / Claude Code / Cursor)
+### Claude Desktop
 
-```bash
-uvx tradememory-protocol
+Add to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "tradememory": {
+      "command": "uvx",
+      "args": ["tradememory-protocol"]
+    }
+  }
+}
 ```
 
-Add to your MCP client config:
+<details>
+<summary>Config file location</summary>
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+
+</details>
+
+Restart Claude Desktop. You'll see TradeMemory tools in the 🔨 menu. Try asking:
+
+- *"Store my latest XAUUSD trade: long 0.05 lots, entry 2847, exit 2855, profit $40"*
+- *"Show my trading performance this week"*
+- *"Run a reflection on my last 20 trades"*
+
+### Claude Code
+
+```bash
+claude mcp add tradememory -- uvx tradememory-protocol
+```
+
+Then ask Claude:
+
+- *"What patterns do you see in my recent losing trades?"*
+- *"Compare my London session vs Asian session win rates"*
+
+### Cursor / Other MCP Clients
+
+Add to `.cursor/mcp.json` (or your client's MCP config):
+
 ```json
 {
   "mcpServers": {
