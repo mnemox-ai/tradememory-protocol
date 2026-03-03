@@ -72,10 +72,10 @@
 - 每個平台語調略有不同
 - Commit: `docs: add Reddit and MQL5 promotional content`
 
-### Task 3.3：撰寫 demo 腳本 ❌
+### Task 3.3：撰寫 demo 腳本 ✅
 - `marketing/demo-script.md`
 - 影片示範的步驟腳本（2-3 分鐘）
-- 場景：打開 Claude Desktop → 問交易績效 → 跑 reflection → 收到 WhatsApp 報告
+- 場景：打開 Claude Desktop → 問交易績效 → 跑 reflection → 收到報告
 - Commit: `docs: add demo video script`
 
 ---
@@ -128,6 +128,6 @@
 |-------|------|----------|
 | Phase 1：OpenClaw Skill | ✅ 完成 | 2026-03-03 |
 | Phase 2：Landing Page | ✅ 完成 | 2026-03-03 |
-| Phase 3：推廣素材 | 🔄 進行中 | - |
+| Phase 3：推廣素材 | ✅ 完成 | 2026-03-03 |
 | Phase 4：Hosted API | ❌ 未開始 | - |
 | Phase 5：Payment Rails | ❌ 未開始 | - |
