@@ -6,6 +6,9 @@ description: >-
   AI trading memory for MT5/forex traders. Record every trade, discover patterns,
   and get AI-powered reflections with automatic strategy adjustments.
   The only trading memory system with 3-layer architecture (raw trades -> patterns -> strategy).
+source: https://github.com/mnemox-ai/tradememory-protocol
+repository: https://github.com/mnemox-ai/tradememory-protocol
+homepage: https://github.com/mnemox-ai/tradememory-protocol
 metadata:
   openclaw:
     emoji: "📊"
@@ -13,21 +16,11 @@ metadata:
     requires:
       bins: ["python3", "pip"]
       env:
-        - name: MT5_LOGIN
-          description: "MetaTrader 5 account number for trade sync"
-          optional: true
-        - name: MT5_PASSWORD
-          description: "MetaTrader 5 account password for trade sync"
-          optional: true
-        - name: MT5_SERVER
-          description: "MT5 broker server name (e.g. ForexTimeFXTM-Demo01)"
-          optional: true
-        - name: ANTHROPIC_API_KEY
-          description: "Enables LLM-powered reflections via Claude. Without it, reflections use rule-based analysis."
-          optional: true
-        - name: TRADEMEMORY_API
-          description: "API endpoint URL, defaults to http://localhost:8000"
-          optional: true
+        MT5_LOGIN: "MetaTrader 5 account number (optional, MT5 sync only)"
+        MT5_PASSWORD: "MetaTrader 5 password (optional, MT5 sync only)"
+        MT5_SERVER: "MT5 broker server name (optional, MT5 sync only)"
+        ANTHROPIC_API_KEY: "Enables LLM reflections (optional, rule-based fallback without it)"
+        TRADEMEMORY_API: "API endpoint, defaults to http://localhost:8000 (optional)"
     os: ["linux", "darwin", "win32"]
     homepage: https://github.com/mnemox-ai/tradememory-protocol
 ---
@@ -79,13 +72,15 @@ See [MT5_SYNC_SETUP.md](https://github.com/mnemox-ai/tradememory-protocol/blob/m
 
 ## Security & Permissions
 
-**Network access:** Local only by default. The TradeMemory server runs on `localhost:8000` and does not make outbound network requests unless you configure the optional hosted API endpoint.
+**Network access during install:** `install.sh` and `setup_mt5.sh` run `pip install` (downloads from PyPI) and `git clone` (downloads from GitHub). These are standard Python project install steps — review the scripts before running.
 
-**Environment variables:** All environment variables listed above are optional. MT5 credentials (`MT5_LOGIN`, `MT5_PASSWORD`, `MT5_SERVER`) are only needed if you use the MT5 sync feature. They are never logged, transmitted externally, or stored outside your local `.env` file.
+**Network access at runtime:** The TradeMemory server runs on `localhost:8000` by default and does not make outbound network requests. If you set `TRADEMEMORY_API` to a remote URL, trade data will be sent to that endpoint — only do this with endpoints you control. If `ANTHROPIC_API_KEY` is set, the reflection engine sends anonymized trade patterns to the Claude API for analysis.
 
-**File system access:** TradeMemory writes to a single SQLite database file (`tradememory.db`) in the project directory. No other files are created or modified outside the project.
+**Environment variables:** All environment variables are optional. MT5 credentials (`MT5_LOGIN`, `MT5_PASSWORD`, `MT5_SERVER`) are only needed for MT5 sync. They are stored in your local `.env` file and read by `mt5_sync.py` to connect to your MT5 terminal. They are not logged or sent to any external service.
 
-**No implicit permissions:** This skill does not auto-install dependencies, modify system files, or require elevated privileges. All setup steps are explicit and documented below.
+**File system access:** TradeMemory writes to a single SQLite database file (`tradememory.db`) in the project directory. No files are created or modified outside the project.
+
+**No implicit permissions:** This skill does not auto-install dependencies, modify system files, or require elevated privileges. All setup steps are explicit and user-initiated.
 
 ## Available Commands
 
