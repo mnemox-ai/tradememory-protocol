@@ -4,7 +4,7 @@ slug: tradememory
 version: 1.0.0
 description: >-
   AI trading memory for MT5/forex traders. Record every trade, discover patterns,
-  get AI-powered reflections, and receive daily performance reports via WhatsApp.
+  and get AI-powered reflections with automatic strategy adjustments.
   The only trading memory system with 3-layer architecture (raw trades -> patterns -> strategy).
 metadata:
   openclaw:
@@ -12,6 +12,22 @@ metadata:
     category: "finance"
     requires:
       bins: ["python3", "pip"]
+      env:
+        - name: MT5_LOGIN
+          description: "MetaTrader 5 account number for trade sync"
+          optional: true
+        - name: MT5_PASSWORD
+          description: "MetaTrader 5 account password for trade sync"
+          optional: true
+        - name: MT5_SERVER
+          description: "MT5 broker server name (e.g. ForexTimeFXTM-Demo01)"
+          optional: true
+        - name: ANTHROPIC_API_KEY
+          description: "Enables LLM-powered reflections via Claude. Without it, reflections use rule-based analysis."
+          optional: true
+        - name: TRADEMEMORY_API
+          description: "API endpoint URL, defaults to http://localhost:8000"
+          optional: true
     os: ["linux", "darwin", "win32"]
     homepage: https://github.com/mnemox-ai/tradememory-protocol
 ---
@@ -60,6 +76,16 @@ python scripts/mt5_sync.py
 ```
 
 See [MT5_SYNC_SETUP.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/MT5_SYNC_SETUP.md) for the full setup guide, auto-start configuration, and troubleshooting.
+
+## Security & Permissions
+
+**Network access:** Local only by default. The TradeMemory server runs on `localhost:8000` and does not make outbound network requests unless you configure the optional hosted API endpoint.
+
+**Environment variables:** All environment variables listed above are optional. MT5 credentials (`MT5_LOGIN`, `MT5_PASSWORD`, `MT5_SERVER`) are only needed if you use the MT5 sync feature. They are never logged, transmitted externally, or stored outside your local `.env` file.
+
+**File system access:** TradeMemory writes to a single SQLite database file (`tradememory.db`) in the project directory. No other files are created or modified outside the project.
+
+**No implicit permissions:** This skill does not auto-install dependencies, modify system files, or require elevated privileges. All setup steps are explicit and documented below.
 
 ## Available Commands
 
@@ -149,7 +175,7 @@ openclaw cron add --name "Daily Trade Reflection" \
   --cron "55 23 * * *" \
   --session isolated \
   --message "Run a reflection on today's trades and send me a summary" \
-  --announce --channel whatsapp
+  --announce
 ```
 
 Weekly and monthly reflections are also supported:
@@ -160,15 +186,17 @@ openclaw cron add --name "Weekly Trade Reflection" \
   --cron "55 23 * * 0" \
   --session isolated \
   --message "Run a weekly reflection on my trading performance and compare to last week" \
-  --announce --channel whatsapp
+  --announce
 
 # Monthly reflection (1st of each month at 00:00)
 openclaw cron add --name "Monthly Trade Reflection" \
   --cron "0 0 1 * *" \
   --session isolated \
   --message "Run a monthly reflection on my trading. Summarize wins, losses, pattern changes, and strategy adjustments." \
-  --announce --channel whatsapp
+  --announce
 ```
+
+> **Note:** Add `--channel whatsapp` or `--channel slack` to the `--announce` flag to route notifications to a specific channel. Channel availability depends on your OpenClaw configuration.
 
 ## Hosted API (Coming Soon)
 
