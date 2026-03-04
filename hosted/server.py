@@ -417,7 +417,7 @@ class RecallTradesResponse(BaseModel):
 @app.get("/api/v1/health")
 async def health():
     """Health check — no auth required."""
-    return {"status": "healthy", "version": "0.3.0"}
+    return {"status": "healthy", "version": "0.3.1"}
 
 
 @app.post("/api/v1/trades", status_code=201, response_model=StoreTradeResponse)
