@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Header, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 
@@ -31,7 +32,20 @@ DB_PATH = os.environ.get("TM_HOSTED_DB", "hosted/hosted.db")
 app = FastAPI(
     title="TradeMemory Hosted API",
     description="Multi-tenant AI Trading Memory API",
-    version="0.3.0",
+    version="0.3.1",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://mnemox.ai",
+        "https://mnemox-ai.github.io",
+        "http://localhost",
+        "http://localhost:3000",
+        "http://127.0.0.1",
+    ],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 
@@ -108,7 +122,40 @@ class HostedDB:
                     )
                 conn.commit()
 
+            # Subscribers table (no-auth, waitlist)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS subscribers (
+                    email TEXT PRIMARY KEY,
+                    source TEXT NOT NULL DEFAULT 'waitlist',
+                    created_at TEXT NOT NULL
+                )
+            """)
+
             conn.commit()
+        finally:
+            conn.close()
+
+    def save_subscriber(self, email: str, source: str = "waitlist") -> bool:
+        """Save waitlist subscriber. Returns True if new, False if already exists."""
+        import logging
+        conn = self._conn()
+        try:
+            conn.execute(
+                "INSERT OR IGNORE INTO subscribers (email, source, created_at) VALUES (?, ?, ?)",
+                (email.lower().strip(), source, datetime.now(timezone.utc).isoformat()),
+            )
+            conn.commit()
+            inserted = conn.execute("SELECT changes()").fetchone()[0]
+            if inserted:
+                logging.getLogger(__name__).info(f"[SUBSCRIBE] {email} source={source}")
+            return bool(inserted)
+        finally:
+            conn.close()
+
+    def get_subscriber_count(self) -> int:
+        conn = self._conn()
+        try:
+            return conn.execute("SELECT COUNT(*) FROM subscribers").fetchone()[0]
         finally:
             conn.close()
 
@@ -454,6 +501,30 @@ async def get_performance(
         symbol=symbol,
         strategy=strategy,
     )
+
+
+# ========== Waitlist / Subscribe (no auth) ==========
+
+
+class SubscribeRequest(BaseModel):
+    email: str = Field(..., min_length=3, max_length=254)
+    source: str = Field(default="waitlist", max_length=64)
+
+
+@app.post("/api/subscribe", status_code=201)
+async def subscribe(req: SubscribeRequest, db: HostedDB = Depends(get_db)):
+    """Add email to waitlist. No auth required."""
+    import re
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", req.email):
+        raise HTTPException(status_code=422, detail={"error": "invalid_email"})
+    is_new = db.save_subscriber(req.email, req.source)
+    return {"status": "subscribed", "new": is_new}
+
+
+@app.get("/api/subscribers/count")
+async def subscriber_count(db: HostedDB = Depends(get_db)):
+    """Public subscriber count."""
+    return {"count": db.get_subscriber_count()}
 
 
 # ========== Entry Point ==========
