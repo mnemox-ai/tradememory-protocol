@@ -1,9 +1,9 @@
 <!-- mcp-name: io.github.mnemox-ai/tradememory-protocol -->
 # TradeMemory Protocol
 
-**A [Mnemox](https://mnemox.ai) Project** — MCP server that gives AI trading agents persistent memory.
+**A [Mnemox](https://mnemox.ai) Project** — MCP server that gives AI trading agents persistent, outcome-weighted memory.
 
-AI trading agents are stateless by default. Every session starts from zero. TradeMemory is an MCP (Model Context Protocol) server that stores trade decisions, analyzes patterns via a reflection engine, and persists learned insights across sessions.
+AI trading agents are stateless by default. Every session starts from zero — no memory of what worked, what failed, or why. TradeMemory is an MCP server that stores trade decisions into a five-type cognitive memory system, recalls them using outcome-weighted scoring (grounded in ACT-R power-law decay, Kelly criterion, and Bayesian updating), and learns across sessions through a store → recall → learn loop.
 
 [![CI](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -18,10 +18,13 @@ AI trading agents are stateless by default. Every session starts from zero. Trad
 ## What It Does
 
 - **Trade journaling** — Records every decision with reasoning, confidence, market context, and outcome
+- **Outcome-weighted recall (OWM)** — Five memory types (episodic, semantic, procedural, affective, prospective) scored by `Q × Sim × Rec × Conf × Aff` to surface the right memory at the right time
 - **Reflection engine** — Analyzes trade history to find session/strategy/confidence patterns (rule-based, with optional LLM)
-- **State persistence** — Agent loads its learned patterns and risk constraints when starting a new session
-- **3-layer memory** — L1 (active trades), L2 (discovered patterns), L3 (strategy adjustments in SQLite)
+- **Kelly-from-memory** — Context-weighted position sizing derived from recalled trade outcomes, not global statistics
+- **State persistence** — Agent loads its confidence level, drawdown state, behavioral patterns, and active plans when starting a new session
 - **Strategy adjustments (L3)** — Rule-based tuning from L2 patterns: disable losing strategies, prefer winners, adjust lot sizes, restrict directions
+
+All v0.3.x features work unchanged. OWM is an additive upgrade.
 
 What it does NOT do yet: multi-agent learning, cryptocurrency exchange support. These are planned for future phases.
 
@@ -190,43 +193,88 @@ See [.skills/tradememory/SKILL.md](.skills/tradememory/SKILL.md) for the full sk
 
 ```mermaid
 graph TD
-    A["AI Trading Agent<br/>(Claude / GPT / Custom)"] -->|MCP Protocol| B["TradeMemory Server"]
+    Agent["AI Trading Agent<br/>(Claude / GPT / Custom)"] -->|MCP Protocol| Server
 
-    subgraph B["TradeMemory Protocol Server"]
-        J["TradeJournal<br/>Records decisions & outcomes"]
-        R["ReflectionEngine<br/>Analyzes patterns, generates insights"]
-        S["StateManager<br/>Persists learned knowledge"]
-        J --> R --> S
+    subgraph Server["TradeMemory Protocol Server"]
+        direction TB
+
+        subgraph OWM["OWM Cognitive Memory"]
+            EP["Episodic<br/>Trade events + context"]
+            SEM["Semantic<br/>Bayesian beliefs"]
+            PROC["Procedural<br/>Behavioral patterns"]
+            AFF["Affective<br/>Confidence + drawdown"]
+            PROS["Prospective<br/>Conditional plans"]
+        end
+
+        subgraph Legacy["Legacy Pipeline (v0.3.x)"]
+            L1["L1 Hot — RAM<br/>Active trades"]
+            L2["L2 Warm — JSON<br/>Discovered patterns"]
+            L3["L3 Cold — SQLite<br/>Strategy adjustments"]
+        end
+
+        OWM ---|"recall_memories()"| RECALL["Outcome-Weighted<br/>Recall Engine"]
+        Legacy ---|"recall_similar_trades()"| RECALL
     end
 
-    subgraph M["3-Layer Memory"]
-        L1["L1 Hot — RAM<br/>Active trades, session context"]
-        L2["L2 Warm — JSON<br/>Curated insights from reflection"]
-        L3["L3 Cold — SQLite<br/>Full trade history"]
-    end
-
-    B --> M
-    MT5["MT5 / Binance / Alpaca"] -->|"scripts/mt5_sync.py"| J
+    MT5["MT5 / Binance / Alpaca"] -->|"mt5_sync.py"| Server
 ```
 
-### Data Flow
-
-1. Agent records trade decision (symbol, direction, strategy, confidence, reasoning)
-2. Trade closes → agent records outcome (P&L, exit reasoning)
-3. Reflection engine runs (daily) → discovers patterns → stores in L2
-4. Next session → agent loads state with updated patterns and constraints
+> **Legacy compatibility:** All v0.3.x tools and data remain functional. `recall_similar_trades` auto-detects whether OWM episodic data exists — if yes, it uses outcome-weighted scoring; if no, it falls back to keyword matching. Zero migration required.
 
 ---
 
-## MCP Tools (v0.3.1)
+## Why OWM?
 
-### Core Memory Tools (MCP — via `uvx tradememory-protocol`)
-- `store_trade_memory` — Store a trade decision with full context into memory
-- `recall_similar_trades` — Find past trades with similar market context
-- `get_strategy_performance` — Aggregate performance stats per strategy
-- `get_trade_reflection` — Deep-dive into a specific trade's reasoning and lessons
+Outcome-Weighted Memory is a novel application of established cognitive science to AI trading agents — not an invention of new theory. It combines Tulving's episodic memory taxonomy (1972), Anderson's ACT-R activation framework (2007), Kelly's optimal bet sizing (1956), and Damasio's somatic marker hypothesis (1994) into a single recall function purpose-built for sequential financial decisions.
 
-### REST API (FastAPI — via `tradememory-api`)
+The core recall formula scores each candidate memory `m` given current context `C`:
+
+```
+Score(m, C) = Q(m) × Sim(m, C) × Rec(m) × Conf(m) × Aff(m)
+```
+
+| Component | Formula | What It Does |
+|-----------|---------|-------------|
+| **Q** — Outcome Quality | `sigmoid(k · pnl_r / σ_r)` | Maps R-multiple outcomes to (0,1) via sigmoid. A +3R winner scores 0.98; a -3R loser scores 0.02 but never zero — losing memories are recalled as warnings. |
+| **Sim** — Context Similarity | Gaussian kernel over `ContextVector` | Measures how similar the current market context (symbol, regime, ATR, session) is to when the memory was formed. Irrelevant memories are suppressed. |
+| **Rec** — Recency | `(1 + age_days/τ)^(-d)` | ACT-R power-law decay. A 30-day-old memory retains 70.7% strength; a 1-year-old memory retains 27.5%. Much gentler than exponential — old regime-relevant memories remain retrievable. |
+| **Conf** — Confidence | `0.5 + 0.5 · confidence` | Memories formed during high-confidence states score higher. Floor of 0.5 prevents early memories from being ignored. |
+| **Aff** — Affective Modulation | `1.0 + α · relevance(m, state)` | Current drawdown/streak state modulates recall. During drawdowns, cautionary memories surface; during winning streaks, overconfidence checks activate. |
+
+**Academic foundations:**
+- Anderson, J. R. (2007). *How Can the Human Mind Occur in the Physical Universe?* — ACT-R activation and power-law decay
+- Kelly, J. L. (1956). *A New Interpretation of Information Rate* — Optimal bet sizing from outcome history
+- Tulving, E. (1972). *Episodic and semantic memory* — Five-type memory taxonomy
+- Damasio, A. (1994). *Descartes' Error* — Affective markers in decision-making
+
+Full specification: [docs/OWM_FRAMEWORK.md](docs/OWM_FRAMEWORK.md) (1,875 lines, includes mathematical proofs, boundary analysis, and financial validation against Kelly/Bayesian/Prospect Theory)
+
+---
+
+## MCP Tools (v0.4.0)
+
+### Core Memory Tools (4 — backward compatible)
+
+| Tool | Description |
+|------|-------------|
+| `store_trade_memory` | Store a trade decision with full context into memory |
+| `recall_similar_trades` | Find past trades with similar market context (auto-upgrades to OWM when episodic data exists) |
+| `get_strategy_performance` | Aggregate performance stats per strategy |
+| `get_trade_reflection` | Deep-dive into a specific trade's reasoning and lessons |
+
+### OWM Tools (6 — new in v0.4.0)
+
+| Tool | Description |
+|------|-------------|
+| `remember_trade` | Store a trade into all five memory layers simultaneously (episodic + Bayesian semantic update + procedural running averages + affective EWMA) |
+| `recall_memories` | Outcome-weighted recall with full score breakdown per component |
+| `get_behavioral_analysis` | Procedural memory analysis: hold times, disposition ratio, lot sizing variance, Kelly comparison |
+| `get_agent_state` | Current affective state: confidence, risk appetite, drawdown %, win/loss streaks, recommended action |
+| `create_trading_plan` | Store a conditional plan in prospective memory (e.g., "if regime changes to ranging, skip breakout trades") |
+| `check_active_plans` | Match active plans against current market context, expire stale plans |
+
+### REST API
+
 - `POST /trade/record_decision` — Log entry decision with full context
 - `POST /trade/record_outcome` — Log trade result (P&L, exit reason)
 - `POST /trade/query_history` — Search past trades by strategy/date/result
@@ -239,6 +287,7 @@ graph TD
 - `POST /reflect/generate_adjustments` — Generate L3 strategy adjustments from L2 patterns
 - `GET /adjustments/query` — Query strategy adjustments by status/type
 - `POST /adjustments/update_status` — Update adjustment lifecycle (proposed→approved→applied)
+- 7 new OWM endpoints under `/owm/` prefix — episodic/semantic/procedural/affective/prospective CRUD + recall + Kelly sizing
 
 Full API reference: [docs/API.md](docs/API.md)
 
@@ -246,14 +295,15 @@ Full API reference: [docs/API.md](docs/API.md)
 
 ## Project Status
 
-### What Works (Phase 1)
+### What Works (v0.4.0)
 - Core MCP server + TradeJournal
+- OWM cognitive memory architecture (5 memory types, outcome-weighted recall, Kelly sizing)
 - SQLite storage + Pydantic data models
 - MT5 connector (auto-sync trades from MetaTrader 5)
 - Daily reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 203 unit tests passing
+- 399 unit tests passing
 - Interactive demo (`demo.py`)
 - Weekly/monthly reflection cycles
 - Adaptive risk algorithms
@@ -274,16 +324,18 @@ Full API reference: [docs/API.md](docs/API.md)
 
 - **MCP Server:** FastMCP 3.x (stdio transport)
 - **REST API:** FastAPI + uvicorn
-- **Storage:** SQLite (L3), JSON (L2)
+- **Storage:** SQLite (trade records + OWM tables), JSON (L2)
+- **Memory:** OWM 5-type cognitive memory with outcome-weighted recall
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API (Phase 1)
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (203 tests)
+- **Testing:** pytest (399 tests)
 
 ---
 
 ## Documentation
 
+- [OWM Framework Specification](docs/OWM_FRAMEWORK.md) — Full theoretical foundation (1,875 lines)
 - [Tutorial (English)](docs/TUTORIAL.md)
 - [教學 (中文)](docs/TUTORIAL_ZH.md)
 - [Before/After Comparison](docs/BEFORE_AFTER.md) — Simulated impact data
@@ -367,16 +419,16 @@ See [MT5 Setup Guide](docs/MT5_SYNC_SETUP.md) for detailed configuration.
 No. TradeMemory is a memory layer, not a trading platform connector. It accepts standardized trade data from any source. For MT5 users, `scripts/mt5_sync.py` automatically polls and syncs closed trades every 60 seconds.
 
 **What trading platforms are supported?**
-Any platform that can output trade data. Built-in support exists for MetaTrader 5 via `scripts/mt5_sync.py`. For other platforms (Binance, Alpaca, Interactive Brokers), you send trades through the MCP `store_trade` tool or REST API using a standardized format.
+Any platform that can output trade data. Built-in support exists for MetaTrader 5 via `scripts/mt5_sync.py`. For other platforms (Binance, Alpaca, Interactive Brokers), you send trades through the MCP `store_trade_memory` tool or REST API using a standardized format.
 
 **What data does it store?**
-Three layers: L1 stores raw trade records (symbol, direction, lots, entry/exit price, PnL, timestamps). L2 stores discovered patterns (win rate by session, drawdown sequences). L3 stores strategy-level insights from LLM reflection.
+Five memory types: **Episodic** (individual trade events with full context), **Semantic** (Bayesian beliefs about strategy effectiveness, updated with each trade), **Procedural** (behavioral patterns — hold times, disposition ratio, lot sizing variance), **Affective** (agent confidence, drawdown state, win/loss streaks), and **Prospective** (conditional trading plans). Plus the legacy L1/L2/L3 layers for backward compatibility.
 
 **Is it free to use?**
-Yes. MIT license, fully open source. The LLM reflection feature requires a Claude API key, but the core trade storage and performance analysis work without any API keys.
+Yes. MIT license, fully open source. All 10 MCP tools work without any API keys. The optional LLM reflection feature requires a Claude API key for deeper insights, but the core memory system — including OWM recall and Kelly sizing — runs entirely locally.
 
 **Can I use it without MetaTrader 5?**
-Yes. MT5 is just one data source. You can manually store trades via the MCP `store_trade` tool, send them through the REST API, or write a custom sync script for your platform.
+Yes. MT5 is just one data source. You can manually store trades via the MCP `store_trade_memory` or `remember_trade` tools, send them through the REST API, or write a custom sync script for your platform.
 
 ---
 
