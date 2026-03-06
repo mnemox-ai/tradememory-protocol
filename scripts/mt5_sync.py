@@ -25,6 +25,30 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List, Tuple
 from dotenv import load_dotenv
 
+# ---------------------------------------------------------------------------
+# Discord Webhook helper
+# ---------------------------------------------------------------------------
+
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
+
+
+def send_discord(message: str, color: int = 0x00FF00):
+    """Send a Discord embed notification. Silently fails if no webhook configured."""
+    if not DISCORD_WEBHOOK_URL:
+        return
+    try:
+        payload = {
+            "embeds": [{
+                "title": "TradeMemory — MT5 Sync",
+                "description": message,
+                "color": color,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }]
+        }
+        requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=5)
+    except Exception:
+        pass  # Never block sync for a notification failure
+
 # Setup logging to both file and console
 os.makedirs("logs", exist_ok=True)
 logging.basicConfig(
@@ -323,6 +347,15 @@ def sync_trade_to_memory(position: Dict[str, Any]) -> bool:
             return False
 
         log.info(f"SYNC {trade_id}: {strategy} {symbol} {direction} {lot_size} lots, P&L: ${pnl:.2f}, Duration: {hold_duration}min")
+
+        # Discord notification
+        emoji = "🟢" if pnl >= 0 else "🔴"
+        send_discord(
+            f"{emoji} **{strategy}** {symbol} {direction.upper()}\n"
+            f"Entry: {entry_price:.2f} → Exit: {exit_price:.2f}\n"
+            f"P&L: **${pnl:+.2f}** | Lots: {lot_size} | Hold: {hold_duration}min",
+            color=0x00FF00 if pnl >= 0 else 0xFF0000,
+        )
         return True
 
     except requests.exceptions.RequestException as e:
@@ -369,9 +402,20 @@ def main_loop():
 
     log.info(f"Monitoring started. last_synced_ticket={last_synced_ticket}. Press Ctrl+C to stop.")
 
+    # Discord startup notification
+    send_discord(
+        f"🚀 **MT5 Sync Started**\n"
+        f"Account: {MT5_LOGIN} @ {MT5_SERVER}\n"
+        f"Interval: {SYNC_INTERVAL}s | Last ticket: {last_synced_ticket}",
+        color=0x3498DB,
+    )
+
     consecutive_errors = 0
     heartbeat_counter = 0
     HEARTBEAT_INTERVAL = 10  # Log heartbeat every 10 cycles (~10 min)
+    daily_sync_count = 0     # Trades synced today
+    daily_pnl = 0.0          # P&L accumulated today
+    last_summary_date = datetime.now(timezone.utc).date()  # Track day for daily summary
 
     try:
         while True:
@@ -417,6 +461,29 @@ def main_loop():
                     # Save state AFTER successful syncs
                     save_state(last_synced_ticket)
                     log.info(f"Sync complete. {synced_count}/{len(new_trades)} synced. Last ticket: {last_synced_ticket}")
+
+                # Track daily stats
+                if len(new_trades) > 0:
+                    for position in new_trades:
+                        pnl_val = sum(d.profit for d in position['deals'])
+                        daily_sync_count += 1
+                        daily_pnl += pnl_val
+
+                # Daily summary at day change (UTC)
+                today_utc = datetime.now(timezone.utc).date()
+                if today_utc != last_summary_date:
+                    if daily_sync_count > 0:
+                        emoji = "📊"
+                        send_discord(
+                            f"{emoji} **Daily Summary — {last_summary_date}**\n"
+                            f"Trades synced: **{daily_sync_count}**\n"
+                            f"Total P&L: **${daily_pnl:+.2f}**",
+                            color=0xF39C12,
+                        )
+                        log.info(f"[DAILY SUMMARY] {last_summary_date}: {daily_sync_count} trades, P&L=${daily_pnl:+.2f}")
+                    last_summary_date = today_utc
+                    daily_sync_count = 0
+                    daily_pnl = 0.0
 
                 # Reset error counter on success
                 consecutive_errors = 0

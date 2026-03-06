@@ -11,7 +11,7 @@ Usage:
 import argparse
 import os
 import requests
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -20,6 +20,28 @@ load_dotenv()
 TRADEMEMORY_API = os.getenv('TRADEMEMORY_API', 'http://localhost:8000')
 _PROJECT_DIR = os.path.dirname(os.path.abspath(__file__))
 OUTPUT_DIR = os.getenv('REFLECTION_OUTPUT_DIR', os.path.join(_PROJECT_DIR, 'reflections'))
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL", "")
+
+
+def send_discord(title: str, message: str, color: int = 0x9B59B6):
+    """Send a Discord embed notification. Silently fails if no webhook configured."""
+    if not DISCORD_WEBHOOK_URL:
+        return
+    try:
+        # Truncate to Discord embed limit (4096 chars)
+        if len(message) > 4000:
+            message = message[:3997] + "..."
+        payload = {
+            "embeds": [{
+                "title": f"TradeMemory — {title}",
+                "description": message,
+                "color": color,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            }]
+        }
+        requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=5)
+    except Exception:
+        pass  # Never fail the script for a notification issue
 
 
 def generate_daily_reflection(target_date: date = None) -> str:
@@ -238,6 +260,16 @@ def main():
         print("=" * 60)
         print(summary)
         print("=" * 60)
+
+        # Send to Discord
+        if args.weekly:
+            mode_label = "Weekly Reflection"
+        elif args.monthly:
+            mode_label = "Monthly Reflection"
+        else:
+            mode_label = "Daily Reflection"
+        send_discord(f"📝 {mode_label}", summary)
+        print("[OK] Discord notification sent" if DISCORD_WEBHOOK_URL else "[SKIP] No DISCORD_WEBHOOK_URL set")
     else:
         print("[FAIL] Failed to generate reflection")
         exit(1)
