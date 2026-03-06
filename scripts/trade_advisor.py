@@ -32,8 +32,9 @@ MIN_RECALL_SCORE = 0.2
 # If past similar trades have avg PnL below this, warn
 LOSS_PATTERN_THRESHOLD = -50.0
 
-# Minimum number of similar trades to make a judgment
-MIN_SIMILAR_TRADES = 2
+# Minimum number of SAME-STRATEGY trades to make a judgment
+# Below this → stay silent on recall-based warnings (not enough data)
+MIN_SIMILAR_TRADES = 5
 
 
 def send_discord_alert(message: str, color: int = 0xE74C3C):
@@ -55,20 +56,23 @@ def send_discord_alert(message: str, color: int = 0xE74C3C):
 
 
 def recall_similar(symbol: str, strategy: str, session: str) -> List[Dict]:
-    """Query OWM for similar past trades."""
+    """Query OWM for similar past trades — filtered by SAME strategy."""
     try:
         resp = requests.post(
             f"{TRADEMEMORY_API}/owm/recall",
             json={
                 "symbol": symbol,
                 "market_context": f"{symbol} {strategy} entry during {session} session.",
+                "strategy_name": strategy,
                 "limit": 10,
             },
             timeout=10,
         )
         if resp.status_code == 200:
             data = resp.json()
-            return data.get("memories", [])
+            memories = data.get("memories", [])
+            # Double-check: only keep same strategy (in case API doesn't filter)
+            return [m for m in memories if m.get("strategy") == strategy]
     except Exception:
         pass
     return []
@@ -119,6 +123,10 @@ def advise_on_open(
     memories = recall_similar(symbol, strategy, session)
     relevant = [m for m in memories if m.get("score", 0) >= MIN_RECALL_SCORE]
 
+    # Track if recall found a real problem (not just a reflection)
+    has_recall_warning = False
+    recall_reflection = None
+
     if len(relevant) >= MIN_SIMILAR_TRADES:
         pnls = [m.get("pnl", 0) for m in relevant if m.get("pnl") is not None]
         if pnls:
@@ -130,21 +138,23 @@ def advise_on_open(
             if avg_pnl < LOSS_PATTERN_THRESHOLD:
                 worst = min(pnls)
                 warnings.append(
-                    f"**Similar past trades averaged ${avg_pnl:+.0f}** "
+                    f"**{strategy} past trades averaged ${avg_pnl:+.0f}** "
                     f"({win_count}W/{loss_count}L, worst: ${worst:+.0f})"
                 )
+                has_recall_warning = True
 
             if win_rate < 0.35 and len(pnls) >= 3:
                 warnings.append(
-                    f"Win rate in similar setups: **{win_rate:.0%}** ({len(pnls)} trades)"
+                    f"{strategy} win rate in similar setups: **{win_rate:.0%}** ({len(pnls)} trades)"
                 )
+                has_recall_warning = True
 
-        # Check if any relevant memory has a useful reflection
+        # Save reflection — only attach it later if there's a real warning
         for m in relevant[:3]:
-            reflection = m.get("reflection")
-            if reflection and len(reflection) > 10:
-                warnings.append(f"Past note: *\"{reflection[:120]}\"*")
-                break  # Only show one reflection
+            ref = m.get("reflection")
+            if ref and len(ref) > 10:
+                recall_reflection = f"Past {strategy} note: *\"{ref[:120]}\"*"
+                break
 
     # -----------------------------------------------------------------------
     # 2. Check behavioral patterns
@@ -181,6 +191,12 @@ def advise_on_open(
             warnings.append(
                 f"**{consec_losses} consecutive losses** — are you revenge trading?"
             )
+
+    # -----------------------------------------------------------------------
+    # Attach reflection only if there's already a real warning
+    # -----------------------------------------------------------------------
+    if warnings and recall_reflection:
+        warnings.append(recall_reflection)
 
     # -----------------------------------------------------------------------
     # Decision: speak or stay silent
