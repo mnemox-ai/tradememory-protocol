@@ -3,15 +3,46 @@
 
 **A [Mnemox](https://mnemox.ai) Project** — MCP server that gives AI trading agents persistent, outcome-weighted memory.
 
-AI trading agents are stateless by default. Every session starts from zero — no memory of what worked, what failed, or why. TradeMemory is an MCP server that stores trade decisions into a five-type cognitive memory system, recalls them using outcome-weighted scoring (grounded in ACT-R power-law decay, Kelly criterion, and Bayesian updating), and learns across sessions through a store → recall → learn loop.
-
 [![CI](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status: Alpha](https://img.shields.io/badge/status-alpha-orange.svg)](https://github.com/mnemox-ai/tradememory-protocol)
+[![Status: Beta](https://img.shields.io/badge/status-beta-green.svg)](https://github.com/mnemox-ai/tradememory-protocol)
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/mnemox-ai/tradememory-protocol)
 
 **Works with:** Claude Desktop · Claude Code · Cursor · Windsurf · any MCP client
+
+### The Problem
+
+Your AI trading agent has no memory. Every session starts from zero — same mistakes, same blown setups, no learning.
+
+```
+Session 1: Agent loses $200 on Asian session breakouts
+Session 2: Agent loses $180 on Asian session breakouts  ← no memory of Session 1
+Session 3: Agent loses $210 on Asian session breakouts  ← still no memory
+```
+
+### The Fix
+
+```
+pip install tradememory-protocol
+```
+
+```
+Session 1: Agent loses $200 → remember_trade stores context + outcome
+Session 2: Agent calls recall_memories → "Asian breakouts: 0% win rate, -$590"
+           Agent skips the trade.  ← memory saved $180
+```
+
+```mermaid
+graph LR
+    T["Execute Trade"] --> S["store<br/>remember_trade()"]
+    S --> R["recall<br/>recall_memories()"]
+    R --> L["learn<br/>adjust strategy"]
+    L --> T
+    style S fill:#22c55e,color:#fff
+    style R fill:#3b82f6,color:#fff
+    style L fill:#f59e0b,color:#fff
+```
 
 ---
 
@@ -19,14 +50,57 @@ AI trading agents are stateless by default. Every session starts from zero — n
 
 - **Trade journaling** — Records every decision with reasoning, confidence, market context, and outcome
 - **Outcome-weighted recall (OWM)** — Five memory types (episodic, semantic, procedural, affective, prospective) scored by `Q × Sim × Rec × Conf × Aff` to surface the right memory at the right time
-- **Reflection engine** — Analyzes trade history to find session/strategy/confidence patterns (rule-based, with optional LLM)
+- **Behavioral bias detection** — Flags overtrading, revenge trading, and disposition effect from your trade history
 - **Kelly-from-memory** — Context-weighted position sizing derived from recalled trade outcomes, not global statistics
 - **State persistence** — Agent loads its confidence level, drawdown state, behavioral patterns, and active plans when starting a new session
-- **Strategy adjustments (L3)** — Rule-based tuning from L2 patterns: disable losing strategies, prefer winners, adjust lot sizes, restrict directions
+- **Strategy adjustments** — Rule-based tuning from discovered patterns: disable losing strategies, prefer winners, adjust lot sizes, restrict directions
 
-All v0.3.x features work unchanged. OWM is an additive upgrade.
+10 MCP tools · 399 tests · MIT license · All v0.3.x features work unchanged
 
-What it does NOT do yet: multi-agent learning, cryptocurrency exchange support. These are planned for future phases.
+---
+
+## See It Work (30 seconds)
+
+No API key needed. Runs 30 simulated trades through the full pipeline:
+
+```bash
+pip install tradememory-protocol
+python -c "from tradememory.demo import run; run()" 2>/dev/null || python scripts/demo.py
+```
+
+<details>
+<summary>Output — trade recording → pattern discovery → strategy adjustment (click to expand)</summary>
+
+```
+── Step 1: Recording trades to memory ──
+
+  # │ Result │ Session │ Strategy    │ P&L      │ R
+  1 │ LOSS   │ Asia    │ Pullback    │ $-15.00  │ -1.0
+  2 │ WIN    │ London  │ VolBreakout │ $+42.00  │ +2.1
+  3 │ WIN    │ London  │ VolBreakout │ $+28.50  │ +1.5
+  ...
+  30 │ WIN   │ London  │ Pullback    │ $+28.00  │ +1.4
+
+  Total: 30 trades | Winners: 19 | Win rate: 63% | Net P&L: $+499.50
+
+── Step 2: Reflection engine discovers patterns ──
+
+  Pattern             │ Win Rate │ Record    │ Net P&L   │ Assessment
+  London session      │     100% │ 14W / 0L  │ $+608.50  │ HIGH EDGE
+  Asian session       │      10% │  1W / 9L  │ $-156.00  │ WEAK
+  VolBreakout strategy│      73% │ 11W / 4L  │ $+429.50  │ HIGH EDGE
+
+── Step 3: Strategy adjustments generated ──
+
+  Parameter                │ Old  │ New  │ Reason
+  london_max_lot           │ 0.05 │ 0.08 │ London WR 100% — earned more room
+  asian_max_lot            │ 0.05 │ 0.025│ Asian WR 10% — reduce exposure
+  min_confidence_threshold │ 0.40 │ 0.55 │ Trades below 0.55 have 0% WR
+```
+
+</details>
+
+> All demo data is simulated. See [Before/After Comparison](docs/BEFORE_AFTER.md) for detailed breakdown.
 
 ---
 
@@ -94,61 +168,6 @@ git clone https://github.com/mnemox-ai/tradememory-protocol.git
 cd tradememory-protocol
 pip install -e .
 ```
-
-### Run the Demo
-
-No API key needed. Runs 30 simulated XAUUSD trades through the full pipeline:
-
-```bash
-python scripts/demo.py
-```
-
-Output shows: trade recording (L1) → pattern discovery (L2) → strategy adjustments (L3) → agent reloading state with memory.
-
-<details>
-<summary>Demo output preview (click to expand)</summary>
-
-```
-┌───────────────────────────────────────────────┐
-│                                               │
-│    TradeMemory Protocol                       │
-│    Persistent memory for AI trading agents    │
-│                                               │
-└───────────────────────────────────────────────┘
-
-── Step 1: L1 — Recording trades to TradeJournal ──
-
-  # │ Result │ Session │ Strategy    │ P&L      │ R
-  1 │ LOSS   │ Asia    │ Pullback    │ $-15.00  │ -1.0
-  2 │ WIN    │ London  │ VolBreakout │ $+42.00  │ +2.1
-  3 │ WIN    │ London  │ VolBreakout │ $+28.50  │ +1.5
-  ...
-  30 │ WIN   │ London  │ Pullback    │ $+28.00  │ +1.4
-
-  Total: 30 trades | Winners: 19 | Win rate: 63% | Net P&L: $+499.50
-
-── Step 2: L2 — Reflection Engine discovers patterns ──
-
-  Pattern             │ Win Rate │ Record    │ Net P&L   │ Assessment
-  London session      │     100% │ 14W / 0L  │ $+608.50  │ HIGH EDGE
-  Asian session       │      10% │  1W / 9L  │ $-156.00  │ WEAK
-  VolBreakout strategy│      73% │ 11W / 4L  │ $+429.50  │ HIGH EDGE
-
-  Confidence correlation:
-    High (>0.75): 100% win rate
-    Low  (<0.55):   0% win rate
-
-── Step 3: L3 — Strategy adjustments generated ──
-
-  Parameter                │ Old  │ New  │ Reason
-  london_max_lot           │ 0.05 │ 0.08 │ London WR 100% — earned more room
-  asian_max_lot            │ 0.05 │ 0.025│ Asian WR 10% — reduce exposure
-  min_confidence_threshold │ 0.40 │ 0.55 │ Trades below 0.55 have 0% WR
-```
-
-</details>
-
-> All demo data is simulated. See [Before/After Comparison](docs/BEFORE_AFTER.md) for detailed breakdown.
 
 ### Start the Server
 
@@ -296,27 +315,20 @@ Full API reference: [docs/API.md](docs/API.md)
 ## Project Status
 
 ### What Works (v0.4.0)
-- Core MCP server + TradeJournal
 - OWM cognitive memory architecture (5 memory types, outcome-weighted recall, Kelly sizing)
-- SQLite storage + Pydantic data models
-- MT5 connector (auto-sync trades from MetaTrader 5)
-- Daily reflection engine (rule-based + optional LLM)
+- 10 MCP tools + 20+ REST API endpoints
+- MT5 connector (`scripts/mt5_sync.py`) — auto-sync trades from MetaTrader 5
+- Binance connector (`scripts/binance_sync.py`) — poll and sync spot trades
+- Daily/weekly/monthly reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
 - 399 unit tests passing
 - Interactive demo (`demo.py`)
-- Weekly/monthly reflection cycles
-- Adaptive risk algorithms
 
-### Planned (Phase 2 — Q2 2026)
+### Planned
 - Multi-strategy portfolio support
 - Agent-to-agent learning
-- Public beta
-
-### Future (Phase 3 — Q3 2026)
-- Cryptocurrency exchange support (Binance/Bybit)
-- Stock market support (Alpaca/Interactive Brokers)
-- SaaS hosted version
+- More exchange connectors (Bybit, Alpaca, Interactive Brokers)
 
 ---
 
@@ -327,7 +339,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Storage:** SQLite (trade records + OWM tables), JSON (L2)
 - **Memory:** OWM 5-type cognitive memory with outcome-weighted recall
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
-- **Broker Integration:** MT5 Python API (Phase 1)
+- **Broker Integration:** MT5 Python API, Binance REST API
 - **Dashboard:** Streamlit + Plotly
 - **Testing:** pytest (399 tests)
 
@@ -419,7 +431,7 @@ See [MT5 Setup Guide](docs/MT5_SYNC_SETUP.md) for detailed configuration.
 No. TradeMemory is a memory layer, not a trading platform connector. It accepts standardized trade data from any source. For MT5 users, `scripts/mt5_sync.py` automatically polls and syncs closed trades every 60 seconds.
 
 **What trading platforms are supported?**
-Any platform that can output trade data. Built-in support exists for MetaTrader 5 via `scripts/mt5_sync.py`. For other platforms (Binance, Alpaca, Interactive Brokers), you send trades through the MCP `store_trade_memory` tool or REST API using a standardized format.
+Any platform that can output trade data. Built-in connectors: MetaTrader 5 (`scripts/mt5_sync.py`) and Binance spot (`scripts/binance_sync.py`). For other platforms (Alpaca, Interactive Brokers), send trades through the MCP `remember_trade` tool or REST API.
 
 **What data does it store?**
 Five memory types: **Episodic** (individual trade events with full context), **Semantic** (Bayesian beliefs about strategy effectiveness, updated with each trade), **Procedural** (behavioral patterns — hold times, disposition ratio, lot sizing variance), **Affective** (agent confidence, drawdown state, win/loss streaks), and **Prospective** (conditional trading plans). Plus the legacy L1/L2/L3 layers for backward compatibility.
