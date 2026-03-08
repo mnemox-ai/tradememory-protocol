@@ -79,9 +79,12 @@ class LLMClient:
         user_prompt: str,
         response_model: type[T] = AgentDecision,
         temperature: float = 0.3,
-        max_tokens: int = 1024,
+        max_tokens: int = 0,  # 0 = auto: 4096 for DeepSeek, 1024 for Claude
     ) -> T:
         """Call LLM and return structured AgentDecision (or fallback HOLD on error)."""
+        if max_tokens == 0:
+            # DeepSeek generates verbose reasoning traces (~3000 tokens)
+            max_tokens = 4096 if self.provider == "deepseek" else 1024
         try:
             if self.provider == "deepseek":
                 result, completion = self.client.chat.completions.create_with_completion(
