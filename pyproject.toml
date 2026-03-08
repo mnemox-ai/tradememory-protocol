@@ -45,6 +45,12 @@ dashboard = [
     "streamlit",
     "plotly",
 ]
+replay = [
+    "instructor>=1.0.0",
+    "openai>=1.0.0",
+    "anthropic>=0.39.0",
+    "pyyaml>=6.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/mnemox-ai/tradememory-protocol"

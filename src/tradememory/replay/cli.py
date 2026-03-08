@@ -28,6 +28,17 @@ def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
         help="LLM provider (overrides config)",
     )
     parser.add_argument(
+        "--model",
+        type=str,
+        help="LLM model name (e.g. claude-3-5-haiku-20241022, deepseek-chat)",
+    )
+    parser.add_argument(
+        "--max-decisions",
+        type=int,
+        default=0,
+        help="Stop after N decisions (0 = unlimited, useful for cost control)",
+    )
+    parser.add_argument(
         "--resume", action="store_true", help="Resume from last checkpoint"
     )
     parser.add_argument(
@@ -51,6 +62,10 @@ def load_config(args: argparse.Namespace) -> ReplayConfig:
         config_dict["data_path"] = args.data
     if args.provider:
         config_dict["llm_provider"] = args.provider
+    if hasattr(args, "model") and args.model:
+        config_dict["llm_model"] = args.model
+    if hasattr(args, "max_decisions") and args.max_decisions:
+        config_dict["max_decisions"] = args.max_decisions
 
     if "data_path" not in config_dict:
         print("Error: --data or config.data_path is required", file=sys.stderr)

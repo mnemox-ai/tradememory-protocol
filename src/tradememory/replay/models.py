@@ -122,9 +122,10 @@ class ReplayConfig(BaseModel):
 
     # Resumability
     resume_from_bar: int = 0
+    max_decisions: int = 0  # 0 = unlimited, useful for cost control
 
     # Output
-    log_path: Optional[str] = None  # JSONL output path
+    log_path: Optional[str] = "data/replay_decisions.jsonl"  # JSONL output path
 
     # Broker time offset from UTC (FXTM: +2 winter, +3 summer)
     broker_utc_offset: int = 2

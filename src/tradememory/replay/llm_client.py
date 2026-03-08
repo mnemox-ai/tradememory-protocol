@@ -17,12 +17,28 @@ T = TypeVar("T")
 # Cost per million tokens (USD)
 _COST_TABLE = {
     "deepseek": {"input": 0.27, "output": 1.10},
-    "claude": {"input": 3.00, "output": 15.00},
+    "claude": {"input": 3.00, "output": 15.00},  # sonnet default
+}
+
+# Per-model cost overrides (for non-default models)
+_MODEL_COST_TABLE = {
+    "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},
+    "claude-3-5-haiku-20241022": {"input": 0.80, "output": 4.00},
+    "claude-haiku-4-5-20250315": {"input": 0.80, "output": 4.00},
+    "claude-sonnet-4-20250514": {"input": 3.00, "output": 15.00},
+    "deepseek-chat": {"input": 0.27, "output": 1.10},
+    "deepseek-reasoner": {"input": 0.55, "output": 2.19},
 }
 
 _DEFAULT_MODELS = {
     "deepseek": "deepseek-chat",
-    "claude": "claude-sonnet-4-6",
+    "claude": "claude-sonnet-4-20250514",
+}
+
+
+_DEFAULT_API_KEY_ENV = {
+    "deepseek": "DEEPSEEK_API_KEY",
+    "claude": "ANTHROPIC_API_KEY",
 }
 
 
@@ -35,7 +51,18 @@ class LLMClient:
         self.total_tokens_used: int = 0
         self.total_cost_usd: float = 0.0
 
-        api_key = os.environ[config.api_key_env]
+        # Auto-detect correct env var if user didn't override
+        if config.api_key_env == "DEEPSEEK_API_KEY" and self.provider == "claude":
+            env_var = _DEFAULT_API_KEY_ENV["claude"]
+        else:
+            env_var = config.api_key_env
+
+        api_key = os.environ.get(env_var)
+        if not api_key:
+            raise RuntimeError(
+                f"API key not found. Set environment variable {env_var} "
+                f"for provider '{self.provider}'."
+            )
 
         if self.provider == "deepseek":
             self.client = instructor.from_openai(
@@ -99,7 +126,8 @@ class LLMClient:
     def _track_cost(self, input_tokens: int, output_tokens: int) -> None:
         total = input_tokens + output_tokens
         self.total_tokens_used += total
-        costs = _COST_TABLE[self.provider]
+        # Use model-specific costs if available, else provider default
+        costs = _MODEL_COST_TABLE.get(self.model, _COST_TABLE[self.provider])
         self.total_cost_usd += (
             input_tokens * costs["input"] + output_tokens * costs["output"]
         ) / 1_000_000

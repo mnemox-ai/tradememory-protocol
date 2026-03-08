@@ -70,6 +70,7 @@ class ReplayEngine:
 
         system_prompt = build_system_prompt()
         last_decision_idx: Optional[int] = None
+        decision_count = 0
 
         for bar_idx, window, current_bar in sliding_window(
             bars, self.config.window_size, self.config.decision_interval
@@ -77,6 +78,10 @@ class ReplayEngine:
             # Skip bars before resume point
             if bar_idx < self.config.resume_from_bar:
                 continue
+
+            # Cost control: stop after max_decisions
+            if self.config.max_decisions > 0 and decision_count >= self.config.max_decisions:
+                break
 
             # Check intermediate bars for SL/TP between decision points
             if last_decision_idx is not None:
@@ -147,6 +152,7 @@ class ReplayEngine:
 
             # Checkpoint for resumability
             self._checkpoint(bar_idx)
+            decision_count += 1
 
         # Check remaining intermediate bars after last decision
         if last_decision_idx is not None and last_decision_idx < len(bars) - 1:
@@ -209,10 +215,10 @@ class ReplayEngine:
         data = {
             "id": f"replay_{position.trade_id}",
             "timestamp": position.entry_time.isoformat(),
-            "context_json": {
+            "context_json": json.dumps({
                 "source": "replay_engine",
                 "data_file": self.config.data_path,
-            },
+            }),
             "context_regime": regime,
             "context_volatility_regime": "unknown",
             "context_session": session,
@@ -229,9 +235,11 @@ class ReplayEngine:
             "max_adverse_excursion": position.max_adverse_excursion,
             "reflection": position.reasoning,
             "confidence": position.confidence,
-            "tags": ["replay", position.strategy, position.state.value],
+            "tags": json.dumps(["replay", position.strategy, position.state.value]),
             "retrieval_strength": 1.0,
             "retrieval_count": 0,
+            "last_retrieved": None,
+            "created_at": datetime.now(timezone.utc).isoformat(),
         }
         db.insert_episodic(data)
 
