@@ -446,6 +446,16 @@ Yes. MT5 is just one data source. You can manually store trades via the MCP `sto
 
 ---
 
+## Research
+
+We used TradeMemory's episodic memory system to run controlled A/B experiments on LLM trading agents. Key finding: naively adding memory made the agent *worse* (Profit Factor 2.42 → 0.94) due to positive recall bias — the same cognitive bias documented in human investors.
+
+**[I Gave My Trading Agent Memory. It Made Everything Worse. Here's How I Fixed It.](https://medium.com/@seanpeng-mnemox/i-gave-my-trading-agent-memory-it-made-everything-worse-heres-how-i-fixed-it-955ed2495c2e)**
+
+The full experiment was conducted using the [Trade Dreaming](https://github.com/mnemox-ai/trade-dreaming) replay engine built on top of this protocol.
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.

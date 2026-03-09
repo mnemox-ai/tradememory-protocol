@@ -115,19 +115,31 @@ class ReplayEngine:
             # Memory recall (before LLM call)
             memory_context: Optional[str] = None
             if self.config.use_memory_recall:
-                from src.tradememory.replay.memory_recall import build_memory_context
-
                 session = self._classify_session(current_bar.timestamp)
                 pos = self.tracker.current_position
                 strategy = pos.strategy if pos else None
                 regime = self._classify_regime(pos) if pos else None
-                memory_context = build_memory_context(
-                    db_path=self.config.db_path,
-                    strategy=strategy,
-                    regime=regime,
-                    session=session,
-                    atr_d1=d1_atr or 0.0,
-                )
+
+                if self.config.memory_recall_fn is not None:
+                    # Pluggable recall (e.g. trade-dreaming hybrid retrieval)
+                    memory_context = self.config.memory_recall_fn(
+                        db_path=self.config.db_path,
+                        strategy=strategy,
+                        regime=regime,
+                        session=session,
+                        atr_d1=d1_atr or 0.0,
+                    )
+                else:
+                    # Default built-in recall
+                    from src.tradememory.replay.memory_recall import build_memory_context
+
+                    memory_context = build_memory_context(
+                        db_path=self.config.db_path,
+                        strategy=strategy,
+                        regime=regime,
+                        session=session,
+                        atr_d1=d1_atr or 0.0,
+                    )
                 if memory_context:
                     self._memory_recalls_count += 1
 
@@ -156,7 +168,9 @@ class ReplayEngine:
             decision = llm.decide(system_prompt, user_prompt)
 
             # Execute decision
-            self._execute_decision(decision, current_bar)
+            closed_by_agent = self._execute_decision(decision, current_bar)
+            if closed_by_agent and db:
+                self._store_to_memory(db, closed_by_agent, window)
 
             # Log entry
             entry = {
@@ -198,14 +212,17 @@ class ReplayEngine:
 
         return self._build_summary(llm)
 
-    def _execute_decision(self, decision: AgentDecision, bar: Bar) -> None:
-        """Execute a BUY/SELL/CLOSE decision."""
+    def _execute_decision(
+        self, decision: AgentDecision, bar: Bar
+    ) -> Optional[Position]:
+        """Execute a BUY/SELL/CLOSE decision. Returns closed Position if any."""
         if decision.decision in (DecisionType.BUY, DecisionType.SELL):
             if self.tracker.current_position is None:
                 self.tracker.open_position(decision, bar)
         elif decision.decision == DecisionType.CLOSE:
             if self.tracker.current_position is not None:
-                self.tracker.close_position(bar, PositionState.CLOSED_AGENT)
+                return self.tracker.close_position(bar, PositionState.CLOSED_AGENT)
+        return None
 
     def _check_intermediate_bars(
         self, bars: List[Bar], from_idx: int, to_idx: int
@@ -282,14 +299,23 @@ class ReplayEngine:
 
     @staticmethod
     def _classify_regime(position: Position) -> str:
-        """Simple regime classification based on trade outcome."""
+        """Classify market regime based on trade outcome and price movement.
+
+        - CLOSED_TP → trending (price reached target)
+        - CLOSED_SL → range_bound (price reversed)
+        - Agent CLOSE / EOD with profit → trending (price moved in direction)
+        - Agent CLOSE / EOD with loss → range_bound (price moved against)
+        """
         if position.pnl is None:
-            return "unknown"
+            return "range_bound"  # no data → conservative default
         if position.state == PositionState.CLOSED_TP:
             return "trending"
-        elif position.state == PositionState.CLOSED_SL:
+        if position.state == PositionState.CLOSED_SL:
             return "range_bound"
-        return "unknown"
+        # Agent CLOSE or EOD — use PnL direction
+        if position.pnl > 0:
+            return "trending"
+        return "range_bound"
 
     def _lookup_d1_atr(self, dt: datetime) -> Optional[float]:
         """Look up the most recent D1 ATR for a given timestamp."""

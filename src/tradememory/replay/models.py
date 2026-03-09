@@ -2,7 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List
+from typing import Any, Optional, List
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -173,6 +173,9 @@ class ReplayConfig(BaseModel):
 
     # Memory recall
     use_memory_recall: bool = False
+    # Pluggable memory recall function: (db_path, strategy, regime, session, atr_d1) -> str
+    # If set, overrides the built-in build_memory_context when use_memory_recall=True
+    memory_recall_fn: Optional[Any] = None
 
     # Pluggable strategy prompt — override the built-in generic prompt
     # with your own strategy rules (e.g. from trade-dreaming package)
