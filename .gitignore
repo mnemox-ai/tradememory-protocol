@@ -67,6 +67,19 @@ scripts/debug/
 # MCP Registry (auth tokens — never commit)
 .mcpregistry_*
 
+# Runtime state
+mt5_sync_state.json
+scripts/mt5_sync_state.json
+
+# Windows artifacts
+nul
+
+# Task files
+tasks*.txt
+
+# uv
+uv.lock
+
 # OS
 .DS_Store
 Thumbs.db

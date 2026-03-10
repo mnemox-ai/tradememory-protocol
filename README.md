@@ -55,7 +55,7 @@ graph LR
 - **State persistence** — Agent loads its confidence level, drawdown state, behavioral patterns, and active plans when starting a new session
 - **Strategy adjustments** — Rule-based tuning from discovered patterns: disable losing strategies, prefer winners, adjust lot sizes, restrict directions
 
-10 MCP tools · 399 tests · MIT license · All v0.3.x features work unchanged
+10 MCP tools · 503 tests · MIT license · All v0.3.x features work unchanged
 
 ---
 
@@ -324,7 +324,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - Daily/weekly/monthly reflection engine (rule-based + optional LLM)
 - State persistence (cross-session memory)
 - Streamlit dashboard
-- 399 unit tests passing
+- 503 unit tests passing
 - Interactive demo (`demo.py`)
 
 ### Planned
@@ -343,7 +343,7 @@ Full API reference: [docs/API.md](docs/API.md)
 - **Reflection:** Rule-based pattern analysis, optional Claude API for deeper insights
 - **Broker Integration:** MT5 Python API, Binance REST API
 - **Dashboard:** Streamlit + Plotly
-- **Testing:** pytest (399 tests)
+- **Testing:** pytest (503 tests)
 
 ---
 
