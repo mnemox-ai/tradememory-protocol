@@ -9,6 +9,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from .adaptive_risk import AdaptiveRisk
@@ -30,6 +31,24 @@ app = FastAPI(
     description="AI Agent Trading Memory & Adaptive Decision Layer",
     version="0.4.0"
 )
+
+# CORS middleware — allow dashboard dev server
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Dashboard API router
+from .dashboard_api import dashboard_router  # noqa: E402
+
+app.include_router(dashboard_router)
 
 # Initialize modules
 journal = TradeJournal()
