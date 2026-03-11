@@ -57,7 +57,7 @@
   display: block;
   width: 24px;
   height: 2px;
-  background: var(--text);
+  background: var(--cyan);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
@@ -75,7 +75,7 @@
 }
 
 /* Mobile navigation */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .nav {
     padding: 0 16px;
   }
@@ -86,14 +86,16 @@
 
   .links {
     display: none;
-    position: absolute;
+    position: fixed;
     top: 60px;
     left: 0;
     width: 100%;
+    height: calc(100vh - 60px);
     flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 24px;
     background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    padding: 8px 0;
+    z-index: 99;
   }
 
   .linksOpen {
@@ -101,7 +103,8 @@
   }
 
   .link {
-    padding: 12px 24px;
+    padding: 16px 32px;
+    font-size: 1.125rem;
     border-bottom: none;
     border-left: 3px solid transparent;
   }
