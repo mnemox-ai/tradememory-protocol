@@ -6,6 +6,7 @@ Runs alongside the existing FastAPI server (separate entry point).
 """
 
 import json
+import logging
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -13,7 +14,10 @@ from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
 
 from .db import Database
+from .hybrid_recall import hybrid_recall
 from .owm import ContextVector, outcome_weighted_recall
+
+logger = logging.getLogger(__name__)
 
 mcp = FastMCP("tradememory-protocol")
 
@@ -749,8 +753,9 @@ async def recall_memories(
             "consecutive_losses": affective.get("consecutive_losses", 0),
         }
 
-    scored = outcome_weighted_recall(
+    scored = hybrid_recall(
         query_context=query_context,
+        query_embedding=None,  # No embedding yet — falls back to pure OWM
         memories=candidates,
         affective_state=affective_state,
         limit=limit,
@@ -775,6 +780,35 @@ async def recall_memories(
             entry["confidence"] = sm.data.get("confidence")
             entry["sample_size"] = sm.data.get("sample_size")
         results.append(entry)
+
+    # Side effect: log recall event (handler layer, not in hybrid_recall)
+    try:
+        avg_score = (
+            sum(r["score"] for r in results) / len(results) if results else 0.0
+        )
+        conn = db._get_connection()
+        try:
+            conn.execute(
+                """INSERT INTO recall_events
+                   (timestamp, query_symbol, query_context, query_regime,
+                    num_candidates, num_returned, avg_score)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    datetime.now(timezone.utc).isoformat(),
+                    symbol_upper,
+                    market_context,
+                    context_regime,
+                    len(candidates),
+                    len(results),
+                    round(avg_score, 6),
+                ),
+            )
+            conn.commit()
+        finally:
+            conn.close()
+    except Exception as e:
+        # Side effect failure must not affect recall response
+        logger.debug(f"recall_events logging skipped: {e}")
 
     return {
         "query_symbol": symbol_upper,
