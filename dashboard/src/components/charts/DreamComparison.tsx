@@ -5,10 +5,13 @@ export interface DreamComparisonProps {
   data: DreamSession[];
 }
 
+export const PF_DISPLAY_CAP = 10;
+
 export interface DreamComparisonBarData {
   condition: string;
   label: string;
   pf: number;
+  pfCapped: boolean;
   color: string;
   resonance: boolean;
 }
@@ -29,10 +32,13 @@ function transformData(data: DreamSession[]): DreamComparisonBarData[] {
       label: session.condition,
       color: '#6a6a80',
     };
+    const rawPf = session.pf;
+    const isCapped = !isFinite(rawPf) || rawPf > PF_DISPLAY_CAP;
     return {
       condition: session.condition,
       label: config.label,
-      pf: session.pf,
+      pf: isCapped ? PF_DISPLAY_CAP : rawPf,
+      pfCapped: isCapped,
       color: config.color,
       resonance: session.resonance_detected,
     };

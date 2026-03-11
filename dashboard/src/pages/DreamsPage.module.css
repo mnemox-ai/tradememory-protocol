@@ -84,6 +84,7 @@
   color: var(--text-dim);
   padding: 8px 12px;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
 }
 
 .dreamTable td {

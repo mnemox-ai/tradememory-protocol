@@ -9,9 +9,11 @@ import {
   Cell,
   ReferenceLine,
   Label,
+  LabelList,
 } from 'recharts';
 import ChartTooltip from '../ui/ChartTooltip';
 import type { DreamComparisonBarData } from './DreamComparison';
+import { PF_DISPLAY_CAP } from './DreamComparison';
 
 export interface DreamComparisonWebProps {
   data: DreamComparisonBarData[];
@@ -29,6 +31,7 @@ export default function DreamComparisonWeb({ data }: DreamComparisonWebProps) {
           axisLine={{ stroke: '#1a1a28' }}
         />
         <YAxis
+          domain={[0, PF_DISPLAY_CAP]}
           tick={{ fill: '#6a6a80', fontSize: 11, fontFamily: "'JetBrains Mono', monospace" }}
           tickLine={{ stroke: '#1a1a28' }}
           axisLine={{ stroke: '#1a1a28' }}
@@ -55,6 +58,12 @@ export default function DreamComparisonWeb({ data }: DreamComparisonWebProps) {
           {data.map((entry, index) => (
             <Cell key={index} fill={entry.color} />
           ))}
+          <LabelList
+            dataKey="pfCapped"
+            position="top"
+            formatter={(capped: boolean) => capped ? '∞' : ''}
+            style={{ fill: '#ffaa00', fontSize: 14, fontWeight: 700 }}
+          />
         </Bar>
       </BarChart>
     </ResponsiveContainer>

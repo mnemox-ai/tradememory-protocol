@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { buildHeatmapGrid, getCellColor } from './StrategyHeatmap';
 import type { StrategyHeatmapProps, HeatmapCell } from './StrategyHeatmap';
 import styles from './StrategyHeatmap.module.css';
@@ -18,8 +18,8 @@ export default function StrategyHeatmapWeb({ data }: StrategyHeatmapProps) {
 
         {/* Data rows */}
         {sessions.map((session) => (
-          <>
-            <div key={`label-${session}`} className={styles.rowLabel}>{session}</div>
+          <React.Fragment key={session}>
+            <div className={styles.rowLabel}>{session}</div>
             {days.map((day) => {
               const key = `${session}:${day}`;
               const cell = lookup.get(key);
@@ -66,7 +66,7 @@ export default function StrategyHeatmapWeb({ data }: StrategyHeatmapProps) {
                 </div>
               );
             })}
-          </>
+          </React.Fragment>
         ))}
       </div>
     </div>
