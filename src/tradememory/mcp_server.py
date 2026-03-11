@@ -14,6 +14,7 @@ from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
 
 from .db import Database
+from .embedding import embed_trade_context
 from .hybrid_recall import hybrid_recall
 from .owm import ContextVector, outcome_weighted_recall
 
@@ -643,6 +644,21 @@ async def remember_trade(
         "grade": None,
     }
     db.insert_trade(trade_data)
+
+    # 4) Auto-generate embedding for hybrid recall (best-effort)
+    try:
+        embed_input = {
+            "strategy": strategy_name,
+            "direction": direction_lower,
+            "context_regime": context_regime,
+            "reflection": reflection,
+        }
+        embedding = embed_trade_context(embed_input)
+        if embedding is not None:
+            db.update_episodic_embedding(tid, embedding)
+            logger.info(f"Embedding stored for trade {tid} (dim={len(embedding)})")
+    except Exception as e:
+        logger.warning(f"Embedding generation skipped for trade {tid}: {e}")
 
     return {
         "memory_id": tid,

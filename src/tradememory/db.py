@@ -805,6 +805,34 @@ class Database:
         finally:
             conn.close()
 
+    def update_episodic_embedding(self, memory_id: str, embedding: list[float]) -> bool:
+        """Store embedding vector for an episodic memory record.
+
+        Adds the embedding column via ALTER TABLE if it doesn't exist yet.
+        """
+        conn = self._get_connection()
+        try:
+            # Ensure column exists (SQLite ignores duplicate ALTER TABLE ADD COLUMN)
+            try:
+                conn.execute(
+                    "ALTER TABLE episodic_memory ADD COLUMN embedding TEXT"
+                )
+            except Exception:
+                pass  # Column already exists
+
+            embedding_json = json.dumps(embedding)
+            result = conn.execute(
+                "UPDATE episodic_memory SET embedding = ? WHERE id = ?",
+                (embedding_json, memory_id),
+            )
+            conn.commit()
+            return result.rowcount > 0
+        except Exception as e:
+            print(f"Error updating episodic embedding: {e}")
+            return False
+        finally:
+            conn.close()
+
     # ========== OWM: Semantic Memory ==========
 
     def insert_semantic(self, data: Dict[str, Any]) -> bool:
