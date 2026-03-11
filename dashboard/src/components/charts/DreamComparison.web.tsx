@@ -61,7 +61,7 @@ export default function DreamComparisonWeb({ data }: DreamComparisonWebProps) {
           <LabelList
             dataKey="pfCapped"
             position="top"
-            formatter={(capped: boolean) => capped ? '∞' : ''}
+            formatter={((value?: string | number) => value ? '∞' : '') as (label: unknown) => string}
             style={{ fill: '#ffaa00', fontSize: 14, fontWeight: 700 }}
           />
         </Bar>
