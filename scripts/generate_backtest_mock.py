@@ -118,15 +118,16 @@ def gen_overview(trades: list[dict], total_all: int) -> dict:
     wr = compute_wr(trades)
     pf = compute_pf(trades)
 
-    # max drawdown from equity curve
-    peak = 0.0
-    cum = 0.0
+    # max drawdown from equity curve (starting from initial balance)
+    initial_balance = 10000.0
+    cum = initial_balance
+    peak = initial_balance
     max_dd = 0.0
     for t in trades:
         cum += t["pnl"]
         if cum > peak:
             peak = cum
-        dd = (peak - cum) / max(peak, 1.0)
+        dd = (peak - cum) / peak if peak > 0 else 0.0
         if dd > max_dd:
             max_dd = dd
 

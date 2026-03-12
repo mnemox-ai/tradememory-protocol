@@ -4,6 +4,7 @@
   border-radius: 12px;
   padding: 20px 24px;
   transition: all 0.3s ease;
+  overflow: hidden;
 }
 
 .card:hover {
@@ -23,7 +24,8 @@
 .valueRow {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .value {
