@@ -1,0 +1,91 @@
+{
+  "run_id": "EVO-A1B2C3",
+  "symbol": "BTCUSDT",
+  "timeframe": "1h",
+  "generations": 3,
+  "per_generation": [
+    { "generation": 0, "hypotheses_count": 10, "graduated_count": 3, "eliminated_count": 7 },
+    { "generation": 1, "hypotheses_count": 10, "graduated_count": 2, "eliminated_count": 8 },
+    { "generation": 2, "hypotheses_count": 10, "graduated_count": 4, "eliminated_count": 6 }
+  ],
+  "graduated": [
+    {
+      "hypothesis_id": "HYP-001A",
+      "pattern_name": "London Open Breakout",
+      "generation": 0,
+      "fitness_is": { "sharpe_ratio": 2.1, "win_rate": 0.58, "profit_factor": 1.85, "total_pnl": 3200, "max_drawdown_pct": 6.2, "trade_count": 85 },
+      "fitness_oos": { "sharpe_ratio": 1.6, "win_rate": 0.54, "profit_factor": 1.45, "total_pnl": 1800, "max_drawdown_pct": 8.1, "trade_count": 42 }
+    },
+    {
+      "hypothesis_id": "HYP-002B",
+      "pattern_name": "NY Session Mean Revert",
+      "generation": 1,
+      "fitness_is": { "sharpe_ratio": 1.8, "win_rate": 0.62, "profit_factor": 1.72, "total_pnl": 2800, "max_drawdown_pct": 7.5, "trade_count": 92 },
+      "fitness_oos": { "sharpe_ratio": 1.3, "win_rate": 0.56, "profit_factor": 1.35, "total_pnl": 1400, "max_drawdown_pct": 9.2, "trade_count": 38 }
+    },
+    {
+      "hypothesis_id": "HYP-003C",
+      "pattern_name": "Asian Range Fade",
+      "generation": 1,
+      "fitness_is": { "sharpe_ratio": 1.5, "win_rate": 0.55, "profit_factor": 1.48, "total_pnl": 2100, "max_drawdown_pct": 9.8, "trade_count": 78 },
+      "fitness_oos": { "sharpe_ratio": 1.2, "win_rate": 0.52, "profit_factor": 1.28, "total_pnl": 1100, "max_drawdown_pct": 11.3, "trade_count": 35 }
+    },
+    {
+      "hypothesis_id": "HYP-004D",
+      "pattern_name": "Vol Squeeze Expansion",
+      "generation": 2,
+      "fitness_is": { "sharpe_ratio": 2.4, "win_rate": 0.51, "profit_factor": 2.1, "total_pnl": 4500, "max_drawdown_pct": 5.1, "trade_count": 65 },
+      "fitness_oos": { "sharpe_ratio": 1.9, "win_rate": 0.49, "profit_factor": 1.75, "total_pnl": 2800, "max_drawdown_pct": 7.4, "trade_count": 30 }
+    }
+  ],
+  "graveyard": [
+    {
+      "hypothesis_id": "HYP-X01",
+      "pattern_name": "Hourly RSI Crossover",
+      "generation": 0,
+      "elimination_reason": "Negative Sharpe in IS (-0.3)",
+      "fitness_is": { "sharpe_ratio": -0.3, "win_rate": 0.42, "trade_count": 95 }
+    },
+    {
+      "hypothesis_id": "HYP-X02",
+      "pattern_name": "VWAP Bounce",
+      "generation": 0,
+      "elimination_reason": "Max drawdown 28% exceeds 20% limit",
+      "fitness_is": { "sharpe_ratio": 0.8, "win_rate": 0.48, "trade_count": 72 }
+    },
+    {
+      "hypothesis_id": "HYP-X03",
+      "pattern_name": "Bollinger Band Squeeze",
+      "generation": 0,
+      "elimination_reason": "Only 12 trades — insufficient sample",
+      "fitness_is": { "sharpe_ratio": 1.1, "win_rate": 0.67, "trade_count": 12 }
+    },
+    {
+      "hypothesis_id": "HYP-X04",
+      "pattern_name": "EMA Triple Cross",
+      "generation": 1,
+      "elimination_reason": "OOS Sharpe 0.4 < 1.0 threshold",
+      "fitness_is": { "sharpe_ratio": 1.6, "win_rate": 0.56, "trade_count": 88 }
+    },
+    {
+      "hypothesis_id": "HYP-X05",
+      "pattern_name": "Momentum Divergence",
+      "generation": 1,
+      "elimination_reason": "Negative Sharpe in IS (-0.1)",
+      "fitness_is": { "sharpe_ratio": -0.1, "win_rate": 0.44, "trade_count": 60 }
+    },
+    {
+      "hypothesis_id": "HYP-X06",
+      "pattern_name": "Range Breakout Fade",
+      "generation": 2,
+      "elimination_reason": "OOS win rate 35% — regime overfitting",
+      "fitness_is": { "sharpe_ratio": 1.9, "win_rate": 0.61, "trade_count": 70 }
+    }
+  ],
+  "total_graduated": 4,
+  "total_graveyard": 6,
+  "total_tokens": 45000,
+  "total_backtests": 30,
+  "started_at": "2026-03-16T12:00:00+00:00",
+  "completed_at": "2026-03-16T12:15:30+00:00"
+}

@@ -119,3 +119,51 @@ export interface DreamSession {
   memory_type: string | null;
   resonance_detected: boolean;
 }
+
+export interface EvolutionFitness {
+  sharpe_ratio: number;
+  win_rate: number;
+  profit_factor: number;
+  total_pnl: number;
+  max_drawdown_pct: number;
+  trade_count: number;
+}
+
+export interface EvolutionGraduated {
+  hypothesis_id: string;
+  pattern_name: string;
+  generation: number;
+  fitness_is: EvolutionFitness;
+  fitness_oos: EvolutionFitness | null;
+}
+
+export interface EvolutionGraveyard {
+  hypothesis_id: string;
+  pattern_name: string;
+  generation: number;
+  elimination_reason: string;
+  fitness_is: EvolutionFitness | null;
+}
+
+export interface EvolutionGeneration {
+  generation: number;
+  hypotheses_count: number;
+  graduated_count: number;
+  eliminated_count: number;
+}
+
+export interface EvolutionRunResponse {
+  run_id: string;
+  symbol: string;
+  timeframe: string;
+  generations: number;
+  per_generation: EvolutionGeneration[];
+  graduated: EvolutionGraduated[];
+  graveyard: EvolutionGraveyard[];
+  total_graduated: number;
+  total_graveyard: number;
+  total_tokens: number;
+  total_backtests: number;
+  started_at: string;
+  completed_at: string;
+}

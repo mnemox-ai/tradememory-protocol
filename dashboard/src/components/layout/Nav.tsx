@@ -9,6 +9,7 @@ const NAV_KEYS = [
   { to: '/strategies', key: 'nav.strategies' },
   { to: '/reflections', key: 'nav.reflections' },
   { to: '/dreams', key: 'nav.dreams' },
+  { to: '/evolution', key: 'nav.evolution' },
 ] as const;
 
 export default function Nav() {

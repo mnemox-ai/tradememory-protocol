@@ -12,6 +12,7 @@ import type {
   AdjustmentEvent,
   BeliefState,
   DreamSession,
+  EvolutionRunResponse,
 } from './types';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
@@ -136,5 +137,13 @@ export function useDreamResults(): SWRResult<DreamSession[]> {
     return useMock<DreamSession[]>(() => import('../mock/dream-results.json'));
   }
   const result = useSWR<DreamSession[]>('/dashboard/dream-results', fetcher);
+  return { data: result.data, error: result.error, isLoading: result.isLoading, mutate: () => { result.mutate(); } };
+}
+
+export function useEvolution(): SWRResult<EvolutionRunResponse> {
+  if (USE_MOCK) {
+    return useMock<EvolutionRunResponse>(() => import('../mock/evolution.json'));
+  }
+  const result = useSWR<EvolutionRunResponse>('/dashboard/evolution', fetcher);
   return { data: result.data, error: result.error, isLoading: result.isLoading, mutate: () => { result.mutate(); } };
 }

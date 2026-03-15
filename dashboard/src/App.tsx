@@ -5,6 +5,7 @@ import IntelligencePage from './pages/IntelligencePage';
 import StrategiesPage from './pages/StrategiesPage';
 import ReflectionsPage from './pages/ReflectionsPage';
 import DreamsPage from './pages/DreamsPage';
+import EvolutionPage from './pages/EvolutionPage';
 
 export default function App() {
   return (
@@ -16,6 +17,7 @@ export default function App() {
         <Route path="/strategies" element={<StrategiesPage />} />
         <Route path="/reflections" element={<ReflectionsPage />} />
         <Route path="/dreams" element={<DreamsPage />} />
+        <Route path="/evolution" element={<EvolutionPage />} />
       </Routes>
     </>
   );

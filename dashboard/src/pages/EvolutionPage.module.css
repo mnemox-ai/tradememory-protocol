@@ -1,0 +1,178 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  margin: 0 0 16px;
+}
+
+/* Summary grid */
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.summaryItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summaryLabel {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summaryValue {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Fitness trend bars */
+.trendRows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.trendRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.trendGen {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--text-dim);
+  min-width: 50px;
+}
+
+.trendBar {
+  flex: 1;
+  display: flex;
+  height: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.trendGraduated {
+  background: var(--green);
+  opacity: 0.8;
+}
+
+.trendEliminated {
+  background: var(--red);
+  opacity: 0.5;
+}
+
+.trendLabel {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Tables */
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.evoTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.evoTable th {
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.evoTable td {
+  padding: 10px 12px;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+
+.evoTable tr:hover td {
+  background: var(--bg-card-hover);
+}
+
+.stratName {
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+.stratNameDead {
+  color: var(--text-dim);
+  text-decoration: line-through;
+}
+
+.reason {
+  font-size: 0.75rem;
+  color: var(--amber);
+  max-width: 280px;
+}
+
+.graveyardRow td {
+  opacity: 0.7;
+}
+
+.graveyardRow:hover td {
+  opacity: 1;
+}
+
+/* Color helpers */
+.textGreen {
+  color: var(--green);
+}
+
+.textRed {
+  color: var(--red);
+}
+
+.textAmber {
+  color: var(--amber);
+}
+
+@media (max-width: 640px) {
+  .section {
+    padding: 16px;
+  }
+
+  .summaryGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
