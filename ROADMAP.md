@@ -290,12 +290,12 @@
 
 自動化的觀察→假說→回測→淘汰 loop。`src/tradememory/evolution/` 獨立模組。
 
-### Task 10.1：Evolution Models ❌
-- `src/tradememory/evolution/models.py`
-- Hypothesis（策略假說）：name, rules, parameters, generation, fitness
-- EvolutionRun：run_id, hypotheses, results, IS/OOS split
-- FitnessMetrics：sharpe, win_rate, profit_factor, max_dd, trade_count
-- 測試：model validation
+### Task 10.1：Evolution Models + Pattern Discovery ✅
+- `src/tradememory/evolution/` 模組：LLMClient Protocol, AnthropicClient, MockLLMClient
+- CandidatePattern（structured JSON schema）, Hypothesis lifecycle, FitnessMetrics, EvolutionRun
+- Pattern discovery: LLM-powered with prompt templates, graveyard avoidance
+- Mutation: generate variations of promising hypotheses
+- 49 tests (mock LLM, no real API calls) + 1 integration test (@pytest.mark.integration)
 
 ### Task 10.2：Vectorized Backtester ❌
 - `src/tradememory/evolution/backtester.py`
