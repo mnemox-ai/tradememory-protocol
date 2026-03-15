@@ -265,7 +265,7 @@
 - OHLCVSeries.split() for IS/OOS validation
 - 27 tests passing
 
-### Task 9.2：Binance Historical Data Adapter ❌
+### Task 9.2：Binance Historical Data Adapter ✅
 - `src/tradememory/data/binance.py`：實作 DataSource Protocol
 - Binance REST API /klines endpoint（無需 API key for public data）
 - Rate limiting（respect 1200 req/min）
@@ -389,7 +389,7 @@
 | Phase 6：OWM Architecture | ✅ 完成 | 2026-03-05 |
 | Phase 7：Trading Intelligence Dashboard | ✅ 完成 | 2026-03-11 |
 | Phase 8：OWM Completion | ❌ 未開始 | — |
-| Phase 9：Data Layer | 🔄 進行中 (1/4) | — |
+| Phase 9：Data Layer | 🔄 進行中 (2/4) | — |
 | Phase 10：Evolution Engine | ❌ 未開始 | — |
 | Phase 11：Evolution MCP Tools | ❌ 未開始 | — |
 | Phase 12：Integration & Validation | ❌ 未開始 | — |
