@@ -37,6 +37,38 @@ from tradememory.evolution.models import (
 logger = logging.getLogger(__name__)
 
 
+# --- Annualization factor ---
+
+_ANNUALIZATION_MAP = {
+    "1m": math.sqrt(252 * 24 * 60),
+    "5m": math.sqrt(252 * 24 * 12),
+    "15m": math.sqrt(252 * 24 * 4),
+    "30m": math.sqrt(252 * 24 * 2),
+    "1h": math.sqrt(252 * 24),
+    "4h": math.sqrt(252 * 6),
+    "1d": math.sqrt(252),
+    "1w": math.sqrt(52),
+}
+
+
+def get_annualization_factor(timeframe_str: str) -> float:
+    """Return sqrt(N) annualization factor for Sharpe ratio.
+
+    Args:
+        timeframe_str: One of "1m","5m","15m","30m","1h","4h","1d","1w".
+
+    Returns:
+        sqrt(bars_per_year) for the given timeframe.
+
+    Raises:
+        ValueError: If timeframe_str is not recognized.
+    """
+    factor = _ANNUALIZATION_MAP.get(timeframe_str)
+    if factor is None:
+        raise ValueError(f"Unknown timeframe: {timeframe_str!r}. Expected one of {list(_ANNUALIZATION_MAP)}")
+    return factor
+
+
 # --- Trade log ---
 
 
@@ -148,6 +180,7 @@ def backtest(
     series: OHLCVSeries,
     pattern: CandidatePattern,
     context_config: Optional[ContextConfig] = None,
+    timeframe: str = "1h",
 ) -> FitnessMetrics:
     """Run vectorized backtest of a pattern on OHLCV data.
 
@@ -155,6 +188,7 @@ def backtest(
         series: OHLCV data (typically H1).
         pattern: CandidatePattern with entry/exit rules.
         context_config: Optional config for context computation.
+        timeframe: Bar timeframe for Sharpe annualization (e.g. "1h", "1d").
 
     Returns:
         FitnessMetrics with backtest results.
@@ -202,7 +236,7 @@ def backtest(
         trade = _force_close(position, last_bar, len(bars) - 1, "end")
         trades.append(trade)
 
-    return _compute_fitness(trades)
+    return _compute_fitness(trades, timeframe=timeframe)
 
 
 def _open_position(
@@ -314,7 +348,7 @@ def _force_close(
 # --- Fitness computation ---
 
 
-def _compute_fitness(trades: List[Trade]) -> FitnessMetrics:
+def _compute_fitness(trades: List[Trade], timeframe: str = "1h") -> FitnessMetrics:
     """Compute FitnessMetrics from trade log."""
     if not trades:
         return FitnessMetrics()
@@ -337,12 +371,13 @@ def _compute_fitness(trades: List[Trade]) -> FitnessMetrics:
     avg_trade_pnl = total_pnl / trade_count if trade_count > 0 else 0
     avg_holding = sum(t.holding_bars for t in trades) / trade_count if trade_count > 0 else 0
 
-    # Sharpe ratio (annualized, assuming H1 bars: ~252*24 bars/year)
+    # Sharpe ratio (annualized using timeframe-appropriate factor)
     if len(pnls) > 1:
         mean_pnl = total_pnl / len(pnls)
         var_pnl = sum((p - mean_pnl) ** 2 for p in pnls) / (len(pnls) - 1)
         std_pnl = math.sqrt(var_pnl) if var_pnl > 0 else 0
-        sharpe = (mean_pnl / std_pnl) * math.sqrt(252) if std_pnl > 0 else 0
+        ann_factor = get_annualization_factor(timeframe)
+        sharpe = (mean_pnl / std_pnl) * ann_factor if std_pnl > 0 else 0
     else:
         sharpe = 0
 

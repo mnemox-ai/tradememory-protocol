@@ -25,6 +25,7 @@ from tradememory.evolution.backtester import (
     backtest,
     check_entry,
     evaluate_condition,
+    get_annualization_factor,
 )
 from tradememory.evolution.models import (
     CandidatePattern,
@@ -339,3 +340,42 @@ class TestMaxConsecutiveLosses:
 
     def test_empty(self):
         assert _max_consecutive_losses([]) == 0
+
+
+# --- Annualization factor ---
+
+
+class TestAnnualizationFactor:
+    def test_annualization_factor_h1_vs_d1(self):
+        """H1 factor should be larger than D1 (more bars per year)."""
+        h1 = get_annualization_factor("1h")
+        d1 = get_annualization_factor("1d")
+        assert h1 > d1
+        assert d1 == pytest.approx(math.sqrt(252), rel=1e-6)
+        assert h1 == pytest.approx(math.sqrt(252 * 24), rel=1e-6)
+
+    def test_sharpe_uses_timeframe(self):
+        """Same PnL series should yield different Sharpe for H1 vs D1."""
+        trades = [
+            Trade(entry_bar=0, exit_bar=5, direction="long", entry_price=100, exit_price=110, pnl=10, holding_bars=5),
+            Trade(entry_bar=10, exit_bar=15, direction="long", entry_price=110, exit_price=105, pnl=-5, holding_bars=5),
+            Trade(entry_bar=20, exit_bar=25, direction="long", entry_price=105, exit_price=115, pnl=10, holding_bars=5),
+        ]
+        f_h1 = _compute_fitness(trades, timeframe="1h")
+        f_d1 = _compute_fitness(trades, timeframe="1d")
+        # H1 annualizes with sqrt(6048) vs D1 sqrt(252), so H1 Sharpe > D1 Sharpe
+        assert f_h1.sharpe_ratio != f_d1.sharpe_ratio
+        assert abs(f_h1.sharpe_ratio) > abs(f_d1.sharpe_ratio)
+
+    def test_annualization_factor_all_timeframes(self):
+        """All 8 timeframes should return valid positive factors, in descending order."""
+        tfs = ["1m", "5m", "15m", "30m", "1h", "4h", "1d", "1w"]
+        factors = [get_annualization_factor(tf) for tf in tfs]
+        # All positive
+        assert all(f > 0 for f in factors)
+        # Sorted descending (more granular = more bars/year = larger factor)
+        for i in range(len(factors) - 1):
+            assert factors[i] > factors[i + 1], f"{tfs[i]} factor should > {tfs[i+1]} factor"
+        # Unknown timeframe raises
+        with pytest.raises(ValueError):
+            get_annualization_factor("2h")

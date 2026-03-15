@@ -123,10 +123,11 @@ class EvolutionEngine:
                 continue
 
             # Step 2: Backtest IS
+            tf = is_series.timeframe.value
             for h in hypotheses:
                 h.generation = gen
                 h.status = HypothesisStatus.BACKTESTING
-                h.fitness_is = backtest(is_series, h.pattern)
+                h.fitness_is = backtest(is_series, h.pattern, timeframe=tf)
                 run.total_backtests += 1
 
             # Step 3: Rank by IS → top N proceed to OOS
@@ -135,7 +136,7 @@ class EvolutionEngine:
             # Step 4: Backtest OOS for ranked hypotheses
             for h in ranked:
                 h.status = HypothesisStatus.SURVIVED_IS
-                h.fitness_oos = backtest(oos_series, h.pattern)
+                h.fitness_oos = backtest(oos_series, h.pattern, timeframe=tf)
                 run.total_backtests += 1
 
             # Step 5: Select & eliminate
