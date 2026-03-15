@@ -63,13 +63,17 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-15] P2 Evolution Engine roadmap added (Phases 8-12, 18 tasks)
+- [2026-03-15] Task 9.1 DataSource Protocol: OHLCV model, Timeframe enum, OHLCVSeries, DataSource Protocol, 27 tests
+- [2026-03-15] 修復 mt5_sync_v3.py 關鍵 bug：DELETE open_positions 在 sync 前執行導致資料遺失。現在先 sync 成功再 DELETE
+- [2026-03-15] 手動補回遺失交易 MT5-2352281785（IntradayMomentum XAUUSD -$196.38）。總交易數 13→14
 - [2026-03-15] 建立 Jarvis 系統：/morning 每日掃描、/wrap-up session handoff
 
 ## Current Status
-- v0.4.0, 503 tests passing
-- MT5 Sync V3 運作中, 0 errors
-- Roadmap 42/43 完成
-- 狀態：等待中（累積交易數據）
+- v0.4.0, 620 tests passing
+- P2 Evolution Engine: Task 9.1 done, next: 9.2 Binance Adapter
+- Roadmap: 43/61 tasks (P1: 42/42, P2: 1/19)
+- MT5 Sync V3 running, 14 trades, PnL +,200
 
 ## Compact Instructions
 
