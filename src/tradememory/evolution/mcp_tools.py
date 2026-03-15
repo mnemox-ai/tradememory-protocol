@@ -1,25 +1,37 @@
 """Evolution MCP tool functions — pure async, not yet registered on MCP server.
 
-Three tools:
+Five tools:
 1. fetch_market_data — fetch OHLCV via BinanceDataSource
 2. discover_patterns — LLM pattern discovery from market data
 3. run_backtest — backtest a pattern dict against OHLCV data
+4. evolve_strategy — full evolution loop with trajectory
+5. get_evolution_log — list of past evolution runs (in-memory)
 """
 
 from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone, timedelta
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from tradememory.data.binance import BinanceDataSource
 from tradememory.data.models import OHLCVSeries, Timeframe
 from tradememory.evolution.backtester import backtest
+from tradememory.evolution.engine import EngineConfig, EvolutionEngine
 from tradememory.evolution.generator import GenerationConfig, HypothesisGenerator
 from tradememory.evolution.llm import LLMClient
-from tradememory.evolution.models import CandidatePattern, EntryCondition, ExitCondition
+from tradememory.evolution.models import (
+    CandidatePattern,
+    EntryCondition,
+    EvolutionConfig,
+    EvolutionRun,
+    ExitCondition,
+)
 
 logger = logging.getLogger(__name__)
+
+# Module-level evolution log (in-memory, not DB — per spec)
+_evolution_log: List[dict[str, Any]] = []
 
 # Timeframe string → Timeframe enum mapping
 _TIMEFRAME_MAP = {tf.value: tf for tf in Timeframe}
@@ -227,3 +239,138 @@ async def run_backtest(
     except Exception as e:
         logger.error("run_backtest failed: %s", e)
         return {"error": f"Backtest failed: {e}"}
+
+
+async def evolve_strategy(
+    symbol: str,
+    timeframe: str = "1h",
+    generations: int = 3,
+    population_size: int = 10,
+    *,
+    llm: LLMClient,
+    series: Optional[OHLCVSeries] = None,
+    data_source: Optional[BinanceDataSource] = None,
+    days: int = 90,
+) -> dict[str, Any]:
+    """Run full evolution loop — generate, backtest, select, eliminate.
+
+    Args:
+        symbol: Trading pair (e.g. "BTCUSDT")
+        timeframe: Bar timeframe (e.g. "1h", "4h")
+        generations: Number of evolution generations
+        population_size: Hypotheses per generation
+        llm: LLM client (required)
+        series: Pre-fetched OHLCVSeries (skips fetch if provided)
+        data_source: Optional injected data source
+        days: Days of history if fetching
+
+    Returns:
+        dict with run_id, per-generation results, graduated list,
+        graveyard with elimination reasons, total tokens/backtests.
+    """
+    # Validate timeframe
+    try:
+        tf = _resolve_timeframe(timeframe)
+    except ValueError as e:
+        return {"error": str(e)}
+
+    # Get data
+    if series is None:
+        result = await fetch_market_data(
+            symbol, timeframe, days, data_source=data_source,
+        )
+        if result.get("error"):
+            return {"error": result["error"]}
+        series = result["series"]
+
+    # Configure and run engine
+    evo_config = EvolutionConfig(
+        symbol=symbol,
+        timeframe=timeframe,
+        generations=generations,
+        population_size=population_size,
+    )
+    engine_config = EngineConfig(evolution=evo_config)
+    engine = EvolutionEngine(llm=llm, config=engine_config)
+
+    try:
+        run: EvolutionRun = await engine.evolve(series)
+    except Exception as e:
+        logger.error("evolve_strategy failed: %s", e)
+        return {"error": f"Evolution failed: {e}"}
+
+    # Build per-generation summary
+    gen_results: list[dict] = []
+    for gen_idx in range(generations):
+        gen_hyps = [h for h in run.hypotheses if h.generation == gen_idx]
+        gen_grad = [h for h in run.graduated if h.generation == gen_idx]
+        gen_elim = [h for h in run.graveyard if h.generation == gen_idx]
+        gen_results.append({
+            "generation": gen_idx,
+            "hypotheses_count": len(gen_hyps),
+            "graduated_count": len(gen_grad),
+            "eliminated_count": len(gen_elim),
+        })
+
+    # Build graduated list
+    graduated = []
+    for h in run.graduated:
+        entry = {
+            "hypothesis_id": h.hypothesis_id,
+            "pattern_name": h.pattern.name,
+            "generation": h.generation,
+        }
+        if h.fitness_is:
+            entry["fitness_is"] = h.fitness_is.model_dump()
+        if h.fitness_oos:
+            entry["fitness_oos"] = h.fitness_oos.model_dump()
+        graduated.append(entry)
+
+    # Build graveyard list
+    graveyard = []
+    for h in run.graveyard:
+        entry = {
+            "hypothesis_id": h.hypothesis_id,
+            "pattern_name": h.pattern.name,
+            "generation": h.generation,
+            "elimination_reason": h.elimination_reason,
+        }
+        if h.fitness_is:
+            entry["fitness_is"] = h.fitness_is.model_dump()
+        if h.fitness_oos:
+            entry["fitness_oos"] = h.fitness_oos.model_dump()
+        graveyard.append(entry)
+
+    response = {
+        "run_id": run.run_id,
+        "symbol": symbol,
+        "timeframe": timeframe,
+        "generations": generations,
+        "population_size": population_size,
+        "per_generation": gen_results,
+        "graduated": graduated,
+        "graveyard": graveyard,
+        "total_graduated": len(graduated),
+        "total_graveyard": len(graveyard),
+        "total_tokens": run.total_llm_tokens,
+        "total_backtests": run.total_backtests,
+        "started_at": run.started_at.isoformat(),
+        "completed_at": run.completed_at.isoformat() if run.completed_at else None,
+    }
+
+    # Store in module-level log
+    _evolution_log.append(response)
+
+    return response
+
+
+def get_evolution_log() -> dict[str, Any]:
+    """Return list of past evolution runs (in-memory).
+
+    Returns:
+        dict with runs list and total_runs count.
+    """
+    return {
+        "runs": list(_evolution_log),
+        "total_runs": len(_evolution_log),
+    }

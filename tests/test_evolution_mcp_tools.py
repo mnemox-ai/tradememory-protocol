@@ -14,8 +14,11 @@ from tradememory.evolution.mcp_tools import (
     fetch_market_data,
     discover_patterns,
     run_backtest,
+    evolve_strategy,
+    get_evolution_log,
     _resolve_timeframe,
     _pattern_from_dict,
+    _evolution_log,
 )
 
 
@@ -285,3 +288,218 @@ class TestRunBacktest:
         result = await run_backtest(pattern, "BTCUSDT", "1h", series=series)
 
         assert result.get("pattern_id") == "PAT-CUSTOM"
+
+
+# --- evolve_strategy ---
+
+
+def _llm_responses(n: int) -> list[str]:
+    """Generate n LLM responses, each with one pattern."""
+    responses = []
+    for i in range(n):
+        responses.append(json.dumps({
+            "patterns": [
+                {
+                    "name": f"Pattern_{i}",
+                    "description": f"Test pattern {i}",
+                    "entry_condition": {
+                        "direction": "long",
+                        "conditions": [
+                            {"field": "hour_utc", "op": "eq", "value": 10 + (i % 12)}
+                        ],
+                    },
+                    "exit_condition": {
+                        "stop_loss_atr": 1.5,
+                        "take_profit_atr": 3.0,
+                        "max_holding_bars": 24,
+                    },
+                    "confidence": 0.7,
+                }
+            ]
+        }))
+    return responses
+
+
+class TestEvolveStrategy:
+    @pytest.fixture(autouse=True)
+    def clear_log(self):
+        """Clear the module-level evolution log before each test."""
+        _evolution_log.clear()
+        yield
+        _evolution_log.clear()
+
+    @pytest.mark.asyncio
+    async def test_basic_evolution(self):
+        """evolve_strategy returns correct top-level keys."""
+        # Enough responses for 2 gens × 1 LLM call each
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=2, population_size=3,
+            llm=llm, series=series,
+        )
+
+        assert "error" not in result
+        assert "run_id" in result
+        assert result["run_id"].startswith("EVO-")
+        assert result["symbol"] == "BTCUSDT"
+        assert result["timeframe"] == "1h"
+        assert result["generations"] == 2
+        assert result["population_size"] == 3
+        assert "per_generation" in result
+        assert "graduated" in result
+        assert "graveyard" in result
+        assert "total_tokens" in result
+        assert "total_backtests" in result
+        assert result["total_backtests"] > 0
+        assert result["started_at"] is not None
+        assert result["completed_at"] is not None
+
+    @pytest.mark.asyncio
+    async def test_response_has_graveyard(self):
+        """Response must include graveyard with elimination reasons."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=3,
+            llm=llm, series=series,
+        )
+
+        assert "graveyard" in result
+        assert isinstance(result["graveyard"], list)
+        # With strict OOS thresholds, most patterns end up in graveyard
+        total = result["total_graduated"] + result["total_graveyard"]
+        assert total > 0, "Should have at least one graduated or eliminated"
+
+    @pytest.mark.asyncio
+    async def test_graveyard_has_elimination_reason(self):
+        """Each graveyard entry must have elimination_reason."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=5,
+            llm=llm, series=series,
+        )
+
+        for entry in result["graveyard"]:
+            assert "elimination_reason" in entry
+            assert "hypothesis_id" in entry
+            assert "pattern_name" in entry
+            assert "generation" in entry
+
+    @pytest.mark.asyncio
+    async def test_graduated_has_fitness(self):
+        """Each graduated entry must have fitness_is (fitness_oos may be None for edge cases)."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=5,
+            llm=llm, series=series,
+        )
+
+        for entry in result["graduated"]:
+            assert "hypothesis_id" in entry
+            assert "pattern_name" in entry
+            assert "fitness_is" in entry
+
+    @pytest.mark.asyncio
+    async def test_per_generation_results(self):
+        """per_generation list has one entry per generation."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=3, population_size=2,
+            llm=llm, series=series,
+        )
+
+        assert len(result["per_generation"]) == 3
+        for gen in result["per_generation"]:
+            assert "generation" in gen
+            assert "hypotheses_count" in gen
+            assert "graduated_count" in gen
+            assert "eliminated_count" in gen
+
+    @pytest.mark.asyncio
+    async def test_invalid_timeframe(self):
+        """Invalid timeframe returns error."""
+        llm = MockLLMClient(responses=[])
+        result = await evolve_strategy(
+            "BTCUSDT", "invalid", generations=1, population_size=2,
+            llm=llm, series=make_series(100),
+        )
+        assert "error" in result
+
+    @pytest.mark.asyncio
+    async def test_stored_in_log(self):
+        """evolve_strategy stores result in _evolution_log."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        assert len(_evolution_log) == 0
+        await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=2,
+            llm=llm, series=series,
+        )
+        assert len(_evolution_log) == 1
+        assert _evolution_log[0]["run_id"].startswith("EVO-")
+
+    @pytest.mark.asyncio
+    async def test_survivors_in_response(self):
+        """Response has both graduated (survivors) and graveyard."""
+        llm = MockLLMClient(responses=_llm_responses(10))
+        series = make_series(300)
+
+        result = await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=5,
+            llm=llm, series=series,
+        )
+
+        assert "graduated" in result
+        assert "graveyard" in result
+        assert isinstance(result["graduated"], list)
+        assert isinstance(result["graveyard"], list)
+        assert "total_graduated" in result
+        assert "total_graveyard" in result
+
+
+# --- get_evolution_log ---
+
+
+class TestGetEvolutionLog:
+    @pytest.fixture(autouse=True)
+    def clear_log(self):
+        _evolution_log.clear()
+        yield
+        _evolution_log.clear()
+
+    def test_empty_log(self):
+        result = get_evolution_log()
+        assert result["runs"] == []
+        assert result["total_runs"] == 0
+
+    @pytest.mark.asyncio
+    async def test_log_after_runs(self):
+        """Log accumulates across multiple evolve_strategy calls."""
+        llm = MockLLMClient(responses=_llm_responses(20))
+        series = make_series(300)
+
+        await evolve_strategy(
+            "BTCUSDT", "1h", generations=1, population_size=2,
+            llm=llm, series=series,
+        )
+        llm2 = MockLLMClient(responses=_llm_responses(20))
+        await evolve_strategy(
+            "ETHUSDT", "4h", generations=1, population_size=2,
+            llm=llm2, series=series,
+        )
+
+        result = get_evolution_log()
+        assert result["total_runs"] == 2
+        assert len(result["runs"]) == 2
+        assert result["runs"][0]["symbol"] == "BTCUSDT"
+        assert result["runs"][1]["symbol"] == "ETHUSDT"
