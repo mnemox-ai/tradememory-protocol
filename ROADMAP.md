@@ -214,6 +214,169 @@
 
 ---
 
+---
+
+## Phase 8：OWM Completion（補完五種記憶類型）
+
+填補 OWM 已設計但尚未實作的缺口。每項都有 OWM_FRAMEWORK.md 的數學定義。
+
+### Task 8.1：Episodic Memory Decay ❌
+- 實作 S(t) = S₀ × (1 + t/τ)^(-d) × boost(n) 衰減函數
+- τ=30d, d=0.5, rehearsal boost = 1 + 0.3×ln(1+n)
+- recall 時自動計算 current_strength，低於閾值的自動標記 dormant
+- 測試：衰減曲線、rehearsal boost、邊界值
+
+### Task 8.2：Semantic Memory Bayesian Update ❌
+- Bayesian posterior Beta(α,β) 更新：α += outcome, β += (1-outcome)
+- regime_match_factor：不同市場狀態下的語義記憶權重
+- τ=180d, d=0.3 衰減（比 episodic 慢）
+- auto-induction：從 episodic patterns 自動產生 semantic memory
+- 測試：posterior 收斂、regime 切換、auto-induction
+
+### Task 8.3：Procedural Memory Drift Detection ❌
+- CUSUM (Cumulative Sum) drift detection 實作
+- 追蹤 behavioral stats：avg holding time, SL/TP ratio, disposition effect
+- 當 drift 超過閾值時，自動觸發 L3 adjustment review
+- 測試：drift detection 敏感度、false positive rate
+
+### Task 8.4：Affective State EWMA ❌
+- EWMA confidence: C(t) = λ×C(t-1) + (1-λ)×outcome, λ=0.9
+- risk_appetite = max(0.1, 1 - (dd/max_dd)²)
+- 連動 Kelly criterion position sizing
+- 測試：EWMA 收斂、drawdown 風控、Kelly 計算
+
+### Task 8.5：Prospective Memory Trigger Evaluation ❌
+- 條件計畫的 trigger 匹配引擎
+- 每次新交易進來時，檢查所有 active plans 的 trigger 條件
+- 命中時自動建立 notification（不自動執行）
+- outcome tracking：plan 的預測 vs 實際結果
+- 測試：trigger 匹配、多條件 AND/OR、outcome tracking
+
+---
+
+## Phase 9：Platform-Agnostic Data Layer
+
+進化引擎的數據基礎。DataSource Protocol + Binance/MT5 adapter。
+
+### Task 9.1：DataSource Protocol ✅
+- `src/tradememory/data/` 模組：OHLCV model、Timeframe enum、OHLCVSeries
+- DataSource Protocol（runtime_checkable）：fetch_ohlcv(), available_symbols()
+- Exception hierarchy：DataSourceError → RateLimitError / SymbolNotFoundError
+- OHLCVSeries.split() for IS/OOS validation
+- 27 tests passing
+
+### Task 9.2：Binance Historical Data Adapter ❌
+- `src/tradememory/data/binance.py`：實作 DataSource Protocol
+- Binance REST API /klines endpoint（無需 API key for public data）
+- Rate limiting（respect 1200 req/min）
+- Local parquet cache（~/.tradememory/cache/binance/）
+- async httpx client
+- 測試：mock API response、cache hit/miss、rate limit handling
+
+### Task 9.3：Context Builder ❌
+- 從 OHLCVSeries 計算 ContextVector（for OWM recall）
+- 指標：ATR, trend direction, volatility regime, time-of-day bucket
+- Pure function，不依賴外部狀態
+- 測試：各指標計算、邊界值
+
+### Task 9.4：MT5 CSV Adapter ❌
+- Wrap 現有 `replay/data_loader.py` 的 `parse_mt5_csv()` into DataSource Protocol
+- 讀取本地 CSV 檔案，轉換為 OHLCVSeries
+- 測試：CSV 解析、tab/comma auto-detect
+
+---
+
+## Phase 10：Evolution Engine Core
+
+自動化的觀察→假說→回測→淘汰 loop。`src/tradememory/evolution/` 獨立模組。
+
+### Task 10.1：Evolution Models ❌
+- `src/tradememory/evolution/models.py`
+- Hypothesis（策略假說）：name, rules, parameters, generation, fitness
+- EvolutionRun：run_id, hypotheses, results, IS/OOS split
+- FitnessMetrics：sharpe, win_rate, profit_factor, max_dd, trade_count
+- 測試：model validation
+
+### Task 10.2：Vectorized Backtester ❌
+- `src/tradememory/evolution/backtester.py`
+- Pure Python vectorized backtester（擴展 replay/ 概念）
+- 輸入：OHLCVSeries + Hypothesis → FitnessMetrics
+- 支援 long/short、SL/TP、time-based exit
+- 不用外部 backtest library（保持輕量）
+- 測試：known-outcome trades、edge cases
+
+### Task 10.3：Hypothesis Generator ❌
+- `src/tradememory/evolution/generator.py`
+- LLM-powered（Sonnet）：給定 OHLCVSeries 統計摘要，產生交易假說
+- Prompt engineering：結構化輸出（JSON schema）
+- Temperature 控制：exploration vs exploitation
+- 測試：mock LLM response、schema validation
+
+### Task 10.4：Selection & Elimination ❌
+- `src/tradememory/evolution/selector.py`
+- IS fitness → 排名 → top N 進 OOS validation
+- OOS validation：Sharpe > 1.0, trade_count > 30, max_dd < 20%
+- 存活策略 → OWM semantic memory（auto-induction）
+- 淘汰策略 → Strategy Graveyard（保留學習）
+- 測試：selection 邏輯、OOS filter、edge cases
+
+### Task 10.5：Evolution Orchestrator ❌
+- `src/tradememory/evolution/engine.py`
+- 完整 loop：fetch data → generate hypotheses → backtest IS → select → validate OOS → store
+- Configurable：generations, population_size, mutation_rate
+- 結果寫入 OWM：semantic（pattern）、prospective（plan）
+- 測試：end-to-end with mock data
+
+---
+
+## Phase 11：Evolution MCP Tools
+
+讓 AI agent 透過 MCP 觸發和監控進化。
+
+### Task 11.1：evolve_strategies MCP Tool ❌
+- 新 MCP tool：觸發一輪進化
+- 參數：symbol, timeframe, generations, population_size
+- 回傳：top strategies + fitness metrics
+- 測試：tool schema、mock evolution run
+
+### Task 11.2：get_strategy_graveyard MCP Tool ❌
+- 查詢被淘汰的策略 + 淘汰原因
+- 用於 LLM 學習「什麼不 work」
+- 測試：graveyard query
+
+### Task 11.3：Evolution REST Endpoints ❌
+- POST /evolution/run — 觸發進化
+- GET /evolution/runs — 列出歷史 run
+- GET /evolution/runs/{id} — 單次 run 詳情
+- GET /evolution/graveyard — 策略墓園
+- 測試：API endpoints
+
+---
+
+## Phase 12：Integration & Validation
+
+端對端整合 + P1 結果復現。
+
+### Task 12.1：P1 Result Reproduction ❌
+- 用 Phase 10 的進化引擎，在 BTC/USDT 2024-2026 數據上跑
+- 目標：能否自動發現類似 Strategy C/E 的 pattern
+- 記錄：花了幾代、多少假說、最終 fitness
+- 不要求完全復現，但要驗證引擎能發現正期望值策略
+
+### Task 12.2：OWM ↔ Evolution Integration Test ❌
+- 進化產出 → semantic memory → recall 能找到
+- 新交易 → episodic → trigger prospective plans
+- affective state → 影響 position sizing
+- End-to-end smoke test
+
+### Task 12.3：Documentation ❌
+- docs/EVOLUTION_ENGINE.md：架構、使用方式、配置
+- 更新 README：P2 功能說明
+- 更新 SKILL.md：新 MCP tools
+- CHANGELOG：v0.5.0
+
+---
+
 ## 進度追蹤
 
 | Phase | 狀態 | 完成日期 |
@@ -225,3 +388,8 @@
 | Phase 5：Payment Rails | ✅ 完成 | 2026-03-03 |
 | Phase 6：OWM Architecture | ✅ 完成 | 2026-03-05 |
 | Phase 7：Trading Intelligence Dashboard | ✅ 完成 | 2026-03-11 |
+| Phase 8：OWM Completion | ❌ 未開始 | — |
+| Phase 9：Data Layer | 🔄 進行中 (1/4) | — |
+| Phase 10：Evolution Engine | ❌ 未開始 | — |
+| Phase 11：Evolution MCP Tools | ❌ 未開始 | — |
+| Phase 12：Integration & Validation | ❌ 未開始 | — |
