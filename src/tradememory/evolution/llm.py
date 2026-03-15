@@ -222,6 +222,8 @@ class MockLLMClient:
         self._responses = list(responses) if responses else []
         self._call_count = 0
         self.calls: list[dict] = []  # record all calls for assertion
+        self.should_error: bool = False
+        self.error_message: str = "Mock error"
 
     @property
     def name(self) -> str:
@@ -242,6 +244,10 @@ class MockLLMClient:
             "max_tokens": max_tokens,
             "system": system,
         })
+
+        if self.should_error:
+            self._call_count += 1
+            raise LLMError("mock", self.error_message)
 
         if self._call_count < len(self._responses):
             content = self._responses[self._call_count]
