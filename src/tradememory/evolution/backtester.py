@@ -1,4 +1,4 @@
-"""Vectorized backtester for evolution hypotheses.
+"""Bar-by-bar backtester for evolution hypotheses.
 
 Pure Python, no external backtest libraries.
 Input: OHLCVSeries + CandidatePattern → FitnessMetrics
@@ -96,6 +96,8 @@ class Position:
     stop_loss: Optional[float] = None
     take_profit: Optional[float] = None
     max_holding_bars: Optional[int] = None
+    trailing_stop_atr: Optional[float] = None
+    high_water_mark: Optional[float] = None
 
 
 # --- Condition evaluation ---
@@ -182,7 +184,7 @@ def backtest(
     context_config: Optional[ContextConfig] = None,
     timeframe: str = "1h",
 ) -> FitnessMetrics:
-    """Run vectorized backtest of a pattern on OHLCV data.
+    """Run bar-by-bar backtest of a pattern on OHLCV data.
 
     Args:
         series: OHLCV data (typically H1).
@@ -268,6 +270,11 @@ def _open_position(
         else:
             tp = entry_price - tp_dist
 
+    # Compute trailing stop distance (ATR multiple → actual distance)
+    trailing_dist = None
+    if exit_rules.trailing_stop_atr:
+        trailing_dist = atr * exit_rules.trailing_stop_atr
+
     return Position(
         entry_bar=bar_idx,
         direction=direction,
@@ -275,6 +282,8 @@ def _open_position(
         stop_loss=sl,
         take_profit=tp,
         max_holding_bars=exit_rules.max_holding_bars,
+        trailing_stop_atr=trailing_dist,
+        high_water_mark=entry_price,
     )
 
 
@@ -285,14 +294,12 @@ def _check_exit(
 ) -> Optional[Trade]:
     """Check if position should exit on this bar.
 
+    Priority: SL/TP first, then trailing stop, then time-based exit.
     Checks SL/TP against bar high/low (intra-bar execution).
     """
     holding = bar_idx - position.entry_bar
 
-    # Time-based exit
-    if position.max_holding_bars and holding >= position.max_holding_bars:
-        return _force_close(position, bar, bar_idx, "time")
-
+    # SL/TP checks first (highest priority)
     if position.direction == "long":
         # SL hit: bar low touches SL
         if position.stop_loss and bar.low <= position.stop_loss:
@@ -307,6 +314,27 @@ def _check_exit(
         # TP hit: bar low touches TP
         if position.take_profit and bar.low <= position.take_profit:
             return _close_at(position, position.take_profit, bar_idx, "tp")
+
+    # Trailing stop check
+    if position.trailing_stop_atr is not None and position.high_water_mark is not None:
+        if position.direction == "long":
+            # Update high water mark
+            if bar.high > position.high_water_mark:
+                position.high_water_mark = bar.high
+            trailing_sl = position.high_water_mark - position.trailing_stop_atr
+            if bar.low <= trailing_sl:
+                return _close_at(position, trailing_sl, bar_idx, "trailing")
+        else:  # short
+            # For short, track lowest low as water mark
+            if bar.low < position.high_water_mark:
+                position.high_water_mark = bar.low
+            trailing_sl = position.high_water_mark + position.trailing_stop_atr
+            if bar.high >= trailing_sl:
+                return _close_at(position, trailing_sl, bar_idx, "trailing")
+
+    # Time-based exit (lowest priority)
+    if position.max_holding_bars and holding >= position.max_holding_bars:
+        return _force_close(position, bar, bar_idx, "time")
 
     return None
 

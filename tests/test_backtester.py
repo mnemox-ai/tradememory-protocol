@@ -18,7 +18,9 @@ from tradememory.data.context_builder import (
 )
 from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
 from tradememory.evolution.backtester import (
+    Position,
     Trade,
+    _check_exit,
     _compute_fitness,
     _compute_max_drawdown,
     _max_consecutive_losses,
@@ -379,3 +381,98 @@ class TestAnnualizationFactor:
         # Unknown timeframe raises
         with pytest.raises(ValueError):
             get_annualization_factor("2h")
+
+
+# --- Trailing stop ---
+
+
+class TestTrailingStop:
+    def test_trailing_stop_long(self):
+        """Long trailing stop: price rises then pulls back beyond trail distance."""
+        pos = Position(
+            entry_bar=0, direction="long", entry_price=100.0,
+            trailing_stop_atr=5.0, high_water_mark=100.0,
+        )
+        # Bar 1: price rises to 110, low stays above trailing SL (110-5=105)
+        bar1 = OHLCV(
+            timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
+            open=100, high=110, low=106, close=108, volume=100,
+        )
+        assert _check_exit(pos, bar1, 1) is None
+        assert pos.high_water_mark == 110.0  # updated
+
+        # Bar 2: price dips but stays above trailing SL (110-5=105)
+        bar2 = OHLCV(
+            timestamp=datetime(2024, 1, 1, 2, tzinfo=timezone.utc),
+            open=108, high=109, low=105.5, close=106, volume=100,
+        )
+        assert _check_exit(pos, bar2, 2) is None
+
+        # Bar 3: price drops through trailing SL — low=103 < 105 → exit
+        bar3 = OHLCV(
+            timestamp=datetime(2024, 1, 1, 3, tzinfo=timezone.utc),
+            open=106, high=107, low=103, close=104, volume=100,
+        )
+        trade = _check_exit(pos, bar3, 3)
+        assert trade is not None
+        assert trade.exit_reason == "trailing"
+        assert trade.exit_price == 105.0  # 110 - 5
+
+    def test_trailing_stop_short(self):
+        """Short trailing stop: price drops then bounces beyond trail distance."""
+        pos = Position(
+            entry_bar=0, direction="short", entry_price=100.0,
+            trailing_stop_atr=5.0, high_water_mark=100.0,
+        )
+        # Bar 1: price drops to 90, high stays below trailing SL (90+5=95)
+        bar1 = OHLCV(
+            timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
+            open=100, high=94, low=90, close=92, volume=100,
+        )
+        assert _check_exit(pos, bar1, 1) is None
+        assert pos.high_water_mark == 90.0  # tracks lowest low
+
+        # Bar 2: price bounces through trailing SL — high=96 > 95 → exit
+        bar2 = OHLCV(
+            timestamp=datetime(2024, 1, 1, 2, tzinfo=timezone.utc),
+            open=92, high=96, low=91, close=95, volume=100,
+        )
+        trade = _check_exit(pos, bar2, 2)
+        assert trade is not None
+        assert trade.exit_reason == "trailing"
+        assert trade.exit_price == 95.0  # 90 + 5
+
+    def test_trailing_stop_not_set(self):
+        """Position without trailing stop should not trigger trailing exit."""
+        pos = Position(
+            entry_bar=0, direction="long", entry_price=100.0,
+            stop_loss=90.0, take_profit=120.0, max_holding_bars=10,
+        )
+        # Bar that would trigger trailing stop if it existed, but doesn't hit SL/TP
+        bar = OHLCV(
+            timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
+            open=100, high=105, low=95, close=98, volume=100,
+        )
+        trade = _check_exit(pos, bar, 1)
+        assert trade is None
+
+
+# --- SL/TP priority over time exit ---
+
+
+class TestSLTPPriority:
+    def test_sltp_priority_over_time_exit(self):
+        """SL/TP should fire even when max_holding_bars is also reached."""
+        pos = Position(
+            entry_bar=0, direction="long", entry_price=100.0,
+            stop_loss=95.0, take_profit=110.0, max_holding_bars=5,
+        )
+        # Bar at holding=5 (time exit eligible) AND SL hit
+        bar = OHLCV(
+            timestamp=datetime(2024, 1, 1, 5, tzinfo=timezone.utc),
+            open=98, high=99, low=93, close=94, volume=100,
+        )
+        trade = _check_exit(pos, bar, 5)
+        assert trade is not None
+        assert trade.exit_reason == "sl"  # SL takes priority, not "time"
+        assert trade.exit_price == 95.0
