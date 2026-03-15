@@ -7,16 +7,16 @@ import json
 import pytest
 from datetime import datetime, timezone
 
-from src.tradememory.data.models import OHLCV, OHLCVSeries
-from src.tradememory.evolution.engine import EngineConfig, EvolutionEngine
-from src.tradememory.evolution.llm import LLMError, MockLLMClient
-from src.tradememory.evolution.models import (
+from tradememory.data.models import OHLCV, OHLCVSeries
+from tradememory.evolution.engine import EngineConfig, EvolutionEngine
+from tradememory.evolution.llm import LLMError, MockLLMClient
+from tradememory.evolution.models import (
     EvolutionConfig,
     EvolutionRun,
     HypothesisStatus,
 )
-from src.tradememory.evolution.generator import GenerationConfig
-from src.tradememory.evolution.selector import SelectionConfig
+from tradememory.evolution.generator import GenerationConfig
+from tradememory.evolution.selector import SelectionConfig
 
 
 # --- Test data helpers ---

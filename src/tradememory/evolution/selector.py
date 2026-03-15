@@ -13,7 +13,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from src.tradememory.evolution.models import (
+from tradememory.evolution.models import (
     FitnessMetrics,
     Hypothesis,
     HypothesisStatus,

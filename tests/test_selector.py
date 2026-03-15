@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.tradememory.evolution.models import (
+from tradememory.evolution.models import (
     CandidatePattern,
     ConditionOperator,
     EntryCondition,
@@ -14,7 +14,7 @@ from src.tradememory.evolution.models import (
     HypothesisStatus,
     RuleCondition,
 )
-from src.tradememory.evolution.selector import (
+from tradememory.evolution.selector import (
     SelectionConfig,
     SelectionResult,
     rank_by_is_fitness,

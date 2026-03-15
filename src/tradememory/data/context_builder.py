@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from enum import Enum
 from typing import List, Optional, Sequence
 
-from src.tradememory.data.models import OHLCV, OHLCVSeries
+from tradememory.data.models import OHLCV, OHLCVSeries
 
 
 # --- Enums ---
@@ -124,7 +124,7 @@ class MarketContext:
 
     def to_owm_context(self):
         """Convert to OWM ContextVector for recall compatibility."""
-        from src.tradememory.owm.context import ContextVector
+        from tradememory.owm.context import ContextVector
 
         return ContextVector(
             symbol=self.symbol,

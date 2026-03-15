@@ -6,15 +6,15 @@ from typing import List
 
 import pytest
 
-from src.tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
-from src.tradememory.evolution.generator import (
+from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
+from tradememory.evolution.generator import (
     GenerationConfig,
     GenerationResult,
     HypothesisGenerator,
     _create_hypothesis,
 )
-from src.tradememory.evolution.llm import LLMError, LLMMessage, LLMResponse, MockLLMClient
-from src.tradememory.evolution.models import (
+from tradememory.evolution.llm import LLMError, LLMMessage, LLMResponse, MockLLMClient
+from tradememory.evolution.models import (
     CandidatePattern,
     EntryCondition,
     ExitCondition,

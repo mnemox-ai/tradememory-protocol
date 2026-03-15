@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 import pytest
 
-from src.tradememory.evolution.models import (
+from tradememory.evolution.models import (
     CandidatePattern,
     ConditionOperator,
     EntryCondition,

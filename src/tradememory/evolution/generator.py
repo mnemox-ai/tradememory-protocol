@@ -14,13 +14,13 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from src.tradememory.data.models import OHLCVSeries
-from src.tradememory.evolution.discovery import (
+from tradememory.data.models import OHLCVSeries
+from tradememory.evolution.discovery import (
     discover_patterns,
     mutate_pattern,
 )
-from src.tradememory.evolution.llm import LLMClient, LLMError
-from src.tradememory.evolution.models import (
+from tradememory.evolution.llm import LLMClient, LLMError
+from tradememory.evolution.models import (
     CandidatePattern,
     Hypothesis,
     HypothesisStatus,

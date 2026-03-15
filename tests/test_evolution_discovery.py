@@ -10,9 +10,9 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from src.tradememory.data.context_builder import MarketContext, Regime, Session, VolatilityRegime
-from src.tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
-from src.tradememory.evolution.discovery import (
+from tradememory.data.context_builder import MarketContext, Regime, Session, VolatilityRegime
+from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
+from tradememory.evolution.discovery import (
     build_discovery_prompt,
     compute_hourly_stats,
     discover_patterns,
@@ -20,7 +20,7 @@ from src.tradememory.evolution.discovery import (
     mutate_pattern,
     parse_patterns_response,
 )
-from src.tradememory.evolution.llm import (
+from tradememory.evolution.llm import (
     LLMClient,
     LLMError,
     LLMMessage,
@@ -28,7 +28,7 @@ from src.tradememory.evolution.llm import (
     MockLLMClient,
     AnthropicClient,
 )
-from src.tradememory.evolution.models import (
+from tradememory.evolution.models import (
     CandidatePattern,
     EntryCondition,
     ExitCondition,

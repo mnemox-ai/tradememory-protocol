@@ -9,15 +9,15 @@ from typing import List
 
 import pytest
 
-from src.tradememory.data.context_builder import (
+from tradememory.data.context_builder import (
     ContextConfig,
     MarketContext,
     Regime,
     Session,
     VolatilityRegime,
 )
-from src.tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
-from src.tradememory.evolution.backtester import (
+from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
+from tradememory.evolution.backtester import (
     Trade,
     _compute_fitness,
     _compute_max_drawdown,
@@ -26,7 +26,7 @@ from src.tradememory.evolution.backtester import (
     check_entry,
     evaluate_condition,
 )
-from src.tradememory.evolution.models import (
+from tradememory.evolution.models import (
     CandidatePattern,
     ConditionOperator,
     EntryCondition,

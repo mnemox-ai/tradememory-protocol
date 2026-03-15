@@ -19,14 +19,14 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import List, Optional, Sequence
 
-from src.tradememory.data.context_builder import (
+from tradememory.data.context_builder import (
     ContextConfig,
     MarketContext,
     build_context,
     compute_atr,
 )
-from src.tradememory.data.models import OHLCV, OHLCVSeries
-from src.tradememory.evolution.models import (
+from tradememory.data.models import OHLCV, OHLCVSeries
+from tradememory.evolution.models import (
     CandidatePattern,
     ConditionOperator,
     ExitCondition,

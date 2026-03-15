@@ -13,10 +13,10 @@ import logging
 from datetime import timezone
 from typing import List, Optional, Sequence
 
-from src.tradememory.data.context_builder import MarketContext, build_context, ContextConfig
-from src.tradememory.data.models import OHLCV, OHLCVSeries
-from src.tradememory.evolution.llm import LLMClient, LLMError, LLMMessage, LLMResponse
-from src.tradememory.evolution.models import (
+from tradememory.data.context_builder import MarketContext, build_context, ContextConfig
+from tradememory.data.models import OHLCV, OHLCVSeries
+from tradememory.evolution.llm import LLMClient, LLMError, LLMMessage, LLMResponse
+from tradememory.evolution.models import (
     CandidatePattern,
     EntryCondition,
     ExitCondition,
@@ -24,7 +24,7 @@ from src.tradememory.evolution.models import (
     RuleCondition,
     ValidityConditions,
 )
-from src.tradememory.evolution.prompts import (
+from tradememory.evolution.prompts import (
     DISCOVERY_PROMPT,
     MUTATION_PROMPT,
     SYSTEM_PROMPT,
