@@ -55,6 +55,9 @@ class EngineConfig:
     # Exploration vs exploitation balance
     explore_ratio: float = 0.6  # fraction of population from exploration (vs mutation)
 
+    # Data quality warning threshold
+    min_bars_warn: int = 200
+
 
 class EvolutionEngine:
     """Orchestrates the full evolution loop.
@@ -95,6 +98,13 @@ class EvolutionEngine:
         """
         cfg = self.config.evolution
         run = EvolutionRun(config=cfg)
+
+        # Warn if dataset is small
+        if len(series.bars) < self.config.min_bars_warn:
+            logger.warning(
+                f"Only {len(series.bars)} bars provided, "
+                f"recommend >= {self.config.min_bars_warn} for meaningful results"
+            )
 
         # Split data into IS / OOS
         is_series, oos_series = self._split_data(series, cfg.is_oos_ratio)

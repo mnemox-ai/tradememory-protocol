@@ -32,6 +32,35 @@ from tradememory.evolution.prompts import (
 
 logger = logging.getLogger(__name__)
 
+# Known operators for condition normalization (Haiku format handling)
+_KNOWN_OPS = {"eq", "gt", "lt", "gte", "lte", "neq", "between", "in"}
+
+
+def _normalize_condition(cond: dict) -> Optional[dict]:
+    """Normalize a condition dict to {"field", "op", "value"} format.
+
+    Handles two formats:
+    - Standard: {"field": "x", "op": "eq", "value": 4}
+    - Haiku shorthand: {"field": "x", "eq": 4}
+
+    Returns None if normalization fails (missing field or no recognizable operator).
+    """
+    if "field" not in cond:
+        logger.warning(f"Condition missing 'field' key, skipping: {cond}")
+        return None
+
+    # Standard format — already has op + value
+    if "op" in cond and "value" in cond:
+        return {"field": cond["field"], "op": cond["op"], "value": cond["value"]}
+
+    # Haiku shorthand — operator is a top-level key
+    for key in cond:
+        if key in _KNOWN_OPS:
+            return {"field": cond["field"], "op": key, "value": cond[key]}
+
+    logger.warning(f"Condition has no recognizable operator, skipping: {cond}")
+    return None
+
 
 def compute_hourly_stats(bars: Sequence[OHLCV]) -> str:
     """Compute average range and direction by hour (UTC).
@@ -161,10 +190,13 @@ def _parse_single_pattern(raw: dict) -> CandidatePattern:
     entry_raw = raw.get("entry_condition", {})
     entry_conditions = []
     for cond in entry_raw.get("conditions", []):
+        normalized = _normalize_condition(cond)
+        if normalized is None:
+            continue
         entry_conditions.append(RuleCondition(
-            field=cond["field"],
-            op=cond["op"],
-            value=cond["value"],
+            field=normalized["field"],
+            op=normalized["op"],
+            value=normalized["value"],
         ))
     entry = EntryCondition(
         direction=entry_raw.get("direction", "long"),

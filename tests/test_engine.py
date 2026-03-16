@@ -4,6 +4,7 @@ End-to-end tests with MockLLMClient + synthetic OHLCV data.
 """
 
 import json
+import logging
 import pytest
 from datetime import datetime, timezone
 
@@ -428,6 +429,16 @@ class TestEngineConfig:
         assert cfg.mutations_per_graduated == 3
         assert cfg.explore_ratio == 0.4
 
+    def test_min_bars_warn_default(self):
+        """min_bars_warn defaults to 200."""
+        cfg = EngineConfig()
+        assert cfg.min_bars_warn == 200
+
+    def test_min_bars_warn_custom(self):
+        """min_bars_warn can be overridden."""
+        cfg = EngineConfig(min_bars_warn=500)
+        assert cfg.min_bars_warn == 500
+
 
 class TestTokenTracking:
     """Test that LLM token usage is tracked."""
@@ -448,3 +459,46 @@ class TestTokenTracking:
         # MockLLMClient returns 100 input + 200 output = 300 per call
         assert run.total_llm_tokens > 0
         assert run.total_llm_tokens == 300  # 1 generate call × 300 tokens
+
+
+class TestMinBarsWarning:
+    """Test that small datasets log a warning."""
+
+    @pytest.mark.asyncio
+    async def test_warning_logged_for_small_dataset(self, caplog):
+        """evolve() logs warning when bars < min_bars_warn."""
+        mock = MockLLMClient(responses=[make_multi_pattern_json(2)])
+        config = EngineConfig(
+            evolution=EvolutionConfig(generations=1, population_size=2),
+            selection=SelectionConfig(
+                min_is_trade_count=0, min_is_sharpe=-999,
+            ),
+            min_bars_warn=100,  # set threshold to 100
+        )
+        engine = EvolutionEngine(mock, config)
+        small_series = make_series(n_bars=50)  # 50 < 100
+
+        with caplog.at_level(logging.WARNING, logger="tradememory.evolution.engine"):
+            run = await engine.evolve(small_series)
+
+        assert any("Only 50 bars provided" in msg for msg in caplog.messages)
+        assert any("recommend >= 100" in msg for msg in caplog.messages)
+
+    @pytest.mark.asyncio
+    async def test_no_warning_for_sufficient_dataset(self, caplog):
+        """evolve() does NOT warn when bars >= min_bars_warn."""
+        mock = MockLLMClient(responses=[make_multi_pattern_json(2)])
+        config = EngineConfig(
+            evolution=EvolutionConfig(generations=1, population_size=2),
+            selection=SelectionConfig(
+                min_is_trade_count=0, min_is_sharpe=-999,
+            ),
+            min_bars_warn=100,
+        )
+        engine = EvolutionEngine(mock, config)
+        series = make_series(n_bars=200)  # 200 >= 100
+
+        with caplog.at_level(logging.WARNING, logger="tradememory.evolution.engine"):
+            run = await engine.evolve(series)
+
+        assert not any("bars provided" in msg for msg in caplog.messages)

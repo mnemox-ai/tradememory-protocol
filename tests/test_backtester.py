@@ -18,6 +18,7 @@ from tradememory.data.context_builder import (
 )
 from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
 from tradememory.evolution.backtester import (
+    MIN_TRADES_FOR_SHARPE,
     Position,
     Trade,
     _check_exit,
@@ -362,6 +363,8 @@ class TestAnnualizationFactor:
             Trade(entry_bar=0, exit_bar=5, direction="long", entry_price=100, exit_price=110, pnl=10, holding_bars=5),
             Trade(entry_bar=10, exit_bar=15, direction="long", entry_price=110, exit_price=105, pnl=-5, holding_bars=5),
             Trade(entry_bar=20, exit_bar=25, direction="long", entry_price=105, exit_price=115, pnl=10, holding_bars=5),
+            Trade(entry_bar=30, exit_bar=35, direction="long", entry_price=115, exit_price=120, pnl=5, holding_bars=5),
+            Trade(entry_bar=40, exit_bar=45, direction="long", entry_price=120, exit_price=118, pnl=-2, holding_bars=5),
         ]
         f_h1 = _compute_fitness(trades, timeframe="1h")
         f_d1 = _compute_fitness(trades, timeframe="1d")
@@ -476,3 +479,70 @@ class TestSLTPPriority:
         assert trade is not None
         assert trade.exit_reason == "sl"  # SL takes priority, not "time"
         assert trade.exit_price == 95.0
+
+
+# --- Sharpe guard for low trade counts ---
+
+
+class TestSharpeGuard:
+    """Sharpe ratio should be 0.0 for trade counts below MIN_TRADES_FOR_SHARPE."""
+
+    def test_constant_value(self):
+        """MIN_TRADES_FOR_SHARPE is 5."""
+        assert MIN_TRADES_FOR_SHARPE == 5
+
+    def test_one_trade_sharpe_zero(self):
+        """1 trade → sharpe_ratio=0.0 (not an extreme value)."""
+        trades = [
+            Trade(entry_bar=0, exit_bar=5, direction="long",
+                  entry_price=100, exit_price=110, pnl=10, holding_bars=5),
+        ]
+        f = _compute_fitness(trades)
+        assert f.trade_count == 1
+        assert f.sharpe_ratio == 0.0
+
+    def test_four_trades_sharpe_zero(self):
+        """4 trades (< MIN_TRADES_FOR_SHARPE) → sharpe_ratio=0.0."""
+        trades = [
+            Trade(entry_bar=i * 10, exit_bar=i * 10 + 5, direction="long",
+                  entry_price=100, exit_price=110, pnl=10, holding_bars=5)
+            for i in range(4)
+        ]
+        f = _compute_fitness(trades)
+        assert f.trade_count == 4
+        assert f.sharpe_ratio == 0.0
+
+    def test_five_trades_sharpe_computed(self):
+        """5 trades (= MIN_TRADES_FOR_SHARPE) → sharpe computed normally."""
+        trades = [
+            Trade(entry_bar=i * 10, exit_bar=i * 10 + 5, direction="long",
+                  entry_price=100, exit_price=110, pnl=10, holding_bars=5)
+            for i in range(5)
+        ]
+        f = _compute_fitness(trades)
+        assert f.trade_count == 5
+        # All same PnL → std=0 → sharpe=0, so use mixed PnLs
+        # This test just verifies it doesn't force to 0 via the guard
+
+    def test_five_mixed_trades_sharpe_nonzero(self):
+        """5 trades with mixed PnL → sharpe computed (nonzero)."""
+        trades = [
+            Trade(entry_bar=0, exit_bar=5, direction="long", entry_price=100, exit_price=115, pnl=15, holding_bars=5),
+            Trade(entry_bar=10, exit_bar=15, direction="long", entry_price=100, exit_price=95, pnl=-5, holding_bars=5),
+            Trade(entry_bar=20, exit_bar=25, direction="long", entry_price=100, exit_price=112, pnl=12, holding_bars=5),
+            Trade(entry_bar=30, exit_bar=35, direction="long", entry_price=100, exit_price=108, pnl=8, holding_bars=5),
+            Trade(entry_bar=40, exit_bar=45, direction="long", entry_price=100, exit_price=103, pnl=3, holding_bars=5),
+        ]
+        f = _compute_fitness(trades)
+        assert f.trade_count == 5
+        assert f.sharpe_ratio != 0.0  # should compute a real Sharpe
+
+    def test_two_trades_extreme_pnl_sharpe_zero(self):
+        """2 trades with extreme PnL difference → sharpe still 0.0 (guarded)."""
+        trades = [
+            Trade(entry_bar=0, exit_bar=5, direction="long", entry_price=100, exit_price=200, pnl=100, holding_bars=5),
+            Trade(entry_bar=10, exit_bar=15, direction="long", entry_price=100, exit_price=50, pnl=-50, holding_bars=5),
+        ]
+        f = _compute_fitness(trades)
+        assert f.trade_count == 2
+        assert f.sharpe_ratio == 0.0

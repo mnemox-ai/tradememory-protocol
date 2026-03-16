@@ -39,6 +39,8 @@ logger = logging.getLogger(__name__)
 
 # --- Annualization factor ---
 
+MIN_TRADES_FOR_SHARPE = 5
+
 _ANNUALIZATION_MAP = {
     "1m": math.sqrt(252 * 24 * 60),
     "5m": math.sqrt(252 * 24 * 12),
@@ -400,14 +402,17 @@ def _compute_fitness(trades: List[Trade], timeframe: str = "1h") -> FitnessMetri
     avg_holding = sum(t.holding_bars for t in trades) / trade_count if trade_count > 0 else 0
 
     # Sharpe ratio (annualized using timeframe-appropriate factor)
-    if len(pnls) > 1:
+    # Guard: too few trades produce extreme/meaningless Sharpe values
+    if trade_count < MIN_TRADES_FOR_SHARPE:
+        sharpe = 0.0
+    elif len(pnls) > 1:
         mean_pnl = total_pnl / len(pnls)
         var_pnl = sum((p - mean_pnl) ** 2 for p in pnls) / (len(pnls) - 1)
         std_pnl = math.sqrt(var_pnl) if var_pnl > 0 else 0
         ann_factor = get_annualization_factor(timeframe)
         sharpe = (mean_pnl / std_pnl) * ann_factor if std_pnl > 0 else 0
     else:
-        sharpe = 0
+        sharpe = 0.0
 
     # Max drawdown
     max_dd = _compute_max_drawdown(pnls)
