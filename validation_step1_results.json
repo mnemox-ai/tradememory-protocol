@@ -1,0 +1,62 @@
+{
+  "timestamp": "2026-03-16T20:56:00.403507+00:00",
+  "data_period": "2024-06-01 to 2026-03-17",
+  "bars": 15693,
+  "n_random": 1000,
+  "seed": 42,
+  "baseline": {
+    "mean_sharpe": -0.0354,
+    "std_sharpe": 2.2147,
+    "p5": -3.3704,
+    "p25": -1.7777,
+    "p50": -0.0116,
+    "p75": 1.4518,
+    "p95": 3.2708
+  },
+  "strategies": {
+    "Strategy C (full)": {
+      "sharpe": 3.4003,
+      "trades": 336,
+      "win_rate": 0.372,
+      "pf": 1.1169,
+      "total_pnl": 11696.088,
+      "max_dd": 183.878,
+      "avg_hold": 3.5,
+      "percentile": 96.9,
+      "passes_5pct": true
+    },
+    "Strategy E (full)": {
+      "sharpe": 4.4188,
+      "trades": 321,
+      "win_rate": 0.4112,
+      "pf": 1.1542,
+      "total_pnl": 14697.7893,
+      "max_dd": 137.9992,
+      "avg_hold": 3.07,
+      "percentile": 100.0,
+      "passes_5pct": true
+    },
+    "Strategy C (no trend)": {
+      "sharpe": -0.4349,
+      "trades": 654,
+      "win_rate": 0.3761,
+      "pf": 0.986,
+      "total_pnl": -2760.6797,
+      "max_dd": 250.1425,
+      "avg_hold": 3.52,
+      "percentile": 38.0,
+      "passes_5pct": false
+    },
+    "Strategy E (no trend)": {
+      "sharpe": 1.3527,
+      "trades": 653,
+      "win_rate": 0.3905,
+      "pf": 1.043,
+      "total_pnl": 8811.6121,
+      "max_dd": 311.8468,
+      "avg_hold": 3.01,
+      "percentile": 68.6,
+      "passes_5pct": false
+    }
+  }
+}
