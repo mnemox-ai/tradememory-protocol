@@ -24,15 +24,20 @@ from fastapi import Depends, FastAPI, HTTPException, Header, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
+from tradememory.mcp_server import mcp
 
 # ========== Configuration ==========
 
 DB_PATH = os.environ.get("TM_HOSTED_DB", "hosted/hosted.db")
 
+# MCP Streamable HTTP sub-app
+mcp_http = mcp.http_app(path="/mcp", transport="streamable-http", stateless_http=True)
+
 app = FastAPI(
     title="TradeMemory Hosted API",
     description="Multi-tenant AI Trading Memory API",
-    version="0.4.0",
+    version="0.5.0",
+    lifespan=mcp_http.lifespan,
 )
 
 app.add_middleware(
@@ -417,7 +422,7 @@ class RecallTradesResponse(BaseModel):
 @app.get("/api/v1/health")
 async def health():
     """Health check — no auth required."""
-    return {"status": "healthy", "version": "0.4.0"}
+    return {"status": "healthy", "version": "0.5.0"}
 
 
 @app.post("/api/v1/trades", status_code=201, response_model=StoreTradeResponse)
@@ -525,6 +530,12 @@ async def subscribe(req: SubscribeRequest, db: HostedDB = Depends(get_db)):
 async def subscriber_count(db: HostedDB = Depends(get_db)):
     """Public subscriber count."""
     return {"count": db.get_subscriber_count()}
+
+
+# ========== MCP Streamable HTTP ==========
+
+
+app.mount("/", mcp_http)
 
 
 # ========== Entry Point ==========

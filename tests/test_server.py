@@ -42,7 +42,7 @@ class TestHealthEndpoint:
         data = resp.json()
         assert data["status"] == "healthy"
         assert data["service"] == "TradeMemory Protocol"
-        assert data["version"] == "0.4.0"
+        assert data["version"] == "0.5.0"
 
 
 class TestTradeEndpoints:
