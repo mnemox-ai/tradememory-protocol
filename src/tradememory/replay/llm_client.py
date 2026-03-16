@@ -4,10 +4,6 @@ import logging
 import os
 from typing import TypeVar
 
-import instructor
-from anthropic import Anthropic
-from openai import OpenAI
-
 from tradememory.replay.models import AgentDecision, DecisionType, ReplayConfig
 
 logger = logging.getLogger(__name__)
@@ -46,6 +42,16 @@ class LLMClient:
     """Unified LLM client wrapping DeepSeek (OpenAI-compatible) and Claude Sonnet."""
 
     def __init__(self, config: ReplayConfig) -> None:
+        try:
+            import instructor
+            from anthropic import Anthropic
+            from openai import OpenAI
+        except ImportError as e:
+            raise ImportError(
+                f"Missing dependency for replay module: {e}. "
+                "Install with: pip install tradememory-protocol[replay]"
+            ) from e
+
         self.provider = config.llm_provider
         self.model = config.llm_model or _DEFAULT_MODELS[self.provider]
         self.total_tokens_used: int = 0

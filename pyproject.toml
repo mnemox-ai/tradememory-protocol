@@ -66,8 +66,8 @@ Issues = "https://github.com/mnemox-ai/tradememory-protocol/issues"
 Changelog = "https://github.com/mnemox-ai/tradememory-protocol/blob/master/CHANGELOG.md"
 
 [project.scripts]
-tradememory-protocol = "src.tradememory:main"
-tradememory-api = "src.tradememory.server:main"
+tradememory-protocol = "tradememory:main"
+tradememory-api = "tradememory.server:main"
 
 [build-system]
 requires = ["setuptools>=68.0"]

@@ -84,3 +84,52 @@ curl -X POST https://registry.smithery.ai/servers \
 2. 使用者安裝時需要先 `pip install tradememory-protocol`，Smithery 會在頁面顯示安裝指令
 3. 如果 Smithery CLI 指令格式有變，查最新文檔：https://smithery.ai/docs/build/publish
 4. 上架後可在 https://smithery.ai/server/@mnemox-ai/tradememory-protocol 查看頁面
+
+---
+
+# mcp.so 上架步驟
+
+> 最後更新：2026-03-16
+
+## 提交方式
+
+### 方法 1：Web UI（推薦）
+
+1. 開瀏覽器到 https://mcp.so/submit
+2. 填寫表單：
+   - **MCP Name**: TradeMemory Protocol
+   - **Type**: Server
+   - **GitHub URL**: https://github.com/mnemox-ai/tradememory-protocol
+   - **Description**: MCP memory layer for AI trading agents. 5-type outcome-weighted memory, evolution engine, MT5/Binance integration.
+3. 提交
+
+### 方法 2：GitHub Issue
+
+1. 到 https://github.com/chatmcp/mcpso/issues
+2. 建立新 Issue，附上 server 資訊（name, GitHub URL, description）
+
+### 方法 3：Email
+
+- 寄到 support@mcp.so
+
+## 狀態
+
+- [ ] 待提交（Sean 手動操作）
+
+---
+
+# awesome-mcp-servers PR
+
+> 最後更新：2026-03-16
+
+## 狀態
+
+- [x] Fork: `zychenpeng/awesome-mcp-servers`（parent: `punkpeye/awesome-mcp-servers`）
+- [x] TradeMemory 已在 Finance & Fintech section（之前的 PR 已 merge）
+- [x] 更新描述到 v0.5.0：5-type OWM + evolution engine
+- [x] PR: https://github.com/punkpeye/awesome-mcp-servers/pull/3302
+
+## 描述更新
+
+- **舊**: Structured 3-layer memory system (trades → patterns → strategy) for AI trading agents. Supports MT5, Binance, and Alpaca.
+- **新**: MCP memory layer for AI trading agents. 5-type outcome-weighted memory, evolution engine, MT5/Binance integration.
