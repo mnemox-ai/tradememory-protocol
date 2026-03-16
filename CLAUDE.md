@@ -63,6 +63,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-16] Deep market research report: 4 sub-reports → 1 comprehensive report (competitors, channels, painpoints, SEO/pricing). Key: memory layer = blue ocean, forex MCP underserved, need Smithery/mcp.so/awesome listing
 - [2026-03-16] RESEARCH_LOG.md finalized: 11 experiments, model comparison table (Haiku vs Sonnet vs Opus), pattern library, strategy graveyard
 - [2026-03-16] Evolution robustness: P0 parser (Haiku format), P1 min bars, P2 Sharpe guard. Binance live test passed (2160 bars, 2 graduated). 1055 tests
 - [2026-03-16] **v0.5.0 Release** — Evolution Engine + OWM Completion. 1026 tests, all 12 phases complete

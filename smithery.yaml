@@ -1,0 +1,15 @@
+# Smithery configuration: https://smithery.ai/docs/config#smitheryyaml
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      dbUrl:
+        type: string
+        description: "Database URL (default: SQLite in ~/.tradememory/tradememory.db). Use postgresql://... for PostgreSQL."
+  commandFunction: |-
+    (config) => ({
+      command: 'tradememory-protocol',
+      args: [],
+      env: Object.assign({}, config.dbUrl ? { DATABASE_URL: config.dbUrl } : {})
+    })
