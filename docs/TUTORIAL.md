@@ -41,7 +41,7 @@ Verify installation:
 
 ```bash
 python -m pytest tests/ -q
-# Expected: 111 passed
+# Expected: 1,055 passed
 ```
 
 ---
@@ -82,7 +82,88 @@ TradeMemory uses a three-layer architecture:
 
 ---
 
-## Step 4: Record Your Own Trade (1 minute)
+## Step 4: OWM Cognitive Memory
+
+TradeMemory v0.5 adds **OWM (Outcome-Weighted Memory)** — five memory layers that work like a trader's brain:
+
+| Layer | What It Does |
+|-------|-------------|
+| **Episodic** | Stores each trade with full context (price, regime, reflection) |
+| **Semantic** | Bayesian beliefs updated after every trade ("VolBreakout in trending markets: 72% edge") |
+| **Procedural** | Running averages per strategy — what actually works |
+| **Affective** | EWMA confidence tracking, win/loss streaks, drawdown state |
+| **Prospective** | Trading plans with entry/exit criteria and expiry |
+
+### Store a trade via MCP
+
+Ask your Claude agent:
+
+> "Remember my XAUUSD long trade: entered at 5180, exited at 5210, made $90 using VolBreakout. Market was trending up with strong London momentum. ATR was $155. I was 0.8 confident."
+
+This calls `remember_trade` under the hood, which writes to all five memory layers simultaneously.
+
+### Recall memories via MCP
+
+Before entering a trade, ask:
+
+> "What do my memories say about trading XAUUSD in a trending market? I'm looking at VolBreakout."
+
+This calls `recall_memories` with outcome-weighted scoring — trades with better outcomes, matching context, and higher confidence rank higher.
+
+### Other OWM tools
+
+- `get_behavioral_analysis` — "Show me my behavioral patterns" → win rates by regime, overtrading detection, confidence calibration
+- `get_agent_state` — "What's my current state?" → affective state, drawdown, streak info
+- `create_trading_plan` — "Create a plan to buy XAUUSD at 5150 if price pulls back to the 20 EMA"
+- `check_active_plans` — "Do I have any active trading plans?"
+
+---
+
+## Step 5: Evolution Engine
+
+The Evolution Engine uses Claude to **discover trading strategies from raw price data**, then backtests and selects survivors across generations.
+
+### Run a full evolution
+
+Ask your Claude agent:
+
+> "Run evolution on BTCUSDT 1h data for 3 generations with 10 candidates each."
+
+This calls `evolution_evolve_strategy`, which:
+1. Fetches OHLCV data from Binance
+2. Uses Claude to generate candidate trading patterns
+3. Backtests each pattern (vectorized, no API calls)
+4. Eliminates weak hypotheses (Sharpe < threshold)
+5. Repeats for N generations
+6. Validates survivors on out-of-sample data
+
+### Step-by-step approach
+
+You can also run each step individually:
+
+```
+# 1. Fetch data
+> "Fetch 90 days of BTCUSDT 1h data for evolution"
+# Calls: evolution_fetch_market_data
+
+# 2. Discover patterns
+> "Discover 5 trading patterns from the BTCUSDT data"
+# Calls: evolution_discover_patterns
+
+# 3. Backtest a pattern
+> "Backtest the first pattern against the data"
+# Calls: evolution_run_backtest
+
+# 4. Check the log
+> "Show me the evolution log"
+# Calls: evolution_get_log
+```
+
+**Requires:** `ANTHROPIC_API_KEY` in `.env` (Claude generates the pattern hypotheses).
+
+---
+
+## Step 6: Record Your Own Trade (1 minute)
 
 Start the MCP server:
 
@@ -123,7 +204,7 @@ curl -X POST http://localhost:8000/trade/record_outcome \
 
 ---
 
-## Step 5: Run Reflection (2 minutes)
+## Step 7: Run Reflection (2 minutes)
 
 After recording several trades, trigger the reflection engine:
 
@@ -144,7 +225,7 @@ Then reflection uses Claude to generate deeper insights like:
 
 ---
 
-## Step 6: Use Memory in Your Next Trade
+## Step 8: Use Memory in Your Next Trade
 
 The next time the agent starts, it loads its state:
 
@@ -179,6 +260,42 @@ Your AI went from **"stateless calculator"** to **"trader with memory."**
 | No idea about win rate | Knows win rate by session, strategy, time |
 | Fixed position sizing | Dynamic sizing based on performance |
 | No context between sessions | Full cross-session persistence |
+
+---
+
+## MCP Tools Reference
+
+TradeMemory exposes 15 MCP tools across three categories:
+
+### Core Memory (4 tools)
+
+| Tool | Description |
+|------|-------------|
+| `store_trade_memory` | Record a trade decision with strategy, confidence, reasoning |
+| `recall_similar_trades` | Find past trades matching symbol, strategy, or context |
+| `get_strategy_performance` | Win rate, avg PnL, trade count per strategy |
+| `get_trade_reflection` | Get AI-generated reflection on recent trades |
+
+### OWM Cognitive Memory (6 tools)
+
+| Tool | Description |
+|------|-------------|
+| `remember_trade` | Store trade into all 5 OWM layers (episodic → semantic → procedural → affective) |
+| `recall_memories` | Outcome-weighted recall with context matching and recency scoring |
+| `get_behavioral_analysis` | Win rates by regime, overtrading detection, confidence calibration |
+| `get_agent_state` | Current affective state — confidence, drawdown, streak |
+| `create_trading_plan` | Create a prospective plan with entry/exit criteria and expiry |
+| `check_active_plans` | List active plans, check if any triggered |
+
+### Evolution Engine (5 tools)
+
+| Tool | Description |
+|------|-------------|
+| `evolution_fetch_market_data` | Fetch OHLCV data from Binance for backtesting |
+| `evolution_discover_patterns` | LLM-powered pattern generation from price data |
+| `evolution_run_backtest` | Vectorized backtest of a candidate pattern |
+| `evolution_evolve_strategy` | Full evolution loop — generate, backtest, select, repeat |
+| `evolution_get_log` | View past evolution runs and graduated strategies |
 
 ---
 
