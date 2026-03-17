@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-03-17T09:56:40.518051+00:00",
+  "step": "Phase 13 Step 4: Extended OOS Validation",
+  "extended_oos": {
+    "period": "2020-01-01 to 2024-06-01",
+    "bars": 38681,
+    "n_random": 1000,
+    "seed": 42,
+    "baseline": {
+      "mean_sharpe": -0.8875,
+      "std_sharpe": 2.0031,
+      "p5": -3.8515,
+      "p25": -2.4579,
+      "p50": -0.9656,
+      "p75": 0.4568,
+      "p95": 2.6306
+    },
+    "strategies": {
+      "Strategy C": {
+        "sharpe": -0.6376,
+        "trades": 786,
+        "win_rate": 0.3817,
+        "pf": 0.9757,
+        "total_pnl": -3021.1809,
+        "max_dd": 11662.3564,
+        "avg_hold": 3.9,
+        "percentile": 56.2,
+        "passes_95pct": false
+      },
+      "Strategy E": {
+        "sharpe": -0.3693,
+        "trades": 811,
+        "win_rate": 0.4229,
+        "pf": 0.9867,
+        "total_pnl": -1702.2216,
+        "max_dd": 549.0713,
+        "avg_hold": 3.56,
+        "percentile": 56.2,
+        "passes_95pct": false
+      }
+    }
+  },
+  "original_period": {
+    "period": "2024-06-01 to 2026-03-17",
+    "bars": 15288,
+    "Strategy C": {
+      "sharpe": 3.3952,
+      "percentile": 96.9,
+      "trades": 130,
+      "win_rate": 0.438,
+      "pf": 2.1
+    },
+    "Strategy E": {
+      "sharpe": 4.4175,
+      "percentile": 100.0,
+      "trades": 161,
+      "win_rate": 0.46,
+      "pf": 2.62
+    }
+  },
+  "verdict": {
+    "strategy_c_passes": false,
+    "strategy_e_passes": false
+  }
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Generate validation charts for VALIDATION_RESULTS.md.
 
-Outputs 3 PNGs to docs/validation/:
+Outputs 4 PNGs to docs/validation/:
   1. baseline_distribution.png — Random baseline Sharpe distribution + strategy markers
   2. walk_forward_windows.png — OOS Sharpe per window for C and E
   3. ablation_comparison.png  — Full vs no-trend percentile comparison
@@ -53,6 +53,14 @@ def load_step1():
 
 def load_step2():
     with open(ROOT / "validation_step2_results.json", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_step3():
+    path = ROOT / "validation_step3_results.json"
+    if not path.exists():
+        return None
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -210,16 +218,83 @@ def chart_ablation(step1: dict):
     print(f"  Saved {out}")
 
 
+
+def chart_time_bias(step3: dict):
+    """Chart 4: Hourly Sharpe distribution for time bias test."""
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    for idx, (name, data) in enumerate(step3['strategies'].items()):
+        ax = axes[idx]
+        hours = list(range(24))
+        sharpes = [data['hourly_sharpes'][str(h)] for h in hours]
+        orig_hour = data['original_hour']
+
+        colors = []
+        for h in hours:
+            if h == orig_hour:
+                colors.append(PURPLE)
+            elif sharpes[h] > 0:
+                colors.append(GREEN)
+            else:
+                colors.append(RED)
+
+        bars = ax.bar(hours, sharpes, color=colors, width=0.7, edgecolor='#30363d', linewidth=0.5, alpha=0.8)
+
+        # Zero line
+        ax.axhline(0, color=TEXT, linewidth=0.8, alpha=0.5)
+
+        # Mean line
+        mean_s = data['mean_sharpe_all_hours']
+        ax.axhline(mean_s, color=CYAN, linewidth=1.5, linestyle='--',
+                    label=f'Mean = {mean_s:.2f}')
+
+        # Original marker
+        ax.axhline(data['original_sharpe'], color=PURPLE, linewidth=1.5, linestyle=':',
+                    label=f'Original H{orig_hour:02d} = {data["original_sharpe"]:.2f}')
+
+        # US session highlight (H14-H16)
+        ax.axvspan(13.5, 16.5, alpha=0.1, color=ORANGE, label='US session (H14-H16)')
+
+        ax.set_xlabel('Hour (UTC)')
+        ax.set_ylabel('Sharpe Ratio')
+        ax.set_title(f'Strategy {name} (original H{orig_hour:02d})', fontsize=12, fontweight='bold')
+        ax.legend(fontsize=8, facecolor=CARD_BG, edgecolor='#30363d', loc='lower left')
+        ax.grid(True, axis='y')
+        ax.set_xticks(hours)
+        ax.set_xticklabels([f'{h:02d}' for h in hours], fontsize=7, rotation=45)
+
+        # Stats box
+        pos_h = data['positive_hours']
+        pctile = data['original_percentile_vs_24h']
+        ax.text(0.98, 0.95,
+                f"P{pctile:.0f} vs 24h\n{pos_h}/24 positive",
+                transform=ax.transAxes, ha='right', va='top',
+                fontsize=9, color=TEXT,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor=CARD_BG, edgecolor='#30363d'))
+
+    fig.suptitle('Step 3: Time Bias Test (24 Hour Variants)', fontsize=14, fontweight='bold')
+    fig.tight_layout()
+    out = OUT_DIR / 'time_bias_hourly.png'
+    fig.savefig(out, dpi=150, bbox_inches='tight')
+    plt.close(fig)
+    print(f'  Saved {out}')
+
 def main():
     print("Generating validation charts...")
     step1 = load_step1()
     step2 = load_step2()
+    step3 = load_step3()
 
     chart_baseline_distribution(step1)
     chart_walk_forward(step2)
     chart_ablation(step1)
 
-    print("\nDone! 3 charts saved to docs/validation/")
+    if step3:
+        chart_time_bias(step3)
+        n_charts = 4
+    else:
+        n_charts = 3
+    print(f"Done! {n_charts} charts saved to docs/validation/")
 
 
 if __name__ == "__main__":
