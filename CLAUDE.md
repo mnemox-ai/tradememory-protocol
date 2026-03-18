@@ -7,7 +7,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - GitHub: mnemox-ai/tradememory-protocol
 - PyPI: tradememory-protocol
 - 版本: v0.5.0
-- Tests: 1055 tests passing
+- Tests: 1073 tests passing
 - Default branch: `master`（不是 main）
 
 ## 開發規範
@@ -63,6 +63,10 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-18] Live dashboard backend: 16-task architecture (PostgreSQL + Vite + React + pgvector hybrid recall), 1073 tests passing
+- [2026-03-18] scripts/seed_backtest_trades.py — Seed backtest JSON into Supabase live_trades (DELETE+INSERT, strategy_e)
+- [2026-03-18] scripts/export_backtest_trades.py — Export Strategy E backtest trades to JSON (fast_backtest_with_trades + trade_to_dict + 8 tests)
+- [2026-03-18] scripts/live_executor.py — Strategy E paper trading executor (Binance + Supabase + GH Actions hourly)
 - [2026-03-17] Phase 13 Steps 3-4: Time bias (US session H14-H16 is alpha), Extended OOS FAIL (regime-specific)
 - [2026-03-17] Phase 13 Step 2 walk-forward: E passes 2/3 (mean OOS Sharpe 3.24), C fails (0.24)
 - [2026-03-17] Phase 13 Step 1 real data validation: C=P96.9%, E=P100%, both PASS random baseline
@@ -77,7 +81,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - [2026-03-15] 建立 Jarvis 系統：/morning 每日掃描、/wrap-up session handoff
 
 ## Current Status
-- **v0.5.0**, 1055 tests passing, 1 skipped
+- **v0.5.0**, 1073 tests passing, 2 skipped
 - **Phase 13 COMPLETE** -- 4 steps done. E has real edge in 2024-2026 (P100%, walk-forward 3.24). Both FAIL extended OOS (regime-specific). Conclusion: Evolution Engine finds real patterns, but they need periodic re-evolution.
 - **Phase 13 Step 1 PASS** -- Strategy C (Sharpe=3.40, P96.9%) and E (Sharpe=4.42, P100%) beat 1000 random strategies
 - **All 12 phases complete** — P1: 42/42, P2: 20/20, total 62/62 tasks
