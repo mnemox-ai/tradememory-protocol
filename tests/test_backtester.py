@@ -21,7 +21,7 @@ from tradememory.evolution.backtester import (
     MIN_TRADES_FOR_SHARPE,
     Position,
     Trade,
-    _check_exit,
+    check_exit_position,
     _compute_fitness,
     _compute_max_drawdown,
     _max_consecutive_losses,
@@ -401,7 +401,7 @@ class TestTrailingStop:
             timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
             open=100, high=110, low=106, close=108, volume=100,
         )
-        assert _check_exit(pos, bar1, 1) is None
+        assert check_exit_position(pos, bar1, 1) is None
         assert pos.high_water_mark == 110.0  # updated
 
         # Bar 2: price dips but stays above trailing SL (110-5=105)
@@ -409,14 +409,14 @@ class TestTrailingStop:
             timestamp=datetime(2024, 1, 1, 2, tzinfo=timezone.utc),
             open=108, high=109, low=105.5, close=106, volume=100,
         )
-        assert _check_exit(pos, bar2, 2) is None
+        assert check_exit_position(pos, bar2, 2) is None
 
         # Bar 3: price drops through trailing SL — low=103 < 105 → exit
         bar3 = OHLCV(
             timestamp=datetime(2024, 1, 1, 3, tzinfo=timezone.utc),
             open=106, high=107, low=103, close=104, volume=100,
         )
-        trade = _check_exit(pos, bar3, 3)
+        trade = check_exit_position(pos, bar3, 3)
         assert trade is not None
         assert trade.exit_reason == "trailing"
         assert trade.exit_price == 105.0  # 110 - 5
@@ -432,7 +432,7 @@ class TestTrailingStop:
             timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
             open=100, high=94, low=90, close=92, volume=100,
         )
-        assert _check_exit(pos, bar1, 1) is None
+        assert check_exit_position(pos, bar1, 1) is None
         assert pos.high_water_mark == 90.0  # tracks lowest low
 
         # Bar 2: price bounces through trailing SL — high=96 > 95 → exit
@@ -440,7 +440,7 @@ class TestTrailingStop:
             timestamp=datetime(2024, 1, 1, 2, tzinfo=timezone.utc),
             open=92, high=96, low=91, close=95, volume=100,
         )
-        trade = _check_exit(pos, bar2, 2)
+        trade = check_exit_position(pos, bar2, 2)
         assert trade is not None
         assert trade.exit_reason == "trailing"
         assert trade.exit_price == 95.0  # 90 + 5
@@ -456,7 +456,7 @@ class TestTrailingStop:
             timestamp=datetime(2024, 1, 1, 1, tzinfo=timezone.utc),
             open=100, high=105, low=95, close=98, volume=100,
         )
-        trade = _check_exit(pos, bar, 1)
+        trade = check_exit_position(pos, bar, 1)
         assert trade is None
 
 
@@ -475,7 +475,7 @@ class TestSLTPPriority:
             timestamp=datetime(2024, 1, 1, 5, tzinfo=timezone.utc),
             open=98, high=99, low=93, close=94, volume=100,
         )
-        trade = _check_exit(pos, bar, 5)
+        trade = check_exit_position(pos, bar, 5)
         assert trade is not None
         assert trade.exit_reason == "sl"  # SL takes priority, not "time"
         assert trade.exit_price == 95.0

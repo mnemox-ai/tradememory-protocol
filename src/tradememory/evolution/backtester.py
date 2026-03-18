@@ -215,7 +215,7 @@ def backtest(
 
         if position is not None:
             # Check exits
-            trade = _check_exit(position, current_bar, i)
+            trade = check_exit_position(position, current_bar, i)
             if trade is not None:
                 trades.append(trade)
                 position = None
@@ -228,20 +228,20 @@ def backtest(
                 if atr is None or atr <= 0:
                     continue
 
-                position = _open_position(
+                position = open_position(
                     pattern, current_bar, i, atr
                 )
 
     # Close any remaining position at last bar
     if position is not None:
         last_bar = bars[-1]
-        trade = _force_close(position, last_bar, len(bars) - 1, "end")
+        trade = force_close_position(position, last_bar, len(bars) - 1, "end")
         trades.append(trade)
 
     return _compute_fitness(trades, timeframe=timeframe)
 
 
-def _open_position(
+def open_position(
     pattern: CandidatePattern,
     bar: OHLCV,
     bar_idx: int,
@@ -287,7 +287,7 @@ def _open_position(
     )
 
 
-def _check_exit(
+def check_exit_position(
     position: Position,
     bar: OHLCV,
     bar_idx: int,
@@ -334,7 +334,7 @@ def _check_exit(
 
     # Time-based exit (lowest priority)
     if position.max_holding_bars and holding >= position.max_holding_bars:
-        return _force_close(position, bar, bar_idx, "time")
+        return force_close_position(position, bar, bar_idx, "time")
 
     return None
 
@@ -363,7 +363,7 @@ def _close_at(
     )
 
 
-def _force_close(
+def force_close_position(
     position: Position,
     bar: OHLCV,
     bar_idx: int,
@@ -371,6 +371,12 @@ def _force_close(
 ) -> Trade:
     """Force close at bar's close price."""
     return _close_at(position, bar.close, bar_idx, reason)
+
+
+# Backward compatibility aliases
+_open_position = open_position
+_check_exit = check_exit_position
+_force_close = force_close_position
 
 
 # --- Fitness computation ---

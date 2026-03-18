@@ -25,11 +25,11 @@ from tradememory.data.models import OHLCV, OHLCVSeries, Timeframe
 from tradememory.evolution.backtester import (
     Position,
     Trade,
-    _check_exit,
     _compute_fitness,
-    _force_close,
-    _open_position,
     check_entry,
+    check_exit_position,
+    force_close_position,
+    open_position,
 )
 from tradememory.evolution.models import (
     CandidatePattern,
@@ -80,7 +80,7 @@ def fast_backtest_with_trades(
         ctx = contexts[i]
 
         if position is not None:
-            trade = _check_exit(position, current_bar, i)
+            trade = check_exit_position(position, current_bar, i)
             if trade is not None:
                 trades.append(trade)
                 position = None
@@ -90,11 +90,11 @@ def fast_backtest_with_trades(
                 atr = atrs[i]
                 if atr is None or atr <= 0:
                     continue
-                position = _open_position(pattern, current_bar, i, atr)
+                position = open_position(pattern, current_bar, i, atr)
 
     if position is not None:
         last_bar = bars[-1]
-        trade = _force_close(position, last_bar, len(bars) - 1, "end")
+        trade = force_close_position(position, last_bar, len(bars) - 1, "end")
         trades.append(trade)
 
     fitness = _compute_fitness(trades, timeframe=timeframe)
