@@ -63,6 +63,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-19] Strategy C added to shared definitions + export/seed CLI --strategy c/e + 337 trades seeded to Supabase
 - [2026-03-18] GH Actions live executor WORKING: 5 iterations to fix (editable install, Binance US geo-restriction, env var strip, supabase-py maybe_single compat). Cron hourly at :05.
 - [2026-03-18] Code health fixes: shared strategy_definitions.py, ruff auto-fix (43 lint), batch seed insert, live_executor tests, backtester public API, GH Actions cache+notify
 - [2026-03-18] refactor: make backtester _check_exit/_force_close/_open_position public API with backward compat aliases
