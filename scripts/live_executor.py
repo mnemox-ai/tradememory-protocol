@@ -38,8 +38,11 @@ STRATEGY_ID = "strategy_e"
 
 def get_supabase():
     """Create Supabase client from env vars."""
-    url = os.environ["SUPABASE_URL"]
-    key = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
+    url = os.environ["SUPABASE_URL"].strip()
+    key = os.environ["SUPABASE_SERVICE_ROLE_KEY"].strip()
+    from urllib.parse import urlparse
+    parsed = urlparse(url)
+    print(f"Supabase host: {parsed.hostname} (url length: {len(url)})")
     return create_client(url, key)
 
 
