@@ -63,6 +63,10 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-18] Code health fixes: shared strategy_definitions.py, ruff auto-fix (43 lint), batch seed insert, live_executor tests, backtester public API, GH Actions cache+notify
+- [2026-03-18] refactor: make backtester _check_exit/_force_close/_open_position public API with backward compat aliases
+- [2026-03-18] test: 14 unit tests for live_executor check_exit (SL/TP/timeout/boundary/priority/PnL), 1087 tests passing
+- [2026-03-18] refactor: extract build_strategy_e() into scripts/strategy_definitions.py (shared module)
 - [2026-03-18] Live dashboard backend: 16-task architecture (PostgreSQL + Vite + React + pgvector hybrid recall), 1073 tests passing
 - [2026-03-18] scripts/seed_backtest_trades.py — Seed backtest JSON into Supabase live_trades (DELETE+INSERT, strategy_e)
 - [2026-03-18] scripts/export_backtest_trades.py — Export Strategy E backtest trades to JSON (fast_backtest_with_trades + trade_to_dict + 8 tests)
@@ -81,7 +85,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - [2026-03-15] 建立 Jarvis 系統：/morning 每日掃描、/wrap-up session handoff
 
 ## Current Status
-- **v0.5.0**, 1073 tests passing, 2 skipped
+- **v0.5.0**, 1087 tests passing, 2 skipped
 - **Phase 13 COMPLETE** -- 4 steps done. E has real edge in 2024-2026 (P100%, walk-forward 3.24). Both FAIL extended OOS (regime-specific). Conclusion: Evolution Engine finds real patterns, but they need periodic re-evolution.
 - **Phase 13 Step 1 PASS** -- Strategy C (Sharpe=3.40, P96.9%) and E (Sharpe=4.42, P100%) beat 1000 random strategies
 - **All 12 phases complete** — P1: 42/42, P2: 20/20, total 62/62 tasks
