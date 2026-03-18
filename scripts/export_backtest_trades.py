@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
-"""Export Strategy E backtest trades to JSON.
+"""Export strategy backtest trades to JSON.
 
-Fetches BTCUSDT 1H data from Binance (2024-06-01 to 2026-03-18),
-runs Strategy E backtest, and exports each trade with full metadata.
+Fetches BTCUSDT 1H data from Binance (2024-06-01 to now),
+runs backtest, and exports each trade with full metadata.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/export_backtest_trades.py
+    python scripts/export_backtest_trades.py              # default: Strategy E
+    python scripts/export_backtest_trades.py --strategy c  # Strategy C
 """
 
+import argparse
 import asyncio
 import json
 import sys
@@ -101,7 +103,12 @@ def fast_backtest_with_trades(
     return fitness, trades
 
 
-from strategy_definitions import build_strategy_e  # noqa: E402
+from strategy_definitions import build_strategy_c, build_strategy_e  # noqa: E402
+
+STRATEGY_BUILDERS = {
+    "c": (build_strategy_c, "STRAT-C", "strategy_c_backtest.json"),
+    "e": (build_strategy_e, "STRAT-E", "strategy_e_backtest.json"),
+}
 
 
 def trade_to_dict(
@@ -150,7 +157,13 @@ def trade_to_dict(
 
 
 async def main():
-    print("=== Export Strategy E Backtest Trades ===\n")
+    parser = argparse.ArgumentParser(description="Export strategy backtest trades to JSON")
+    parser.add_argument("--strategy", choices=["c", "e"], default="e", help="Strategy to backtest (default: e)")
+    args = parser.parse_args()
+
+    builder, strategy_id, json_filename = STRATEGY_BUILDERS[args.strategy]
+
+    print(f"=== Export Strategy {args.strategy.upper()} Backtest Trades ===\n")
 
     # 1. Fetch data
     start = datetime(2024, 6, 1, tzinfo=timezone.utc)
@@ -173,7 +186,7 @@ async def main():
     atrs = precompute_atrs(series.bars)
 
     # 3. Run backtest
-    strategy = build_strategy_e()
+    strategy = builder()
     print(f"\nRunning backtest: {strategy.name}...")
     fitness, trades = fast_backtest_with_trades(
         series.bars, contexts, atrs, strategy, timeframe="1h"
@@ -181,14 +194,14 @@ async def main():
 
     # 4. Convert trades to dicts
     trade_dicts = [
-        trade_to_dict(t, series.bars, contexts, atrs, strategy_id="STRAT-E", symbol=symbol)
+        trade_to_dict(t, series.bars, contexts, atrs, strategy_id=strategy_id, symbol=symbol)
         for t in trades
     ]
 
     # 5. Write JSON
     output_dir = Path(__file__).parent.parent / "data"
     output_dir.mkdir(exist_ok=True)
-    output_path = output_dir / "strategy_e_backtest.json"
+    output_path = output_dir / json_filename
     output_path.write_text(json.dumps(trade_dicts, indent=2), encoding="utf-8")
     print(f"\nWrote {len(trade_dicts)} trades to {output_path}")
 

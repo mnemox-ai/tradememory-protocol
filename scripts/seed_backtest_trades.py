@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
-"""Seed Strategy E backtest trades from JSON into Supabase live_trades table.
+"""Seed strategy backtest trades from JSON into Supabase live_trades table.
 
-Reads data/strategy_e_backtest.json, deletes existing backtest rows for strategy_e,
+Reads backtest JSON, deletes existing backtest rows for the strategy,
 then inserts all trades.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/seed_backtest_trades.py
+    python scripts/seed_backtest_trades.py              # default: Strategy E
+    python scripts/seed_backtest_trades.py --strategy c  # Strategy C
 
 Env vars required:
     SUPABASE_URL
     SUPABASE_SERVICE_ROLE_KEY
 """
 
+import argparse
 import json
 import os
 import sys
@@ -20,8 +22,10 @@ from pathlib import Path
 
 from supabase import create_client
 
-STRATEGY_ID = "strategy_e"
-JSON_PATH = Path(__file__).parent.parent / "data" / "strategy_e_backtest.json"
+STRATEGY_CONFIGS = {
+    "c": ("strategy_c", "strategy_c_backtest.json"),
+    "e": ("strategy_e", "strategy_e_backtest.json"),
+}
 
 
 def get_supabase():
@@ -31,34 +35,41 @@ def get_supabase():
     return create_client(url, key)
 
 
-def load_trades() -> list[dict]:
+def load_trades(json_path: Path) -> list[dict]:
     """Load backtest trades from JSON file."""
-    if not JSON_PATH.exists():
-        print(f"ERROR: {JSON_PATH} not found. Run export_backtest_trades.py first.")
+    if not json_path.exists():
+        print(f"ERROR: {json_path} not found. Run export_backtest_trades.py first.")
         sys.exit(1)
 
-    with open(JSON_PATH, encoding="utf-8") as f:
+    with open(json_path, encoding="utf-8") as f:
         trades = json.load(f)
 
-    print(f"Loaded {len(trades)} trades from {JSON_PATH}")
+    print(f"Loaded {len(trades)} trades from {json_path}")
     return trades
 
 
 def main():
-    print("=== Seed Backtest Trades into Supabase ===\n")
+    parser = argparse.ArgumentParser(description="Seed backtest trades into Supabase")
+    parser.add_argument("--strategy", choices=["c", "e"], default="e", help="Strategy to seed (default: e)")
+    args = parser.parse_args()
+
+    strategy_id, json_filename = STRATEGY_CONFIGS[args.strategy]
+    json_path = Path(__file__).parent.parent / "data" / json_filename
+
+    print(f"=== Seed Strategy {args.strategy.upper()} Backtest Trades into Supabase ===\n")
 
     # 1. Load JSON
-    trades = load_trades()
+    trades = load_trades(json_path)
 
     # 2. Connect Supabase
     sb = get_supabase()
 
-    # 3. DELETE existing backtest rows for strategy_e
-    print(f"Deleting existing backtest trades for {STRATEGY_ID}...")
+    # 3. DELETE existing backtest rows for this strategy
+    print(f"Deleting existing backtest trades for {strategy_id}...")
     result = (
         sb.table("live_trades")
         .delete()
-        .eq("strategy_id", STRATEGY_ID)
+        .eq("strategy_id", strategy_id)
         .eq("trade_type", "backtest")
         .execute()
     )
@@ -70,7 +81,7 @@ def main():
     rows = []
     for trade in trades:
         row = {
-            "strategy_id": STRATEGY_ID,
+            "strategy_id": strategy_id,
             "symbol": trade["symbol"],
             "direction": trade["direction"],
             "entry_price": trade["entry_price"],
