@@ -33,11 +33,7 @@ from tradememory.evolution.backtester import (
 )
 from tradememory.evolution.models import (
     CandidatePattern,
-    ConditionOperator,
-    EntryCondition,
-    ExitCondition,
     FitnessMetrics,
-    RuleCondition,
 )
 
 
@@ -105,27 +101,7 @@ def fast_backtest_with_trades(
     return fitness, trades
 
 
-def build_strategy_e() -> CandidatePattern:
-    """Strategy E: Afternoon Engine — LONG at 14:00 UTC when 12h trend UP."""
-    return CandidatePattern(
-        pattern_id="STRAT-E",
-        name="Strategy E (Afternoon Engine)",
-        description="LONG at 14:00 UTC when 12h trend is positive",
-        entry_condition=EntryCondition(
-            direction="long",
-            conditions=[
-                RuleCondition(field="hour_utc", op=ConditionOperator.EQ, value=14),
-                RuleCondition(field="trend_12h_pct", op=ConditionOperator.GT, value=0),
-            ],
-        ),
-        exit_condition=ExitCondition(
-            stop_loss_atr=1.0,
-            take_profit_atr=2.0,
-            max_holding_bars=6,
-        ),
-        confidence=0.8,
-        source="evolution_engine",
-    )
+from strategy_definitions import build_strategy_e  # noqa: E402
 
 
 def trade_to_dict(

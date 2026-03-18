@@ -25,7 +25,7 @@ from supabase import create_client
 # Allow importing from scripts/ (for build_strategy_e)
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from run_real_baseline import build_strategy_e
+from strategy_definitions import build_strategy_e
 
 from tradememory.data.binance import BinanceDataSource
 from tradememory.data.context_builder import build_context, compute_atr

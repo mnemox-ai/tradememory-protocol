@@ -25,12 +25,12 @@ from tradememory.evolution.models import (
 )
 
 from export_backtest_trades import (
-    build_strategy_e,
     fast_backtest_with_trades,
     precompute_atrs,
     precompute_contexts,
     trade_to_dict,
 )
+from strategy_definitions import build_strategy_e
 
 
 def _make_bar(ts_hour: int, o: float, h: float, l: float, c: float, vol: float = 100.0) -> OHLCV:
