@@ -10,19 +10,19 @@
 body {
   width: 1000px; height: 420px; background: transparent;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  color: #1f2328; display: flex; flex-direction: column;
+  color: #000000; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 24px;
   overflow: hidden; padding: 32px;
 }
 h2 {
-  font-size: 18px; font-weight: 600; color: #656d76;
+  font-size: 18px; font-weight: 600; color: #424a53;
   text-transform: uppercase; letter-spacing: 2px;
 }
 h2 span { color: #00b4ff; }
 .cards { display: flex; gap: 12px; }
 .card {
   width: 180px; border-radius: 12px; padding: 20px 16px;
-  background: #ffffff; border: 1px solid #d1d9e0;
+  background: #ffffff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1.5px solid #c0c8d0;
   display: flex; flex-direction: column; gap: 10px;
   transition: border-color 0.3s;
 }
@@ -32,11 +32,11 @@ h2 span { color: #00b4ff; }
   font-size: 18px; font-weight: 700;
 }
 .card-title { font-size: 14px; font-weight: 700; }
-.card-desc { font-size: 11px; color: #656d76; line-height: 1.5; }
+.card-desc { font-size: 12px; color: #424a53; line-height: 1.5; font-weight: 500; }
 .card-formula {
   font-size: 10px; font-family: 'SF Mono', 'Fira Code', monospace;
   padding: 6px 8px; border-radius: 6px; background: transparent;
-  color: #1a7f37; border: 1px solid #d1d9e0;
+  color: #1a7f37; border: 1.5px solid #c0c8d0;
 }
 
 /* Colors per factor */
@@ -51,7 +51,7 @@ h2 span { color: #00b4ff; }
 .c-a { border-color: rgba(249, 117, 131, 0.3); }
 .c-a .card-icon { background: rgba(249, 117, 131, 0.15); color: #f97583; }
 
-.footer { font-size: 10px; color: #9198a1; }
+.footer { font-size: 10px; color: #656d76; }
 </style></head>
 <body>
 
