@@ -18,6 +18,13 @@
 
 ---
 
+## News
+
+- [2026-03] **v0.5.0** — Evolution Engine + OWM 5 memory types. 1,087 tests. [Release Notes](https://github.com/mnemox-ai/tradememory-protocol/releases/tag/v0.5.0)
+- [2026-03] **Statistical Validation** — Strategy E passes P100% random baseline, Sharpe 3.24 walk-forward
+- [2026-03] **Live Paper Trading** — Strategy E running on Binance via GitHub Actions (hourly)
+- [2026-02] **v0.4.0** — OWM Framework, 15 MCP tools, Smithery + Glama listed
+
 ## Architecture
 
 <p align="center">
