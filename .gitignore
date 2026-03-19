@@ -37,6 +37,9 @@ env/
 
 # Claude Code
 .claude/settings.local.json
+.claude/rules/
+.claude/plans/
+.claude/launch.json
 CLAUDE.local.md
 
 # IDE
