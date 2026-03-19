@@ -6,7 +6,7 @@ import pytest
 import sys
 import os
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts", "research"))
 
 from evolution_demo import generate_mock_btc_1h, build_mock_responses, run_demo
 
