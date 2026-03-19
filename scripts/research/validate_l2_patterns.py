@@ -5,7 +5,7 @@ Compares patterns in the patterns table (source='backtest_auto') against
 the 5 manual L2 findings from MEMORY.md: MR-001, MR-002, FX-001, FX-002, BATCH-001.
 
 Usage:
-    python scripts/validate_l2_patterns.py [db_path]
+    python scripts/research/validate_l2_patterns.py [db_path]
 
 Default db_path: data/backtest_v1.db
 """

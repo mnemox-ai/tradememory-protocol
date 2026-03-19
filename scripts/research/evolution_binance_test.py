@@ -4,8 +4,8 @@
 Fetches BTCUSDT 1H from Binance (last 3 months), runs evolution with Haiku.
 
 Usage:
-    python scripts/evolution_binance_test.py
-    python scripts/evolution_binance_test.py --rounds 3 --pop 5 --months 3
+    python scripts/research/evolution_binance_test.py
+    python scripts/research/evolution_binance_test.py --rounds 3 --pop 5 --months 3
 """
 
 from __future__ import annotations

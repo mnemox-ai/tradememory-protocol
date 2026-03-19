@@ -7,7 +7,7 @@ the original Jun 2024 - Mar 2026 period results.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_extended_oos.py
+    python scripts/research/run_extended_oos.py
 """
 
 import asyncio

@@ -10,8 +10,8 @@ Usage:
   BINANCE_API_SECRET=...
   TRADEMEMORY_API=http://localhost:8000   # optional, default
 
-  python scripts/binance_sync.py              # one-shot sync
-  python scripts/binance_sync.py --watch 60   # poll every 60 seconds
+  python scripts/research/binance_sync.py              # one-shot sync
+  python scripts/research/binance_sync.py --watch 60   # poll every 60 seconds
 """
 
 import hashlib

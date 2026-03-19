@@ -6,15 +6,15 @@ Enhanced version of demo.py with rich formatting for terminal recording.
 
 Usage:
     pip install rich
-    python scripts/record_demo.py
+    python scripts/research/record_demo.py
 
 Recording with asciinema:
-    asciinema rec demo.cast -c "python scripts/record_demo.py"
+    asciinema rec demo.cast -c "python scripts/research/record_demo.py"
     # Upload: asciinema upload demo.cast
     # Or convert to GIF: agg demo.cast demo.gif
 
 Recording with terminalizer:
-    terminalizer record demo -c "python scripts/record_demo.py"
+    terminalizer record demo -c "python scripts/research/record_demo.py"
     terminalizer render demo -o demo.gif
 """
 

@@ -10,7 +10,7 @@ If original ≈ mean → trend filter is the only alpha, hour is irrelevant.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_time_bias_test.py
+    python scripts/research/run_time_bias_test.py
 """
 
 import asyncio

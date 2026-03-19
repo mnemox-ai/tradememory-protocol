@@ -5,7 +5,7 @@ Generates mock BTC 1H OHLCV data (500 bars with realistic price action),
 runs 3 generations of evolution with MockLLMClient, and prints results.
 
 Usage:
-    python scripts/evolution_demo.py
+    python scripts/research/evolution_demo.py
 """
 
 from __future__ import annotations

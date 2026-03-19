@@ -5,8 +5,8 @@ Uses claude-haiku-4-5-20251001 for cost-effective pipeline validation.
 Generates mock BTC 1H data, runs N generations with real LLM discovery.
 
 Usage:
-    python scripts/evolution_live_test.py
-    python scripts/evolution_live_test.py --rounds 3 --pop 5
+    python scripts/research/evolution_live_test.py
+    python scripts/research/evolution_live_test.py --rounds 3 --pop 5
 
 Requires ANTHROPIC_API_KEY in .env or environment.
 """

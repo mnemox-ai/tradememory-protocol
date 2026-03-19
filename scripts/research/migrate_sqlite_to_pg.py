@@ -2,8 +2,8 @@
 One-time migration: SQLite (data/tradememory.db) → PostgreSQL.
 
 Usage:
-    python scripts/migrate_sqlite_to_pg.py
-    python scripts/migrate_sqlite_to_pg.py --sqlite data/tradememory.db --pg postgresql://tradememory:tradememory@localhost:5432/tradememory
+    python scripts/research/migrate_sqlite_to_pg.py
+    python scripts/research/migrate_sqlite_to_pg.py --sqlite data/tradememory.db --pg postgresql://tradememory:tradememory@localhost:5432/tradememory
 
 Prerequisites:
     1. docker-compose up -d  (PostgreSQL running)

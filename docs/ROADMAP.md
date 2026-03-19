@@ -18,7 +18,7 @@
 - Commit: `feat: add OpenClaw skill packaging (SKILL.md)` → `6e13532`
 
 ### Task 1.2：建立安裝腳本 ✅
-- `.skills/tradememory/scripts/platform/install.sh`：自動安裝 tradememory-protocol + 依賴
+- `.skills/tradememory/scripts/install.sh`：自動安裝 tradememory-protocol + 依賴
 - `.skills/tradememory/scripts/setup_mt5.sh`：互動式引導 MT5 同步設定
 - Commit: 同 `6e13532`（與 Task 1.1 合併 commit）
 

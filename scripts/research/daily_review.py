@@ -4,10 +4,10 @@ Daily Review — AI-powered trade review with OWM hybrid retrieval.
 Closes the feedback loop: MT5 trades → tradememory DB → OWM recall → Sonnet review → reflection stored back.
 
 Usage:
-    python scripts/daily_review.py                  # Review today's trades
-    python scripts/daily_review.py --date 2026-03-10  # Specific date
-    python scripts/daily_review.py --days 3           # Last 3 days
-    python scripts/daily_review.py --strategy VolBreakout  # Filter by strategy
+    python scripts/research/daily_review.py                  # Review today's trades
+    python scripts/research/daily_review.py --date 2026-03-10  # Specific date
+    python scripts/research/daily_review.py --days 3           # Last 3 days
+    python scripts/research/daily_review.py --strategy VolBreakout  # Filter by strategy
 
 Requires:
     - tradememory.db with episodic_memory populated (via mt5_sync)

@@ -16,7 +16,7 @@ Outputs:
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_b2_transfer.py
+    python scripts/research/run_b2_transfer.py
 """
 
 import asyncio

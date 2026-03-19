@@ -8,7 +8,7 @@ Outputs 4 PNGs to docs/validation/:
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/generate_validation_charts.py
+    python scripts/research/generate_validation_charts.py
 """
 
 import json

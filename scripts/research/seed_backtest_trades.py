@@ -6,8 +6,8 @@ then inserts all trades.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/seed_backtest_trades.py              # default: Strategy E
-    python scripts/seed_backtest_trades.py --strategy c  # Strategy C
+    python scripts/research/seed_backtest_trades.py              # default: Strategy E
+    python scripts/research/seed_backtest_trades.py --strategy c  # Strategy C
 
 Env vars required:
     SUPABASE_URL

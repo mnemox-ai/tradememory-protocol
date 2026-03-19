@@ -6,7 +6,7 @@ Runs the L1 → L2 → L3 pipeline with simulated trades and saves
 formatted output to assets/screenshots/ for use in README and docs.
 
 Usage:
-    python scripts/generate_screenshots.py
+    python scripts/research/generate_screenshots.py
 """
 
 import sys

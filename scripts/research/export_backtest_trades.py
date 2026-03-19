@@ -6,8 +6,8 @@ runs backtest, and exports each trade with full metadata.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/export_backtest_trades.py              # default: Strategy E
-    python scripts/export_backtest_trades.py --strategy c  # Strategy C
+    python scripts/research/export_backtest_trades.py              # default: Strategy E
+    python scripts/research/export_backtest_trades.py --strategy c  # Strategy C
 """
 
 import argparse

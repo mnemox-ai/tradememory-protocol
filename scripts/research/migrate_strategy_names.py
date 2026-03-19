@@ -7,7 +7,7 @@ Existing trades were all stored as strategy="NG_Gold". This script:
 3. Updates trade_records in tradememory.db
 
 Usage:
-    python scripts/migrate_strategy_names.py [--dry-run]
+    python scripts/research/migrate_strategy_names.py [--dry-run]
 
 Requires: MetaTrader5 package + MT5 terminal running
 """

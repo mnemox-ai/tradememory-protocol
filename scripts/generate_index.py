@@ -53,7 +53,7 @@ DATA_SOURCES = {
     },
     "tradememory_roadmap": {
         "type": "file",
-        "path": Path.home() / "projects" / "tradememory-protocol" / "ROADMAP.md",
+        "path": Path.home() / "projects" / "tradememory-protocol" / "docs" / "ROADMAP.md",
         "parser": "parse_tradememory_roadmap",
     },
     "tradememory_health": {

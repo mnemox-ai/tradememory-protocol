@@ -7,7 +7,7 @@ the random distribution.
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_real_baseline.py
+    python scripts/research/run_real_baseline.py
 """
 
 import asyncio

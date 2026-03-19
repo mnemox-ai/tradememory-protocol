@@ -15,7 +15,7 @@ Outputs:
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_b1_stability.py
+    python scripts/research/run_b1_stability.py
 """
 
 import asyncio

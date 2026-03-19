@@ -5,7 +5,7 @@ Generates a comprehensive weekly performance report comparing
 real trades vs BATCH-001 backtest baselines.
 
 Usage:
-    python scripts/weekly_report.py [--output reports/]
+    python scripts/research/weekly_report.py [--output reports/]
 """
 
 import os

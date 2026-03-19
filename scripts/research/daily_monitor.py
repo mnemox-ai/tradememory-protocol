@@ -5,7 +5,7 @@ Reads tradememory DB + MT5 open positions to detect anomalies.
 Generates a daily status report with actionable alerts.
 
 Usage:
-    python scripts/daily_monitor.py [--output reports/]
+    python scripts/research/daily_monitor.py [--output reports/]
 
 Output: JSON report + human-readable summary
 """

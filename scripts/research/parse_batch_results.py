@@ -2,7 +2,7 @@
 Parse all batch backtest reports and generate structured analysis.
 
 Usage:
-    python scripts/parse_batch_results.py [report_dir]
+    python scripts/research/parse_batch_results.py [report_dir]
 
 Default report_dir: batch_v1 in MT5 Terminal B reports directory
 """

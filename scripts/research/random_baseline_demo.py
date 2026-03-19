@@ -6,7 +6,7 @@ Generates synthetic OHLCV data (random walk), runs 200 random strategies,
 then ranks a mock "Strategy C" (Sharpe 2.0) against the random distribution.
 
 Usage:
-    python scripts/random_baseline_demo.py
+    python scripts/research/random_baseline_demo.py
 """
 
 import numpy as np

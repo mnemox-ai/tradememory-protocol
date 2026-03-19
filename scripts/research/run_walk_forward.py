@@ -11,7 +11,7 @@ Pass criteria:
 
 Usage:
     cd C:/Users/johns/projects/tradememory-protocol
-    python scripts/run_walk_forward.py
+    python scripts/research/run_walk_forward.py
 """
 
 import asyncio

@@ -4,7 +4,7 @@ Generate dashboard mock JSON files from backtest_v1.db.
 WARNING: Generated from backtest data (2024.01-2026.02, n=10,169). Not live trading results.
 
 Usage:
-    python scripts/generate_backtest_mock.py
+    python scripts/research/generate_backtest_mock.py
 """
 
 import json
