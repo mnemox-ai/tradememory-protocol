@@ -196,7 +196,7 @@ The Evolution Engine discovers trading strategies from raw price data. No indica
 - Max drawdown 0.22% — lower than either strategy alone
 - Zero human strategy input. The LLM discovered these from raw candles.
 
-> Data from [RESEARCH_LOG.md](RESEARCH_LOG.md). 11 experiments, full methodology, model comparison (Haiku vs Sonnet vs Opus).
+> Data from [RESEARCH_LOG.md](docs/RESEARCH_LOG.md). 11 experiments, full methodology, model comparison (Haiku vs Sonnet vs Opus).
 
 </details>
 
@@ -255,7 +255,7 @@ Full reference: [docs/API.md](docs/API.md)
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 - Star the repo to follow progress
 - Report bugs via [GitHub Issues](https://github.com/mnemox-ai/tradememory-protocol/issues)
@@ -272,7 +272,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 | [Tutorial (中文)](docs/TUTORIAL_ZH.md) | 完整教學指南 |
 | [API Reference](docs/API.md) | All REST endpoints |
 | [MT5 Setup](docs/MT5_SYNC_SETUP.md) | MetaTrader 5 integration |
-| [Research Log](RESEARCH_LOG.md) | 11 evolution experiments with full data |
+| [Research Log](docs/RESEARCH_LOG.md) | 11 evolution experiments with full data |
 
 ---
 

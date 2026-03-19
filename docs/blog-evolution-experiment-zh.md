@@ -249,12 +249,12 @@ pip install tradememory-protocol
 
 ---
 
-**更新 (2026-03-17):** 跑了統計驗證，1,000 個隨機策略作為 baseline。策略 C (P96.9%) 和 E (P100%) 都超過第 95 百分位。[完整結果](https://github.com/mnemox-ai/tradememory-protocol/blob/master/VALIDATION_RESULTS.md)。
+**更新 (2026-03-17):** 跑了統計驗證，1,000 個隨機策略作為 baseline。策略 C (P96.9%) 和 E (P100%) 都超過第 95 百分位。[完整結果](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/VALIDATION_RESULTS.md)。
 
 ---
 
 *TradeMemory Protocol: [github.com/mnemox-ai/tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol)*
 
-*完整研究數據: [RESEARCH_LOG.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/RESEARCH_LOG.md)*
+*完整研究數據: [RESEARCH_LOG.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/RESEARCH_LOG.md)*
 
 *Built by [Mnemox AI](https://mnemox.ai) — AI agent 的持久記憶層。*

@@ -179,7 +179,7 @@ Evolution Engine 從原始價格數據中發現交易策略。不用指標，不
 - 最大回撤 0.22% — 比任何單一策略都低
 - 零人工策略輸入。LLM 從原始 K 線中自行發現這些策略。
 
-> 數據來源：[RESEARCH_LOG.md](RESEARCH_LOG.md)。11 項實驗，完整方法論，模型比較（Haiku vs Sonnet vs Opus）。
+> 數據來源：[RESEARCH_LOG.md](../docs/RESEARCH_LOG.md)。11 項實驗，完整方法論，模型比較（Haiku vs Sonnet vs Opus）。
 
 </details>
 
@@ -238,7 +238,7 @@ Evolution Engine 從原始價格數據中發現交易策略。不用指標，不
 
 ## 貢獻
 
-詳見 [CONTRIBUTING.md](CONTRIBUTING.md)。
+詳見 [CONTRIBUTING.md](../.github/CONTRIBUTING.md)。
 
 - 給個 Star 追蹤進度
 - 透過 [GitHub Issues](https://github.com/mnemox-ai/tradememory-protocol/issues) 回報問題

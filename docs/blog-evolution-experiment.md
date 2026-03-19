@@ -249,12 +249,12 @@ If you're building AI agents that make decisions in uncertain environments, the 
 
 ---
 
-**Update (2026-03-17):** Ran statistical validation against 1,000 random strategies. Both Strategy C (P96.9%) and E (P100%) beat the 95th percentile. [Full results](https://github.com/mnemox-ai/tradememory-protocol/blob/master/VALIDATION_RESULTS.md).
+**Update (2026-03-17):** Ran statistical validation against 1,000 random strategies. Both Strategy C (P96.9%) and E (P100%) beat the 95th percentile. [Full results](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/VALIDATION_RESULTS.md).
 
 ---
 
 *TradeMemory Protocol: [github.com/mnemox-ai/tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol)*
 
-*Full research data: [RESEARCH_LOG.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/RESEARCH_LOG.md)*
+*Full research data: [RESEARCH_LOG.md](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/RESEARCH_LOG.md)*
 
 *Built by [Mnemox AI](https://mnemox.ai) — persistent memory for AI agents.*

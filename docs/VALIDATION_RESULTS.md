@@ -279,9 +279,7 @@ python scripts/generate_validation_charts.py
 
 ## Raw Data
 
-- [validation_step1_results.json](validation_step1_results.json)
-- [validation_step2_results.json
-- [validation_step3_results.json](validation_step3_results.json)
-- [validation_step4_results.json](validation_step4_results.json)](validation_step2_results.json
-- [validation_step3_results.json](validation_step3_results.json)
-- [validation_step4_results.json](validation_step4_results.json))
+- [validation_step1_results.json](research/validation_step1_results.json)
+- [validation_step2_results.json](research/validation_step2_results.json)
+- [validation_step3_results.json](research/validation_step3_results.json)
+- [validation_step4_results.json](research/validation_step4_results.json)
