@@ -1,0 +1,201 @@
+{
+  "run_id": "run3",
+  "temperature": 0.7,
+  "timestamp": "2026-03-18T18:18:50.242860+00:00",
+  "elapsed_seconds": 21.0,
+  "tokens_used": 3133,
+  "patterns_requested": 5,
+  "patterns_returned": 5,
+  "patterns": [
+    {
+      "name": "High Volatility Reversal Short",
+      "description": "During peak volatility hours (14:00-16:00 UTC), strong bearish bias creates mean reversion opportunities. High range periods often exhaust quickly, creating short-term reversal setups with favorable risk/reward.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            14,
+            15,
+            16
+          ]
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 1.0
+        },
+        {
+          "field": "atr_percentile",
+          "op": "gt",
+          "value": 70
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.8,
+        "max_bars": 6,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.72,
+      "sample_count": 89
+    },
+    {
+      "name": "Late Night Momentum Long",
+      "description": "Strong bullish bias at 21:00-22:00 UTC (+30-38 avg) suggests institutional accumulation or algorithmic buying. Low volatility environment reduces noise and improves signal quality.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            21,
+            22
+          ]
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 0.5
+        },
+        {
+          "field": "atr_percentile",
+          "op": "lt",
+          "value": 60
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.5,
+        "max_bars": 4,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.68,
+      "sample_count": 76
+    },
+    {
+      "name": "Asian Close Fade",
+      "description": "6:00-7:00 UTC shows consistent bearish bias (-14.39, -6.89) as Asian session closes. Lower volatility creates cleaner price action for mean reversion trades after any overnight gaps.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            6,
+            7
+          ]
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "lt",
+          "value": -0.3
+        },
+        {
+          "field": "atr_percentile",
+          "op": "lt",
+          "value": 50
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.6,
+        "max_bars": 5,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.65,
+      "sample_count": 67
+    },
+    {
+      "name": "Early Morning Continuation Long",
+      "description": "1:00-3:00 UTC shows strong bullish bias (+7.06, +17.20, +8.79) with moderate volatility. This represents follow-through from previous session strength during low-liquidity hours.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 1.5
+        },
+        {
+          "field": "atr_percentile",
+          "op": "between",
+          "value": [
+            30,
+            70
+          ]
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.2,
+        "max_bars": 3,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.63,
+      "sample_count": 58
+    },
+    {
+      "name": "Evening Reversal Short",
+      "description": "19:00-20:00 UTC shows bearish bias (-16.95, -6.86) after European close. High volatility from 17:00 (+14.50) often reverses, creating short opportunities with tight stops.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            19,
+            20
+          ]
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 2.0
+        },
+        {
+          "field": "atr_percentile",
+          "op": "gt",
+          "value": 65
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.5,
+        "max_bars": 7,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.61,
+      "sample_count": 52
+    }
+  ]
+}

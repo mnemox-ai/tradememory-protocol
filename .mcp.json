@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "code-review-graph": {
+      "command": "C:\Users\johns\.local\bin\uv.exe",
+      "args": [
+        "tool",
+        "run",
+        "code-review-graph",
+        "serve"
+      ]
+    }
+  }
+}

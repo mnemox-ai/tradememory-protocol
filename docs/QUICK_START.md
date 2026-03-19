@@ -88,7 +88,7 @@ This analyzes all trades from today and generates a structured reflection report
 ## 6. View the Dashboard (Optional)
 
 ```bash
-pip install -r requirements-dashboard.txt
+pip install -r dashboard/requirements.txt
 streamlit run dashboard.py
 ```
 

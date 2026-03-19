@@ -1,0 +1,159 @@
+{
+  "run_id": "run2",
+  "temperature": 0.7,
+  "timestamp": "2026-03-18T18:18:27.214246+00:00",
+  "elapsed_seconds": 18.6,
+  "tokens_used": 2945,
+  "patterns_requested": 5,
+  "patterns_returned": 5,
+  "patterns": [
+    {
+      "name": "US Open Reversal Short",
+      "description": "14:00 UTC shows highest volatility with neutral bias, creating mean reversion opportunities. High volatility sessions often see initial momentum fade as liquidity stabilizes.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 14
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.3
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.5,
+        "max_bars": 4,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.7,
+      "sample_count": 320
+    },
+    {
+      "name": "Asian Session Fade",
+      "description": "23:00 UTC shows strong bearish bias (-36.89) with lower volatility, ideal for continuation trades. Asian session typically sees follow-through on US session moves.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 23
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "lt",
+          "value": -0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.2,
+        "max_bars": 6,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.8,
+      "sample_count": 280
+    },
+    {
+      "name": "London Close Momentum",
+      "description": "16:00 UTC shows strong bearish bias (-16.79) with high volatility (736 avg range). London close often triggers momentum moves as positions are squared.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 16
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "between",
+          "value": [
+            -0.5,
+            0.5
+          ]
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.8,
+        "max_bars": 5,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.75,
+      "sample_count": 310
+    },
+    {
+      "name": "Late US Bullish Breakout",
+      "description": "22:00 UTC shows strongest bullish bias (+37.90) with moderate volatility. Late US session often sees momentum continuation as algos and institutions position for overnight.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.4,
+        "max_bars": 7,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.8,
+      "sample_count": 295
+    },
+    {
+      "name": "Early European Reversal",
+      "description": "06:00 UTC shows bearish bias (-14.39) with low volatility (456 avg range). Early European session often reverses overnight moves as fresh liquidity enters.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 6
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 0.9,
+        "tp_atr": 2.0,
+        "max_bars": 8,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.65,
+      "sample_count": 250
+    }
+  ]
+}

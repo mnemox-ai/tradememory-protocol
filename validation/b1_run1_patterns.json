@@ -1,0 +1,156 @@
+{
+  "run_id": "run1",
+  "temperature": 0.7,
+  "timestamp": "2026-03-18T18:18:06.605853+00:00",
+  "elapsed_seconds": 19.0,
+  "tokens_used": 2974,
+  "patterns_requested": 5,
+  "patterns_returned": 5,
+  "patterns": [
+    {
+      "name": "US Market Open Bearish Reversal",
+      "description": "14:00 UTC shows highest volatility (957.99 avg range) with slight bearish bias. High volatility creates mean reversion opportunities after initial moves. Target the reversal after early volatility spike.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 14
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.3
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.8,
+        "max_bars": 6,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.7,
+      "sample_count": 654
+    },
+    {
+      "name": "European Close Momentum Short",
+      "description": "16:00 UTC shows strong bearish bias (-16.79) with high volatility (736.23). European market close often creates selling pressure that continues into US afternoon session.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 16
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "lt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.5,
+        "max_bars": 4,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.8,
+      "sample_count": 654
+    },
+    {
+      "name": "Late Night Momentum Long",
+      "description": "22:00 UTC shows strongest bullish bias (+37.90) with moderate volatility. Late US session often sees momentum continuation as retail traders join trending moves.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 3.2,
+        "max_bars": 8,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.75,
+      "sample_count": 653
+    },
+    {
+      "name": "Midnight Reversal Short",
+      "description": "23:00 UTC shows strong bearish bias (-36.89) with lower volatility (500.67). End of trading day often sees profit-taking and position squaring, creating reliable reversals.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 23
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 1.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.2,
+        "max_bars": 3,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.8,
+      "sample_count": 653
+    },
+    {
+      "name": "Asian Session Fade",
+      "description": "00:00 UTC shows bearish bias (-16.29) with high volatility (603.83). Asian session opening often fades overnight moves as liquidity returns and positions are adjusted.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.8
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 2.8,
+        "max_bars": 5,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.65,
+      "sample_count": 654
+    }
+  ]
+}

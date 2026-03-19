@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -e . -r requirements-live.txt
+          pip install -e . -r scripts/requirements-live.txt
 
       - name: Run live executor
         env:

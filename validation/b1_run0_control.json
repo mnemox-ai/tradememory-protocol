@@ -1,0 +1,169 @@
+{
+  "run_id": "control",
+  "temperature": 0.0,
+  "timestamp": "2026-03-18T18:17:47.594703+00:00",
+  "elapsed_seconds": 19.0,
+  "tokens_used": 2991,
+  "patterns_requested": 5,
+  "patterns_returned": 5,
+  "patterns": [
+    {
+      "name": "US Open Reversal Short",
+      "description": "14:00 UTC shows highest volatility with neutral bias, creating mean reversion opportunities. Short after initial volatility spike when 12H trend is positive, expecting pullback in high-volume environment.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 14
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.5
+        },
+        {
+          "field": "volatility_regime",
+          "op": "eq",
+          "value": "normal"
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.8,
+        "max_bars": 6,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.7,
+      "sample_count": 654
+    },
+    {
+      "name": "Late Night Momentum Long",
+      "description": "22:00 UTC shows strongest bullish bias (+37.90) with moderate volatility. Captures late US session momentum continuation when 24H trend is already positive.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.5,
+        "max_bars": 4,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.8,
+      "sample_count": 653
+    },
+    {
+      "name": "Asian Close Fade Short",
+      "description": "06:00 UTC marks Asian session close with bearish bias (-14.39) and lower volatility. Short when overnight trend is positive, expecting profit-taking and reversal.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 6
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.3
+        },
+        {
+          "field": "volatility_regime",
+          "op": "eq",
+          "value": "normal"
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.6,
+        "max_bars": 5,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.6,
+      "sample_count": 654
+    },
+    {
+      "name": "European Open Long",
+      "description": "08:00 UTC European open shows bullish bias (+14.13) with moderate volatility. Captures European buying interest when 24H trend is weak, expecting bounce.",
+      "direction": "long",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 8
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "between",
+          "value": [
+            -1.0,
+            0.5
+          ]
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.2,
+        "max_bars": 3,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.65,
+      "sample_count": 654
+    },
+    {
+      "name": "NY Close Reversal Short",
+      "description": "23:00 UTC shows strong bearish bias (-36.89) with lower volatility. Short when intraday trend is positive, capturing end-of-day profit taking and position squaring.",
+      "direction": "short",
+      "entry_conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 23
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.8
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.5,
+        "max_bars": 8,
+        "trailing_atr": null
+      },
+      "validity": {
+        "regime": null,
+        "session": null
+      },
+      "confidence": 0.75,
+      "sample_count": 653
+    }
+  ]
+}
