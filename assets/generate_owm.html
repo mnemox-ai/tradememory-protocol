@@ -1,0 +1,99 @@
+<!--
+  OWM (Outcome-Weighted Memory) — 5 Factor Cards
+  Chrome DevTools → Ctrl+Shift+P → "Capture full size screenshot" → save as assets/owm-factors.png
+  Size: 1000x420
+-->
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1000px; height: 420px; background: #0d1117;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: #e6edf3; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+  overflow: hidden; padding: 32px;
+}
+h2 {
+  font-size: 18px; font-weight: 600; color: #8b949e;
+  text-transform: uppercase; letter-spacing: 2px;
+}
+h2 span { color: #00b4ff; }
+.cards { display: flex; gap: 12px; }
+.card {
+  width: 180px; border-radius: 12px; padding: 20px 16px;
+  background: #161b22; border: 1px solid #21262d;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.3s;
+}
+.card-icon {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 700;
+}
+.card-title { font-size: 14px; font-weight: 700; }
+.card-desc { font-size: 11px; color: #8b949e; line-height: 1.5; }
+.card-formula {
+  font-size: 10px; font-family: 'SF Mono', 'Fira Code', monospace;
+  padding: 6px 8px; border-radius: 6px; background: #0d1117;
+  color: #7ee787; border: 1px solid #1a2d1a;
+}
+
+/* Colors per factor */
+.c-q { border-color: rgba(0, 180, 255, 0.3); }
+.c-q .card-icon { background: rgba(0, 180, 255, 0.15); color: #00b4ff; }
+.c-s { border-color: rgba(163, 113, 247, 0.3); }
+.c-s .card-icon { background: rgba(163, 113, 247, 0.15); color: #a371f7; }
+.c-r { border-color: rgba(63, 185, 80, 0.3); }
+.c-r .card-icon { background: rgba(63, 185, 80, 0.15); color: #3fb950; }
+.c-c { border-color: rgba(240, 185, 11, 0.3); }
+.c-c .card-icon { background: rgba(240, 185, 11, 0.15); color: #f0b90b; }
+.c-a { border-color: rgba(249, 117, 131, 0.3); }
+.c-a .card-icon { background: rgba(249, 117, 131, 0.15); color: #f97583; }
+
+.footer { font-size: 10px; color: #484f58; }
+</style></head>
+<body>
+
+<h2><span>OWM</span> — Outcome-Weighted Memory</h2>
+
+<div class="cards">
+  <div class="card c-q">
+    <div class="card-icon">Q</div>
+    <div class="card-title">Quality</div>
+    <div class="card-desc">Maps trade PnL to (0,1). Winners score high. Losers never reach zero — they serve as warnings.</div>
+    <div class="card-formula">+3R → 0.98 · −3R → 0.02</div>
+  </div>
+
+  <div class="card c-s">
+    <div class="card-icon">Sim</div>
+    <div class="card-title">Similarity</div>
+    <div class="card-desc">How similar is current context to when this memory was formed? Irrelevant memories get suppressed.</div>
+    <div class="card-formula">cosine(ctx_now, ctx_mem)</div>
+  </div>
+
+  <div class="card c-r">
+    <div class="card-icon">Rec</div>
+    <div class="card-title">Recency</div>
+    <div class="card-desc">Power-law decay. Gentler than exponential — old regime-relevant memories stay retrievable.</div>
+    <div class="card-formula">30d=71% · 1y=28%</div>
+  </div>
+
+  <div class="card c-c">
+    <div class="card-icon">C</div>
+    <div class="card-title">Confidence</div>
+    <div class="card-desc">Memories formed in high-confidence states score higher. Floor of 0.5 prevents ignoring early data.</div>
+    <div class="card-formula">max(conf, 0.5)</div>
+  </div>
+
+  <div class="card c-a">
+    <div class="card-icon">A</div>
+    <div class="card-title">Affect</div>
+    <div class="card-desc">During drawdowns, cautionary memories surface. During streaks, overconfidence checks activate.</div>
+    <div class="card-formula">drawdown → caution</div>
+  </div>
+</div>
+
+<div class="footer">Based on ACT-R · Kelly Criterion · Tulving's Taxonomy · Damasio's Somatic Markers</div>
+
+</body></html>

@@ -1,0 +1,57 @@
+<!--
+  TradeMemory Protocol — Brand Header
+  Chrome DevTools → Ctrl+Shift+P → "Capture full size screenshot" → save as assets/header.png
+  Size: 800x200
+-->
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 800px; height: 200px; background: #0d1117;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  display: flex; align-items: center; justify-content: center; gap: 24px;
+  overflow: hidden;
+}
+.logo-mark {
+  display: grid; grid-template-columns: repeat(5, 8px); gap: 4px;
+}
+.dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #00b4ff; opacity: 0.15;
+}
+.dot.active { opacity: 1; }
+.dot.med { opacity: 0.5; }
+.dot.low { opacity: 0.25; }
+/* M shape pattern in dots */
+.dot:nth-child(1), .dot:nth-child(5),
+.dot:nth-child(6), .dot:nth-child(8), .dot:nth-child(10),
+.dot:nth-child(11), .dot:nth-child(13), .dot:nth-child(15),
+.dot:nth-child(16), .dot:nth-child(20),
+.dot:nth-child(21), .dot:nth-child(25) { opacity: 1; }
+.dot:nth-child(7), .dot:nth-child(9),
+.dot:nth-child(12), .dot:nth-child(14) { opacity: 0.6; }
+
+.text-block { display: flex; flex-direction: column; gap: 4px; }
+.brand {
+  font-size: 48px; font-weight: 800; letter-spacing: -2px;
+  color: #e6edf3;
+}
+.brand span { color: #00b4ff; }
+.tagline {
+  font-size: 16px; color: #8b949e; letter-spacing: 1px; font-weight: 400;
+}
+</style></head>
+<body>
+<div class="logo-mark">
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+</div>
+<div class="text-block">
+  <div class="brand">Trade<span>Memory</span></div>
+  <div class="tagline">Trading memory layer for AI agents</div>
+</div>
+</body></html>

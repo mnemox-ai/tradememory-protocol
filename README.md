@@ -1,25 +1,34 @@
 <!-- mcp-name: io.github.mnemox-ai/tradememory-protocol -->
 
+<p align="center">
+  <img src="assets/header.png" alt="TradeMemory Protocol" width="600">
+</p>
+
 <div align="center">
-
-# TradeMemory Protocol
-
-**Trading memory layer for AI agents. Store, Learn, Evolve.**
 
 [![PyPI](https://img.shields.io/pypi/v/tradememory-protocol?style=flat-square&color=blue)](https://pypi.org/project/tradememory-protocol/)
 [![Tests](https://img.shields.io/badge/tests-1%2C087_passed-brightgreen?style=flat-square)](https://github.com/mnemox-ai/tradememory-protocol/actions)
 [![MCP Tools](https://img.shields.io/badge/MCP_tools-15-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
+[![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
-![Architecture](assets/schema.png)
+[Tutorial](docs/TUTORIAL.md) | [API Reference](docs/API.md) | [OWM Framework](docs/OWM_FRAMEWORK.md) | [中文版](docs/README_ZH.md)
 
 </div>
 
-## What It Does
+---
 
-- **L1 — Store**: Record every trade with full context — entry reasoning, market regime, confidence, outcome.
-- **L2 — Learn**: Auto-discover recurring patterns. LLM hypothesis → vectorized backtest → out-of-sample validation.
-- **L3 — Evolve**: Adjust strategy parameters based on statistical evidence. Outcome-weighted memory downweights stale regimes.
+## Architecture
+
+<p align="center">
+  <img src="assets/schema.png" alt="Architecture" width="900">
+</p>
+
+## Three-Layer Memory
+
+<p align="center">
+  <img src="assets/memory-pipeline.png" alt="L1 L2 L3 Memory Pipeline" width="900">
+</p>
 
 ## Quick Start
 
@@ -76,31 +85,21 @@ Full reference: [docs/API.md](docs/API.md)
 
 </details>
 
-## Architecture: OWM (Outcome-Weighted Memory)
+## OWM — Outcome-Weighted Memory
 
-Every memory scored by 5 factors on recall:
+<p align="center">
+  <img src="assets/owm-factors.png" alt="OWM 5 Factors" width="900">
+</p>
 
-| Factor | Role |
-|--------|------|
-| **Q** — Quality | Trade outcome → (0,1). Losers stay as warnings. |
-| **Sim** — Similarity | Current context vs. memory formation context. |
-| **Rec** — Recency | Power-law decay. 30d=71%, 1y=28%. |
-| **Conf** — Confidence | High-confidence memories weighted more. |
-| **Aff** — Affect | Drawdown → caution. Win streak → overconfidence check. |
+> Full theoretical foundation: [OWM Framework](docs/OWM_FRAMEWORK.md)
 
-> Based on ACT-R, Kelly criterion, Tulving’s taxonomy, Damasio’s somatic markers. Full spec: [OWM Framework](docs/OWM_FRAMEWORK.md)
+## Evolution Engine
 
-<details>
-<summary><strong>Evolution Engine — discover strategies from raw price data</strong></summary>
+<p align="center">
+  <img src="assets/evolution.png" alt="Evolution Engine" width="900">
+</p>
 
-1. **Discover** — LLM analyzes candles, proposes candidates
-2. **Backtest** — Vectorized engine (ATR SL/TP, time-based exit)
-3. **Select** — In-sample rank → out-of-sample validation (Sharpe > 1.0, n > 30)
-4. **Evolve** — Survivors mutate. Next generation. Repeat.
-
-**BTC/USDT 1H, 22 months** — 477 trades, Sharpe 3.84, 91% positive months, max DD 0.22%. Zero human strategy input.
-
-</details>
+> Methodology & data: [Research Log](docs/RESEARCH_LOG.md)
 
 ## Documentation
 

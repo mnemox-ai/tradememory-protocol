@@ -1,0 +1,120 @@
+<!--
+  L1 → L2 → L3 Memory Pipeline Detail Cards
+  Chrome DevTools → Ctrl+Shift+P → "Capture full size screenshot" → save as assets/memory-pipeline.png
+  Size: 1000x360
+-->
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1000px; height: 360px; background: #0d1117;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  color: #e6edf3; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 24px;
+  overflow: hidden; padding: 32px;
+}
+h2 { font-size: 16px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 2px; }
+
+.pipeline { display: flex; align-items: stretch; gap: 12px; }
+
+.layer-card {
+  width: 280px; border-radius: 14px; padding: 22px 20px;
+  background: #161b22; display: flex; flex-direction: column; gap: 12px;
+}
+
+.layer-header { display: flex; align-items: center; gap: 12px; }
+.layer-badge {
+  width: 36px; height: 36px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #0d1117;
+}
+.layer-name { font-size: 16px; font-weight: 700; }
+.layer-subtitle { font-size: 11px; color: #8b949e; font-weight: 500; }
+.layer-desc { font-size: 12px; color: #8b949e; line-height: 1.6; }
+
+.layer-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  font-size: 10px; padding: 3px 10px; border-radius: 12px;
+  font-weight: 500;
+}
+
+/* L1 - Blue */
+.l1 { border: 1px solid rgba(0,180,255,0.3); }
+.l1 .layer-badge { background: #00b4ff; }
+.l1 .tag { background: rgba(0,180,255,0.1); color: #00b4ff; border: 1px solid rgba(0,180,255,0.2); }
+
+/* L2 - Purple */
+.l2 { border: 1px solid rgba(163,113,247,0.3); }
+.l2 .layer-badge { background: #a371f7; }
+.l2 .tag { background: rgba(163,113,247,0.1); color: #a371f7; border: 1px solid rgba(163,113,247,0.2); }
+
+/* L3 - Green */
+.l3 { border: 1px solid rgba(63,185,80,0.3); }
+.l3 .layer-badge { background: #3fb950; }
+.l3 .tag { background: rgba(63,185,80,0.1); color: #3fb950; border: 1px solid rgba(63,185,80,0.2); }
+
+.arrow { color: #30363d; font-size: 28px; display: flex; align-items: center; flex-shrink: 0; }
+</style></head>
+<body>
+
+<h2>Three-Layer Memory Architecture</h2>
+
+<div class="pipeline">
+  <div class="layer-card l1">
+    <div class="layer-header">
+      <div class="layer-badge">L1</div>
+      <div>
+        <div class="layer-name">Trade Records</div>
+        <div class="layer-subtitle">Raw Memory</div>
+      </div>
+    </div>
+    <div class="layer-desc">Every trade stored with full context — not just entry/exit price, but the reasoning, market regime, confidence level, and outcome.</div>
+    <div class="layer-tags">
+      <span class="tag">Entry reasoning</span>
+      <span class="tag">Market regime</span>
+      <span class="tag">Confidence</span>
+      <span class="tag">Outcome</span>
+    </div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="layer-card l2">
+    <div class="layer-header">
+      <div class="layer-badge">L2</div>
+      <div>
+        <div class="layer-name">Pattern Discovery</div>
+        <div class="layer-subtitle">Learning Layer</div>
+      </div>
+    </div>
+    <div class="layer-desc">LLM-driven hypothesis generation + vectorized backtesting. Statistical validation with out-of-sample testing prevents overfitting.</div>
+    <div class="layer-tags">
+      <span class="tag">LLM analysis</span>
+      <span class="tag">Backtest</span>
+      <span class="tag">OOS validation</span>
+      <span class="tag">Bayesian confidence</span>
+    </div>
+  </div>
+
+  <div class="arrow">→</div>
+
+  <div class="layer-card l3">
+    <div class="layer-header">
+      <div class="layer-badge">L3</div>
+      <div>
+        <div class="layer-name">Strategy Adjustment</div>
+        <div class="layer-subtitle">Adaptation Layer</div>
+      </div>
+    </div>
+    <div class="layer-desc">Evidence-based parameter tuning. Outcome-weighted memory auto-downweights patterns from expired regimes. Your bot adapts itself.</div>
+    <div class="layer-tags">
+      <span class="tag">Auto-adapt</span>
+      <span class="tag">Regime-aware</span>
+      <span class="tag">Kelly sizing</span>
+      <span class="tag">Risk control</span>
+    </div>
+  </div>
+</div>
+
+</body></html>
