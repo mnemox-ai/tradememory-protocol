@@ -1,7 +1,7 @@
 """Migration utilities from L1/L2 tables to OWM memory tables."""
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def migrate_trades_to_episodic(db) -> int:
@@ -23,7 +23,7 @@ def migrate_trades_to_episodic(db) -> int:
     try:
         rows = conn.execute("SELECT * FROM trade_records").fetchall()
         count = 0
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
 
         for row in rows:
             trade = dict(row)
@@ -134,7 +134,7 @@ def migrate_patterns_to_semantic(db) -> int:
     try:
         rows = conn.execute("SELECT * FROM patterns").fetchall()
         count = 0
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
 
         for row in rows:
             pattern = dict(row)
@@ -196,7 +196,7 @@ def initialize_affective(db, equity: float = 10000.0) -> bool:
     """
     conn = db._get_connection()
     try:
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         conn.execute(
             """
             INSERT OR IGNORE INTO affective_state (

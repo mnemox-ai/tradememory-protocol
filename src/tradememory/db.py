@@ -5,7 +5,7 @@ Single file database, no ORM (per CIO directive).
 
 import json
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -723,7 +723,7 @@ class Database:
             if isinstance(data.get('context_json'), dict):
                 data['context_json'] = json.dumps(data['context_json'])
             if 'created_at' not in data:
-                data['created_at'] = datetime.utcnow().isoformat()
+                data['created_at'] = datetime.now(timezone.utc).isoformat()
             conn.execute("""
                 INSERT INTO episodic_memory (
                     id, timestamp, context_json, context_regime,
@@ -791,7 +791,7 @@ class Database:
         """Increment retrieval_count and update last_retrieved."""
         conn = self._get_connection()
         try:
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             result = conn.execute(
                 "UPDATE episodic_memory SET retrieval_count = retrieval_count + 1, "
                 "last_retrieved = ? WHERE id = ?",
@@ -841,7 +841,7 @@ class Database:
         try:
             if isinstance(data.get('validity_conditions'), (dict, list)):
                 data['validity_conditions'] = json.dumps(data['validity_conditions'])
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             data.setdefault('alpha', 1.0)
             data.setdefault('beta', 1.0)
             data.setdefault('sample_size', 0)
@@ -922,7 +922,7 @@ class Database:
         """
         conn = self._get_connection()
         try:
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             ref = evidence_id or now
             if confirmed:
                 result = conn.execute(
@@ -952,7 +952,7 @@ class Database:
         """Insert or replace a procedural memory record."""
         conn = self._get_connection()
         try:
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             data.setdefault('created_at', now)
             data['updated_at'] = now
             conn.execute("""
@@ -1013,7 +1013,7 @@ class Database:
             ).fetchone()
             if existing:
                 return False
-            now = datetime.utcnow().isoformat()
+            now = datetime.now(timezone.utc).isoformat()
             conn.execute("""
                 INSERT INTO affective_state (
                     id, confidence_level, risk_appetite, momentum_bias,
@@ -1054,7 +1054,7 @@ class Database:
             if isinstance(data.get('history_json'), (list, dict)):
                 data['history_json'] = json.dumps(data['history_json'])
             data['id'] = 'current'
-            data.setdefault('last_updated', datetime.utcnow().isoformat())
+            data.setdefault('last_updated', datetime.now(timezone.utc).isoformat())
             conn.execute("""
                 INSERT OR REPLACE INTO affective_state (
                     id, confidence_level, risk_appetite, momentum_bias,
@@ -1092,7 +1092,7 @@ class Database:
                 data['source_semantic_ids'] = json.dumps(data['source_semantic_ids'])
             data.setdefault('status', 'active')
             data.setdefault('priority', 0.5)
-            data.setdefault('created_at', datetime.utcnow().isoformat())
+            data.setdefault('created_at', datetime.now(timezone.utc).isoformat())
             conn.execute("""
                 INSERT INTO prospective_memory (
                     id, trigger_type, trigger_condition, planned_action,

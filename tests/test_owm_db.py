@@ -7,7 +7,7 @@ import pytest
 import tempfile
 import json
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 from tradememory.db import Database
 
@@ -402,7 +402,7 @@ class TestProspectiveMemory:
 
     def test_update_status_triggered(self, db):
         db.insert_prospective(self._make_prospective())
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(timezone.utc).isoformat()
         assert db.update_prospective_status(
             "F-001", "triggered", triggered_at=now,
             outcome_pnl_r=2.5, outcome_reflection="Avoided a bad trade"

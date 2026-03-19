@@ -36,7 +36,7 @@ def _get_db() -> Database:
 def _ensure_tz(ts: Optional[str]) -> str:
     """Ensure a timestamp string is timezone-aware (UTC).
 
-    db.py uses datetime.utcnow() which produces naive timestamps.
+    db.py uses datetime.now(timezone.utc) which produces timezone-aware timestamps.
     OWM compute_recency needs aware timestamps for subtraction.
     """
     if ts is None:
