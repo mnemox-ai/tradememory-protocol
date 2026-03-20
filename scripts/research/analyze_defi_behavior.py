@@ -29,16 +29,23 @@ from statistics import mean, median, stdev
 
 STABLECOINS = {
     "USDT", "USDC", "DAI", "BUSD", "TUSD", "FRAX", "LUSD", "GUSD",
-    "USDP", "PYUSD", "FDUSD", "DOLA", "crvUSD", "GHO", "sUSD", "USDe",
+    "USDP", "PYUSD", "FDUSD", "DOLA", "crvUSD", "GHO", "sUSD",
+    "USDS", "sUSDS",
 }
-LST_TOKENS = {"wstETH", "stETH", "eETH", "rETH", "cbETH", "LBTC"}
+LST_TOKENS = {"wstETH", "stETH", "eETH", "rETH", "cbETH", "weETH", "rsETH"}
 AAVE_TOKENS = {
     "aEthWETH", "aEthUSDT", "aEthUSDC", "aEthDAI", "aEthLBTC",
-    "AWETH", "AWSTETH", "aEthwstETH",
+    "AWETH", "AWSTETH", "aEthwstETH", "aEthweETH", "aEthcbBTC",
+    "aEthsUSDe",
 }
-YIELD_TOKENS = {
-    "sUSDe", "farmdUSDCV3", "farmdDAIV3", "cDAI", "cUSDC",
+FARMING_LP = {
+    "farmdUSDCV3", "farmdDAIV3", "farmdUSDTV3", "farmdWETHV3",
+    "cDAI", "cUSDC", "cUSDTv3", "yvUSDC", "yvDAI",
 }
+GOVERNANCE = {"AAVE", "COMP", "CRV", "MKR", "LDO", "RPL", "SKY", "EIGEN"}
+WRAPPED_BTC = {"WBTC", "LBTC", "cbBTC", "tBTC", "aBTC", "eBTC"}
+ETHENA = {"USDe", "sUSDe", "ENA"}
+SPARK_TOKENS = {"spWETH", "spwstETH", "spcbBTC", "spweETH"}
 WRAPPED_ETH = {"WETH", "ETH"}
 
 SESSION_RANGES = {
@@ -59,10 +66,24 @@ def classify_token(symbol: str) -> str:
         return "LST"
     if symbol in AAVE_TOKENS:
         return "aave"
-    if symbol in YIELD_TOKENS:
-        return "yield"
+    if symbol in FARMING_LP:
+        return "farming_lp"
+    if symbol in GOVERNANCE:
+        return "governance"
+    if symbol in WRAPPED_BTC:
+        return "wrapped_btc"
+    if symbol in ETHENA:
+        return "ethena"
+    if symbol in SPARK_TOKENS:
+        return "spark"
     if symbol in WRAPPED_ETH:
         return "ETH"
+    # Pendle prefix matching: PT-* and YT-* tokens
+    if symbol.startswith("PT-") or symbol.startswith("YT-"):
+        return "pendle"
+    # Spark stablecoin wrappers: S*USDT, S*USDC, etc.
+    if symbol.startswith("S*"):
+        return "spark"
     return "other"
 
 

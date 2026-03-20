@@ -6,41 +6,47 @@
       "start": "2024-05-22",
       "end": "2025-07-01"
     },
-    "generated_at": "2026-03-20T06:57:37.855418+00:00"
+    "generated_at": "2026-03-20T07:24:15.707153+00:00"
   },
   "fund_flow": {
-    "total_aave_txs": 595,
-    "deposits": 364,
-    "withdrawals": 231,
+    "total_aave_txs": 816,
+    "deposits": 490,
+    "withdrawals": 326,
     "deposit_amount_stats": {
-      "count": 364,
-      "total": 3076814905.73,
-      "mean": 8452788.2,
-      "median": 3000000.0,
+      "count": 490,
+      "total": 3290691724.51,
+      "mean": 6715697.4,
+      "median": 13216.64,
       "min": 0.15,
       "max": 72200000.0,
-      "stdev": 11830763.1
+      "stdev": 11510348.23
     },
     "withdraw_amount_stats": {
-      "count": 231,
-      "total": 3077029328.91,
-      "mean": 13320473.29,
-      "median": 4000000.0,
+      "count": 326,
+      "total": 3290906240.44,
+      "mean": 10094804.42,
+      "median": 58480.75,
       "min": 14.0,
       "max": 152277740.73,
-      "stdev": 25112777.0
+      "stdev": 22324764.89
     },
     "deposit_tokens": {
       "aEthUSDT": 187,
+      "aEthweETH": 92,
       "aEthwstETH": 87,
       "aEthWETH": 64,
+      "aEthcbBTC": 28,
       "aEthLBTC": 22,
+      "aEthsUSDe": 6,
       "aEthUSDC": 4
     },
     "withdraw_tokens": {
       "aEthUSDT": 144,
+      "aEthweETH": 73,
       "aEthwstETH": 65,
       "aEthLBTC": 14,
+      "aEthcbBTC": 12,
+      "aEthsUSDe": 10,
       "aEthUSDC": 8
     },
     "sample_timeline": [
@@ -148,21 +154,21 @@
   },
   "token_shifts": {
     "top_transitions": {
-      "other→other": 384,
-      "stablecoin→stablecoin": 279,
+      "stablecoin→stablecoin": 266,
       "stablecoin→aave": 191,
-      "other→stablecoin": 160,
+      "LST→aave": 179,
       "aave→stablecoin": 152,
-      "stablecoin→other": 143,
-      "yield→other": 130,
-      "LST→aave": 109,
-      "aave→LST": 79,
-      "LST→other": 77,
+      "aave→LST": 138,
+      "ethena→pendle": 137,
+      "stablecoin→ethena": 130,
       "aave→aave": 59,
-      "stablecoin→yield": 43,
-      "other→LST": 38,
-      "LST→LST": 27,
-      "other→ETH": 21
+      "LST→spark": 51,
+      "stablecoin→farming_lp": 50,
+      "wrapped_btc→aave": 50,
+      "farming_lp→stablecoin": 49,
+      "ethena→stablecoin": 43,
+      "other→stablecoin": 36,
+      "LST→LST": 33
     },
     "top_sold_tokens": {
       "USDT": 357,
@@ -200,108 +206,108 @@
     },
     "monthly_flow_summary": {
       "2024-05": {
-        "stablecoin→stablecoin": 58,
-        "stablecoin→yield": 13,
-        "yield→stablecoin": 6,
-        "LST→LST": 1,
-        "stablecoin→other": 1
+        "stablecoin→ethena": 51,
+        "stablecoin→farming_lp": 7,
+        "stablecoin→stablecoin": 7,
+        "farming_lp→stablecoin": 7,
+        "ethena→ethena": 7
       },
       "2024-06": {
-        "stablecoin→other": 11,
         "aave→stablecoin": 9,
-        "other→stablecoin": 6,
+        "stablecoin→spark": 6,
+        "farming_lp→stablecoin": 5,
         "stablecoin→stablecoin": 5,
         "stablecoin→aave": 5
       },
       "2024-07": {
-        "yield→other": 25,
-        "stablecoin→stablecoin": 12,
+        "ethena→pendle": 24,
         "aave→stablecoin": 9,
+        "stablecoin→stablecoin": 8,
         "stablecoin→aave": 7,
-        "stablecoin→other": 4
+        "stablecoin→spark": 4
       },
       "2024-08": {
-        "stablecoin→stablecoin": 13,
+        "stablecoin→ethena": 10,
         "stablecoin→aave": 5,
         "aave→stablecoin": 5,
-        "other→stablecoin": 3,
-        "stablecoin→other": 2
+        "spark→stablecoin": 3,
+        "stablecoin→stablecoin": 3
       },
       "2024-09": {
-        "stablecoin→stablecoin": 51,
-        "other→other": 12,
-        "LST→aave": 7,
-        "other→stablecoin": 6,
-        "aave→LST": 5
+        "ethena→stablecoin": 43,
+        "LST→aave": 10,
+        "aave→LST": 7,
+        "other→other": 6,
+        "ethena→pendle": 5
       },
       "2024-10": {
-        "stablecoin→stablecoin": 56,
-        "yield→other": 50,
-        "other→other": 20,
-        "stablecoin→yield": 19,
-        "other→stablecoin": 14
+        "stablecoin→ethena": 52,
+        "ethena→pendle": 50,
+        "stablecoin→stablecoin": 23,
+        "ethena→ethena": 16,
+        "wrapped_btc→pendle": 11
       },
       "2024-11": {
-        "other→other": 35,
-        "other→stablecoin": 31,
-        "stablecoin→other": 30,
+        "stablecoin→stablecoin": 62,
+        "aave→LST": 18,
         "aave→stablecoin": 14,
-        "stablecoin→stablecoin": 13
+        "LST→aave": 12,
+        "stablecoin→aave": 11
       },
       "2024-12": {
-        "other→other": 20,
         "stablecoin→aave": 18,
-        "other→stablecoin": 18,
+        "stablecoin→stablecoin": 16,
         "aave→stablecoin": 16,
-        "stablecoin→other": 15
+        "farming_lp→stablecoin": 13,
+        "LST→spark": 10
       },
       "2025-01": {
-        "yield→other": 29,
-        "other→other": 27,
+        "stablecoin→stablecoin": 37,
+        "ethena→pendle": 35,
         "aave→stablecoin": 21,
         "stablecoin→aave": 18,
-        "stablecoin→other": 16
+        "LST→aave": 8
       },
       "2025-02": {
         "stablecoin→aave": 81,
         "aave→stablecoin": 34,
-        "other→other": 30,
-        "LST→other": 21,
+        "stablecoin→stablecoin": 18,
+        "wrapped_btc→pendle": 18,
         "aave→aave": 14
       },
       "2025-03": {
-        "other→other": 45,
-        "stablecoin→stablecoin": 17,
-        "stablecoin→other": 17,
-        "LST→aave": 13,
-        "other→stablecoin": 12
+        "LST→aave": 21,
+        "stablecoin→stablecoin": 16,
+        "aave→LST": 16,
+        "LST→other": 15,
+        "stablecoin→aave": 11
       },
       "2025-04": {
-        "other→other": 69,
+        "wrapped_btc→aave": 26,
+        "LST→aave": 23,
+        "aave→LST": 21,
         "stablecoin→aave": 20,
-        "LST→aave": 20,
-        "stablecoin→stablecoin": 15,
-        "aave→stablecoin": 14
+        "stablecoin→stablecoin": 16
       },
       "2025-05": {
-        "other→other": 79,
-        "LST→aave": 23,
-        "other→stablecoin": 21,
-        "aave→LST": 11,
-        "stablecoin→other": 11
+        "LST→aave": 41,
+        "stablecoin→stablecoin": 23,
+        "aave→LST": 22,
+        "wrapped_btc→aave": 18,
+        "other→stablecoin": 13
       },
       "2025-06": {
-        "other→other": 44,
-        "stablecoin→stablecoin": 21,
-        "LST→aave": 15,
-        "other→stablecoin": 13,
+        "LST→aave": 33,
+        "stablecoin→stablecoin": 27,
+        "aave→LST": 23,
+        "LST→spark": 14,
         "aave→aave": 12
       },
       "2025-07": {
         "stablecoin→stablecoin": 1,
         "LST→stablecoin": 1,
         "aave→aave": 1,
-        "aave→LST": 1
+        "aave→wrapped_btc": 1
       }
     }
   },
