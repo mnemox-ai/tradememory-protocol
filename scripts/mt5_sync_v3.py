@@ -26,8 +26,8 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
-# Add scripts/ to path for trade_advisor
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add scripts/research/ to path for trade_advisor (moved during 2026-03-19 repo reorg)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "research"))
 from trade_advisor import advise_on_open, send_discord_alert, recall_similar, get_behavioral
 
 # ---------------------------------------------------------------------------
