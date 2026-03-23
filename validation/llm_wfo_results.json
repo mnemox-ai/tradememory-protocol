@@ -1,0 +1,177 @@
+{
+  "experiment": "Exp 4b LLM WFO",
+  "mode": "pilot",
+  "date": "2026-03-21T07:47:05.550128+00:00",
+  "n_periods": 5,
+  "total_cost_usd": 0.54,
+  "total_time_s": 620.0,
+  "cumulative_M": 150,
+  "summary": {
+    "mean_sharpe_L": 0.0,
+    "mean_sharpe_G": 0.0,
+    "mean_sharpe_A": 0.0204,
+    "L_gt_A_pct": 60.0,
+    "L_gt_G_pct": 0.0,
+    "DSR_pass_pct": 0.0,
+    "cohens_d_L_vs_G": 0.0,
+    "cohens_d_L_vs_A": -0.211,
+    "wilcoxon_p_L_vs_A": 0.6858,
+    "wilcoxon_p_L_vs_G": 1.0,
+    "novel_fields": [
+      "atr_h1",
+      "atr_percentile",
+      "day_of_week",
+      "regime",
+      "trend_24h_pct",
+      "volatility_regime"
+    ]
+  },
+  "periods": [
+    {
+      "period": 1,
+      "oos_sharpe": 0.0,
+      "oos_sharpe_raw": null,
+      "reason": "No graduated strategies from LLM evolution",
+      "num_hypotheses": 30,
+      "graduated": 0,
+      "dsr": null,
+      "dsr_pvalue": null,
+      "passed_dsr": false,
+      "deployed": false,
+      "tokens": 13474,
+      "cost_usd": 0.1051,
+      "elapsed_s": 119.9,
+      "novel_fields": [
+        "atr_percentile",
+        "trend_24h_pct",
+        "volatility_regime"
+      ],
+      "all_fields": [
+        "atr_percentile",
+        "hour_utc",
+        "trend_12h_pct",
+        "trend_24h_pct",
+        "volatility_regime"
+      ],
+      "cumulative_M": 30
+    },
+    {
+      "period": 2,
+      "oos_sharpe": 0.0,
+      "oos_sharpe_raw": null,
+      "reason": "No graduated strategies from LLM evolution",
+      "num_hypotheses": 30,
+      "graduated": 0,
+      "dsr": null,
+      "dsr_pvalue": null,
+      "passed_dsr": false,
+      "deployed": false,
+      "tokens": 13750,
+      "cost_usd": 0.1072,
+      "elapsed_s": 126.8,
+      "novel_fields": [
+        "atr_percentile",
+        "trend_24h_pct",
+        "volatility_regime"
+      ],
+      "all_fields": [
+        "atr_percentile",
+        "hour_utc",
+        "trend_12h_pct",
+        "trend_24h_pct",
+        "volatility_regime"
+      ],
+      "cumulative_M": 60
+    },
+    {
+      "period": 3,
+      "oos_sharpe": 0.0,
+      "oos_sharpe_raw": null,
+      "reason": "No graduated strategies from LLM evolution",
+      "num_hypotheses": 30,
+      "graduated": 0,
+      "dsr": null,
+      "dsr_pvalue": null,
+      "passed_dsr": false,
+      "deployed": false,
+      "tokens": 13759,
+      "cost_usd": 0.1073,
+      "elapsed_s": 119.0,
+      "novel_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "regime",
+        "trend_24h_pct"
+      ],
+      "all_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "hour_utc",
+        "regime",
+        "trend_12h_pct",
+        "trend_24h_pct"
+      ],
+      "cumulative_M": 90
+    },
+    {
+      "period": 4,
+      "oos_sharpe": 0.0,
+      "oos_sharpe_raw": null,
+      "reason": "No graduated strategies from LLM evolution",
+      "num_hypotheses": 30,
+      "graduated": 0,
+      "dsr": null,
+      "dsr_pvalue": null,
+      "passed_dsr": false,
+      "deployed": false,
+      "tokens": 14068,
+      "cost_usd": 0.1097,
+      "elapsed_s": 127.0,
+      "novel_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "day_of_week",
+        "regime",
+        "trend_24h_pct"
+      ],
+      "all_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "day_of_week",
+        "hour_utc",
+        "regime",
+        "trend_12h_pct",
+        "trend_24h_pct"
+      ],
+      "cumulative_M": 120
+    },
+    {
+      "period": 5,
+      "oos_sharpe": 0.0,
+      "oos_sharpe_raw": null,
+      "reason": "No graduated strategies from LLM evolution",
+      "num_hypotheses": 30,
+      "graduated": 0,
+      "dsr": null,
+      "dsr_pvalue": null,
+      "passed_dsr": false,
+      "deployed": false,
+      "tokens": 14180,
+      "cost_usd": 0.1106,
+      "elapsed_s": 127.3,
+      "novel_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "trend_24h_pct"
+      ],
+      "all_fields": [
+        "atr_h1",
+        "atr_percentile",
+        "hour_utc",
+        "trend_12h_pct",
+        "trend_24h_pct"
+      ],
+      "cumulative_M": 150
+    }
+  ]
+}

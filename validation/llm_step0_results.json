@@ -1,0 +1,1259 @@
+{
+  "step": "Step 0 \u2014 Manual Single Transition",
+  "date": "2026-03-21T07:23:38.833140+00:00",
+  "data_period": "2020-01-01 to 2020-04-01",
+  "bars": 2178,
+  "config": {
+    "generations": 3,
+    "population_size": 10,
+    "model": "claude-sonnet-4-20250514"
+  },
+  "results": {
+    "total_hypotheses": 30,
+    "graduated": 0,
+    "eliminated": 30,
+    "total_backtests": 38,
+    "total_llm_tokens": 13751,
+    "M_is_hypotheses": 30,
+    "elapsed_seconds": 126.7,
+    "estimated_cost_usd": 0.1073,
+    "estimated_cost_23_periods_usd": 2.4669
+  },
+  "novelty": {
+    "gate_result": "PASS",
+    "novel_count": 28,
+    "total_count": 30,
+    "all_fields_used": [
+      "atr_percentile",
+      "hour_utc",
+      "trend_12h_pct",
+      "trend_24h_pct"
+    ],
+    "novel_fields": [
+      "atr_percentile",
+      "trend_24h_pct"
+    ]
+  },
+  "hypotheses": [
+    {
+      "name": "Early Asian Volatility Fade",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.5,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 38.8172,
+      "oos_sharpe": null,
+      "is_trades": 9,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "London Pre-Open Bearish Continuation",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 9
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "lt",
+          "value": -0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.2,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -23.3244,
+      "oos_sharpe": null,
+      "is_trades": 13,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "US Open Volatility Spike Short",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 16
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "between",
+          "value": [
+            -1.0,
+            0.5
+          ]
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.8,
+        "tp_atr": 3.5,
+        "max_holding_bars": 8
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "between",
+        "eq"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -17.9511,
+      "oos_sharpe": null,
+      "is_trades": 12,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Evening Rally Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 18
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.8,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -12.8246,
+      "oos_sharpe": null,
+      "is_trades": 16,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Late US Session Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 20
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": -0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.6,
+        "max_holding_bars": 5
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -10.619,
+      "oos_sharpe": null,
+      "is_trades": 24,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "NY Close Reversal Short",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 21
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 1.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.5,
+        "tp_atr": 3.2,
+        "max_holding_bars": 7
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 31.5812,
+      "oos_sharpe": null,
+      "is_trades": 6,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Late Night Rally Continuation",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 0.3
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 2.9,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -22.58,
+      "oos_sharpe": null,
+      "is_trades": 20,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Asian Session Weakness Fade",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "in",
+          "value": [
+            2,
+            5
+          ]
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "lt",
+          "value": -1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.4,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "in",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -42.2031,
+      "oos_sharpe": null,
+      "is_trades": 9,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "London Afternoon Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 15
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.5
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": -0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.6,
+        "tp_atr": 3.0,
+        "max_holding_bars": 7
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": 42.633,
+      "oos_sharpe": 49.0062,
+      "is_trades": 11,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Mid-Day Range Compression Short",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 13
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "between",
+          "value": [
+            0.8,
+            2.0
+          ]
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "lt",
+          "value": 0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.7,
+        "max_holding_bars": 5
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "between",
+        "eq",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": 0.0,
+      "oos_sharpe": null,
+      "is_trades": 2,
+      "status": "eliminated",
+      "generation": 0
+    },
+    {
+      "name": "Asian Early Morning Bullish Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.3
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.8,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "regime": "trending_up",
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -9.9265,
+      "oos_sharpe": null,
+      "is_trades": 5,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Asian Session Bearish Reversal",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.5,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 8.6547,
+      "oos_sharpe": 0.0,
+      "is_trades": 10,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Morning Weakness Fade",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 9
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": -1.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 3.0,
+        "max_holding_bars": 3
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": 2.4051,
+      "oos_sharpe": -12.8983,
+      "is_trades": 28,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "London Morning Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 10
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": -0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.2,
+        "max_holding_bars": 5
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -6.8177,
+      "oos_sharpe": null,
+      "is_trades": 24,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Afternoon Momentum Continuation",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 15
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.6,
+        "tp_atr": 3.5,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "regime": "trending_up",
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 36.7296,
+      "oos_sharpe": null,
+      "is_trades": 5,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "US Open Volatility Short",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 16
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "lt",
+          "value": 1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.8,
+        "tp_atr": 4.0,
+        "max_holding_bars": 3
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -4.9771,
+      "oos_sharpe": null,
+      "is_trades": 16,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Evening Session Bullish Breakout",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 18
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": -1.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.8,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 7.5769,
+      "oos_sharpe": 46.8067,
+      "is_trades": 28,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "US Evening Strength",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 20
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": -0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.6,
+        "max_holding_bars": 8
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -20.507,
+      "oos_sharpe": null,
+      "is_trades": 24,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Late US Bearish Exhaustion",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 21
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": -2.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.5,
+        "tp_atr": 3.5,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 8.3433,
+      "oos_sharpe": -31.99,
+      "is_trades": 34,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Late Night Momentum Surge",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.0,
+        "max_holding_bars": 5
+      },
+      "validity": {
+        "regime": "trending_up",
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -36.0811,
+      "oos_sharpe": null,
+      "is_trades": 7,
+      "status": "eliminated",
+      "generation": 1
+    },
+    {
+      "name": "Early Morning Bullish Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 1
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.8,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": -12.5243,
+      "oos_sharpe": null,
+      "is_trades": 19,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "Asian Session Bearish Reversal",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 2
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 0.5
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.0,
+        "tp_atr": 2.5,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": 21.9584,
+      "oos_sharpe": 0.0,
+      "is_trades": 14,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "Morning Weakness Fade",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 9
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "lt",
+          "value": -0.3
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 3.2,
+        "max_holding_bars": 5
+      },
+      "validity": {
+        "regime": "ranging",
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 1.8894,
+      "oos_sharpe": 0.0,
+      "is_trades": 11,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "London Session Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 15
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.1
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.0,
+        "max_holding_bars": 8
+      },
+      "validity": {},
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": false,
+      "novel_fields": [],
+      "is_sharpe": 8.6304,
+      "oos_sharpe": 23.0872,
+      "is_trades": 26,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "US Open Volatility Short",
+      "direction": "short",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 16
+        },
+        {
+          "field": "atr_percentile",
+          "op": "gt",
+          "value": 60
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.6,
+        "tp_atr": 3.5,
+        "max_holding_bars": 6
+      },
+      "validity": {},
+      "fields_used": [
+        "atr_percentile",
+        "hour_utc"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "atr_percentile"
+      ],
+      "is_sharpe": -31.0237,
+      "oos_sharpe": null,
+      "is_trades": 33,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "Evening Session Rally",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 18
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": -0.2
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.1,
+        "tp_atr": 2.8,
+        "max_holding_bars": 7
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -14.9138,
+      "oos_sharpe": null,
+      "is_trades": 24,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "US Evening Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 20
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.0
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.3,
+        "tp_atr": 2.9,
+        "max_holding_bars": 5
+      },
+      "validity": {},
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": false,
+      "novel_fields": [],
+      "is_sharpe": -13.6481,
+      "oos_sharpe": null,
+      "is_trades": 34,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "NY Close Bearish Fade",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 21
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "lt",
+          "value": -0.4
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.5,
+        "tp_atr": 3.3,
+        "max_holding_bars": 4
+      },
+      "validity": {
+        "regime": "ranging"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "lt"
+      ],
+      "is_novel": true,
+      "novel_fields": [],
+      "is_sharpe": 23.6457,
+      "oos_sharpe": null,
+      "is_trades": 9,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "Late Night Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 22
+        },
+        {
+          "field": "trend_24h_pct",
+          "op": "gt",
+          "value": 0.1
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.2,
+        "tp_atr": 2.7,
+        "max_holding_bars": 6
+      },
+      "validity": {
+        "volatility_regime": "normal"
+      },
+      "fields_used": [
+        "hour_utc",
+        "trend_24h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "trend_24h_pct"
+      ],
+      "is_sharpe": -18.9894,
+      "oos_sharpe": null,
+      "is_trades": 22,
+      "status": "eliminated",
+      "generation": 2
+    },
+    {
+      "name": "Weekend Prep Momentum",
+      "direction": "long",
+      "conditions": [
+        {
+          "field": "hour_utc",
+          "op": "eq",
+          "value": 0
+        },
+        {
+          "field": "trend_12h_pct",
+          "op": "gt",
+          "value": 0.2
+        },
+        {
+          "field": "atr_percentile",
+          "op": "gt",
+          "value": 50
+        }
+      ],
+      "exit": {
+        "sl_atr": 1.4,
+        "tp_atr": 3.1,
+        "max_holding_bars": 8
+      },
+      "validity": {},
+      "fields_used": [
+        "atr_percentile",
+        "hour_utc",
+        "trend_12h_pct"
+      ],
+      "ops_used": [
+        "eq",
+        "gt"
+      ],
+      "is_novel": true,
+      "novel_fields": [
+        "atr_percentile"
+      ],
+      "is_sharpe": -15.6179,
+      "oos_sharpe": null,
+      "is_trades": 18,
+      "status": "eliminated",
+      "generation": 2
+    }
+  ]
+}

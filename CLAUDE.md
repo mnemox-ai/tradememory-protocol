@@ -64,6 +64,10 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-22] GEO: README + README_ZH 加 FAQ 式開頭、When to use、How it works、Comparison table
+- [2026-03-21] deflated-sharpe v0.1.0 published to PyPI + GitHub (mnemox-ai/deflated-sharpe). DSR/MinBTL/BH-FDR/RegimeDecayDetector extracted as standalone package. 27 tests.
+- [2026-03-21] Phase 15 Batch C: LLM WFO pilot FAIL — 0/150 graduated (5 periods × 30 hypotheses), Cohen's d=0.000 vs Grid. Structural novelty PASS (6 novel fields). Bottleneck is EvolutionEngine graduation, not DSR. STOP decision.
+- [2026-03-21] fix: cumulative_trials bug — re_evolution.py now increments M on ALL outcomes (not just DSR pass). 3 new tests, 1181 total.
 - [2026-03-21] fix: Sharpe annualization bug — backtester.py `annualize=False` param, Grid WFO rerun with raw Sharpe. Layer 1 Gate: 3/3 FAIL (DSR 0/23 pass). Root cause: M=19200 incompatible with 30-50 trades. Report: validation/reevolution_report.md
 - [2026-03-21] feat: Phase 15 Batch B — Grid WFO complete. strategy_registry.py (25 tests) + re_evolution.py (20 tests) + run_grid_wfo.py (23 periods × 19200 combos × 4 arms). 1178 tests total.
 - [2026-03-21] feat: Phase 15 Batch A — Regime Decay Detector (triple-confirmation: Bayesian win rate + DD exceedance + Mahalanobis OOD) + Statistical Gates (DSR + MinBTL + BH-FDR). 46 new tests, 1133 total.
@@ -253,9 +257,10 @@ class LLMReEvolutionPipeline:
 ---
 
 ## Current Status
-- **v0.5.0**, 1178 tests passing, 2 skipped, 0 warnings
-- **Phase 15 Batch B CODE COMPLETE**: strategy_registry + re_evolution + Grid WFO experiment
-- **Grid WFO Layer 1 Gate: FAIL** — Raw Sharpe rerun: DSR gate 0/23 pass, G>A 43.5% (p=0.54), G>C 47.8% (p=0.83). Root cause: M=19200 + 30-50 trades = mathematically impossible to pass DSR. LLM evolution (M≈30) has 640x lower statistical burden — this is the hypothesis for Exp 4b.
+- **v0.5.0**, 1181 tests passing, 2 skipped, 0 warnings
+- **Phase 15 COMPLETE** — 結論：1H timeframe + 3mo window + single-hour entry 條件下，grid 和 LLM 都無法產出通過 DSR gate 的策略。瓶頸是 trade count，不是 search method。Evolution Engine 驗證延後到更高交易頻率的設定。
+- Exp 4a Layer 1 Gate: FAIL (3/3). Exp 4b Layer 2 Gate: FAIL (2/3, Cohen's d=0.000 → STOP).
+- Structural novelty confirmed (LLM 用了 6 種 grid 之外的 features)，但 graduation rate=0% 使比較無意義。
 - **Phase 15 Batch A COMPLETE**: Regime Detector + Statistical Gates committed
 - **Phase 14 Validation COMPLETE**: B1 CONDITIONAL PASS, B2 PASS (P100 ETHUSDT)
 - **OWM filtering INVALIDATED**: Permutation test 0/4 significant

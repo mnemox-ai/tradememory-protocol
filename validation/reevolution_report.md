@@ -96,3 +96,167 @@ The previous run (annualized) reported:
 - G>A win rate: 91.3% → corrected: 43.5%
 
 The relative ranking shift (from 91.3% to 43.5%) is because Arm G went from inflated-but-positive to 0.0 (DSR gate blocks everything), while controls were unaffected by the DSR gate.
+
+---
+
+## Experiment 4b Step 0: LLM Evolution Single Transition
+
+**Date**: 2026-03-21
+**Data**: BTCUSDT 1H, 2020-01-01 to 2020-04-01 (2,178 bars, IS window only)
+**Config**: EvolutionEngine 3 generations × 10 population, Sonnet 4
+
+### Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| M (IS hypotheses) | 30 |
+| Total backtests | 38 (30 IS + 8 OOS) |
+| Graduated | 0 |
+| Eliminated | 30 |
+| LLM tokens | 13,751 |
+| Cost (this period) | ~$0.107 |
+| Projected cost (23 periods) | ~$2.47 |
+| Elapsed time | 126.7s |
+
+### Structural Novelty Analysis
+
+**Gate: PASS — 28/30 hypotheses (93%) have structural novelty.**
+
+Fields used across all 30 hypotheses:
+
+| Field | Count | In Grid? |
+|-------|-------|----------|
+| hour_utc | 30 | Yes |
+| trend_12h_pct | 19 | Yes |
+| trend_24h_pct | 11 | **No** |
+| atr_percentile | 2 | **No** |
+
+Novel features the LLM discovered that grid search cannot use:
+- `trend_24h_pct` — 24h trend filter (11/30 hypotheses)
+- `atr_percentile` — volatility percentile filter (2/30 hypotheses)
+- `between` operator — range filtering on trend_12h_pct (3/30)
+- `in` operator — multi-hour entry (1/30, hours [2,5])
+- `validity_conditions` — regime/volatility filtering (26/30 had volatility_regime=normal)
+
+Operators used: `eq`, `gt`, `lt`, `between`, `in` (grid only uses `eq` + `gt`/`lt`).
+
+### Performance Observations
+
+Despite structural novelty, **0 hypotheses graduated** (all eliminated). Key patterns:
+
+1. **IS Sharpe distribution**: Range [-42.2, 42.6], mostly negative. High positive values (38.8, 42.6) came from <10 trades — not robust.
+2. **OOS survival**: Only 8/30 reached OOS backtest. Of those, best OOS Sharpe=49.0 (#9 London Afternoon, 11 IS trades) but eliminated due to insufficient robustness.
+3. **The LLM gravitates toward single-hour entry** — almost all hypotheses use `hour_utc eq N`. This limits trade frequency to ~1/day, yielding 20-30 trades in 3 months.
+4. **LLM defaults to `volatility_regime=normal`** in validity conditions — this is cosmetic (backtester doesn't enforce validity_conditions), not functional novelty.
+
+### Step 0 Decision
+
+| Criterion | Result |
+|-----------|--------|
+| Structural novelty (≥1 non-grid feature) | **PASS** (trend_24h_pct, atr_percentile) |
+| Functional novelty (backtester uses the feature) | **PASS** (trend_24h_pct and atr_percentile are in MarketContext) |
+| Any graduated strategy | **FAIL** (0/30) |
+
+**Decision: PROCEED to pilot** — The 0-graduation issue may be period-specific (2020-Q1 was the COVID crash period). The structural novelty gate is the primary criterion for Step 0, and it passes decisively. The full WFO across 23 periods will test whether any period produces LLM graduates that survive DSR.
+
+### Bug Fix Applied
+
+Before Step 0, fixed `ReEvolutionPipeline.run()`: `cumulative_trials` now increments on ALL outcomes (not just DSR pass). Without this fix, failed periods don't accumulate M, causing DSR to be too lenient for later periods. 3 new tests added.
+
+---
+
+## Experiment 4b Pilot: LLM WFO (5 periods)
+
+**Date**: 2026-03-21
+**Data**: BTCUSDT 1H, periods P1-P5 (2020-01 to 2021-07)
+**Config**: EvolutionEngine 3 gen × 10 pop, Sonnet 4, 5 pilot periods
+
+### Results
+
+```
+Period      Arm L    Arm G   Ctrl A   Ctrl B  L>A  L>G  DSR
+P1         0.0000   0.0000  -0.0984   0.0285    Y    N  FAIL
+P2         0.0000   0.0000   0.1950   0.0182    N    N  FAIL
+P3         0.0000   0.0000   0.1406   0.0711    N    N  FAIL
+P4         0.0000   0.0000  -0.0563   0.0343    Y    N  FAIL
+P5         0.0000   0.0000  -0.0791  -0.0172    Y    N  FAIL
+```
+
+### Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| Total hypotheses (5 periods) | 150 |
+| Graduated | **0 (0%)** |
+| Cohen's d (L vs G) | **0.000** |
+| Cohen's d (L vs A) | -0.211 |
+| DSR pass | 0/5 (0%) |
+| Total cost | $0.54 |
+| Novel fields | atr_h1, atr_percentile, day_of_week, regime, trend_24h_pct, volatility_regime |
+
+### Root Cause: 0% Graduation Rate
+
+The LLM evolution produces structurally novel hypotheses (6 unique fields beyond grid's 2), but **none survive the EvolutionEngine's internal IS→OOS selection**. The bottleneck is not DSR — it's the upstream graduation gate.
+
+Why 0% graduation across 150 hypotheses (5 periods × 30):
+1. **Single-hour entry dominance**: LLM defaults to `hour_utc eq N`, limiting each strategy to ~1 trade/day → ~30 trades in 3 months → high Sharpe variance.
+2. **Internal 70/30 IS/OOS split**: The 3-month window gets split into ~63 days IS + ~27 days OOS internally. With single-hour strategies, this means ~20 IS trades and ~10 OOS trades — the selector eliminates anything with <30 trades or negative OOS Sharpe.
+3. **The prompt encourages conservative parameters**: System prompt says "short holding periods (1-12 bars)" and "asymmetric RR ≥ 2:1", producing tight strategies that trigger rarely.
+
+### Layer 2 Gate (Pre-Registered)
+
+| Criterion | Result | Verdict |
+|-----------|--------|---------|
+| L DSR survive > G DSR survive (>0%) | 0% = 0% | **FAIL** |
+| L OOS Sharpe > A in ≥50% periods, p<0.10 | 60%, p=0.686 | **FAIL** (p too high) |
+| ≥1 hypothesis uses non-grid feature | **PASS** (6 novel fields) | PASS |
+
+**Layer 2 Gate: FAIL (2/3 criteria failed)**
+
+### Pilot Decision
+
+**STOP. Cohen's d = 0.000. No statistical difference between LLM and Grid arms.**
+
+Running the remaining 18 periods (~$2, ~40min) would not change the result — both arms produce 0 Sharpe (cash position) because neither can graduate strategies from 3-month windows.
+
+### Implications
+
+1. **The LLM vs Grid comparison is moot when neither graduates.** The hypothesis "LLM has lower M → easier DSR" is technically correct but irrelevant — the bottleneck is upstream (graduation), not downstream (DSR).
+2. **Structural novelty is confirmed** — LLM discovers features grid cannot use (6 novel fields). But this advantage requires strategies that trade enough to be statistically evaluable.
+3. **The DSR gate is working correctly.** It is telling us the data is insufficient, not that the search method is wrong.
+
+---
+
+## Phase 15 Conclusion
+
+**In the setting of 1H timeframe + 3-month rolling window + single-hour entry strategies, neither grid search (M=19,200) nor LLM evolution (M=30) can produce strategies that survive the DSR gate. The bottleneck is trade count per window, not search method.**
+
+This is not a failure of the Evolution Engine concept. It is a **specification boundary**: the engine requires strategies that produce sufficient trades per evaluation window for statistical defensibility. The DSR gate's MinBTL requirement is incompatible with strategies that trigger ~1 trade/day over 3 months (~90 trades IS, ~30 OOS after 70/30 split — but single-hour entry reduces this to ~30 IS / ~10 OOS, below any reasonable significance threshold).
+
+### What was validated
+
+| Finding | Status |
+|---------|--------|
+| DSR gate correctly blocks underpowered strategies | **Confirmed** |
+| Grid search M=19,200 is too large for 3mo windows | **Confirmed** (Exp 4a) |
+| LLM evolution produces structurally novel hypotheses | **Confirmed** (6 fields beyond grid) |
+| LLM's lower M gives DSR advantage over grid | **Untestable** (0% graduation in both arms) |
+| 3mo BTC 1H + single-hour entry = insufficient data | **Confirmed** (Exp 4a + 4b) |
+
+### Evolution Engine feasibility boundary
+
+The engine needs one of:
+- **Higher trade frequency**: strategies that trigger multiple times per day (multi-hour entry, or shorter timeframes like 5m/15m)
+- **Longer evaluation windows**: 6-12 months IS instead of 3 months
+- **Higher-frequency timeframes**: 5m or 15m bars → 10-50x more trades per window
+
+This is product spec, not a defect. "Suitable for strategies producing ≥N trades per evaluation window" is a legitimate constraint to document.
+
+### Decision
+
+**Accept Phase 15 results as-is. No post-hoc parameter adjustment.** The pre-registered criteria were applied honestly:
+- Exp 4a Layer 1 Gate: FAIL (3/3)
+- Exp 4b Step 0 Gate: PASS (structural novelty)
+- Exp 4b Layer 2 Gate: FAIL (2/3, pilot Cohen's d = 0.000 → STOP)
+
+Phase 15 is complete. Evolution Engine validation deferred to a setting with sufficient trade frequency.

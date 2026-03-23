@@ -372,6 +372,67 @@ class TestReEvolutionPipeline:
         assert result.best_candidate is not None
 
 
+    def test_cumulative_trials_always_accumulate_on_dsr_fail(self):
+        """Bug fix: cumulative_trials must increment even when DSR gate fails."""
+        registry = StrategyRegistry()
+        registry.cumulative_trials = 100000  # huge M makes DSR impossible
+        pipeline = ReEvolutionPipeline(
+            backtest_fn=make_mock_backtest(sharpe=0.5, trades=20),
+            grid_space=self._small_space(),  # 2 candidates
+        )
+        result = pipeline.run(
+            is_bars=[], is_contexts=[], is_atrs=[],
+            oos_bars=[], oos_contexts=[], oos_atrs=[],
+            registry=registry,
+            version_id="V_FAIL",
+        )
+        # DSR should fail with M=100002
+        assert not result.passed_dsr_gate
+        assert not result.deployed
+        # But cumulative_trials MUST still be incremented
+        assert registry.cumulative_trials == 100002
+
+    def test_cumulative_trials_accumulate_on_no_viable_is(self):
+        """cumulative_trials must increment even when no IS-viable candidates."""
+        registry = StrategyRegistry()
+        registry.cumulative_trials = 500
+        pipeline = ReEvolutionPipeline(
+            backtest_fn=make_mock_backtest(sharpe=-1.0, trades=5),
+            grid_space=self._small_space(),  # 2 candidates
+        )
+        result = pipeline.run(
+            is_bars=[], is_contexts=[], is_atrs=[],
+            oos_bars=[], oos_contexts=[], oos_atrs=[],
+            registry=registry,
+        )
+        assert "No viable IS" in result.reason
+        assert registry.cumulative_trials == 502
+
+    def test_cumulative_trials_accumulate_on_no_oos_viable(self):
+        """cumulative_trials must increment even when no OOS-viable candidates."""
+        registry = StrategyRegistry()
+        registry.cumulative_trials = 300
+        call_count = {"n": 0}
+
+        def is_good_oos_bad(bars, contexts, atrs, pattern, timeframe="1h"):
+            call_count["n"] += 1
+            if call_count["n"] <= 2:  # IS calls
+                return FitnessMetrics(sharpe_ratio=2.0, trade_count=20)
+            return FitnessMetrics(sharpe_ratio=-1.0, trade_count=2)  # OOS fails
+
+        pipeline = ReEvolutionPipeline(
+            backtest_fn=is_good_oos_bad,
+            grid_space=self._small_space(),  # 2 candidates
+        )
+        result = pipeline.run(
+            is_bars=[], is_contexts=[], is_atrs=[],
+            oos_bars=[], oos_contexts=[], oos_atrs=[],
+            registry=registry,
+        )
+        assert "No OOS-viable" in result.reason
+        assert registry.cumulative_trials == 302
+
+
 class TestReEvolutionResult:
     def test_default_state(self):
         r = ReEvolutionResult()

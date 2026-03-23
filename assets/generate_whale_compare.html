@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200, height=630">
+<title>DeFi Whale Fingerprint Comparison</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  width: 1200px; height: 630px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: #0d1117;
+  color: #e6edf3;
+  display: flex; flex-direction: column;
+  padding: 32px 40px 28px;
+  overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 24px;
+}
+.header h1 {
+  font-size: 26px; font-weight: 700; letter-spacing: -1px;
+  color: #fff;
+}
+.header h1 span { color: #00b4ff; }
+.header .badge {
+  font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
+  background: rgba(0, 180, 255, 0.12); border: 1px solid rgba(0, 180, 255, 0.3);
+  border-radius: 6px; padding: 6px 14px; color: #00b4ff;
+}
+
+/* ── Two columns ── */
+.columns { display: flex; gap: 28px; flex: 1; }
+
+.whale-card {
+  flex: 1; border-radius: 14px; padding: 22px 24px;
+  position: relative; overflow: hidden;
+}
+.whale-a {
+  background: rgba(0, 180, 255, 0.06);
+  border: 1.5px solid rgba(0, 180, 255, 0.3);
+}
+.whale-b {
+  background: rgba(163, 113, 247, 0.06);
+  border: 1.5px solid rgba(163, 113, 247, 0.3);
+}
+
+.whale-label {
+  font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.whale-a .whale-label { color: #00b4ff; }
+.whale-b .whale-label { color: #a371f7; }
+
+.whale-name {
+  font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 2px;
+}
+.whale-subtitle {
+  font-size: 12px; color: #8b949e; margin-bottom: 16px;
+}
+
+/* ── Stats grid ── */
+.stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-box {
+  background: rgba(255,255,255,0.04); border-radius: 8px;
+  padding: 10px 12px;
+}
+.stat-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  color: #8b949e; margin-bottom: 4px;
+}
+.stat-value {
+  font-size: 18px; font-weight: 700; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value.cyan { color: #00b4ff; }
+.stat-value.purple { color: #a371f7; }
+.stat-value.green { color: #3fb950; }
+.stat-value.gold { color: #f0b90b; }
+
+/* ── Tempo bar ── */
+.tempo-bar {
+  height: 6px; border-radius: 3px; margin-top: 4px;
+  position: relative; overflow: hidden;
+}
+.whale-a .tempo-bar { background: rgba(0, 180, 255, 0.15); }
+.whale-b .tempo-bar { background: rgba(163, 113, 247, 0.15); }
+.tempo-fill {
+  height: 100%; border-radius: 3px; position: absolute; left: 0; top: 0;
+}
+.whale-a .tempo-fill { background: #00b4ff; }
+.whale-b .tempo-fill { background: #a371f7; }
+
+/* ── Tags ── */
+.tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.tag {
+  font-size: 10px; font-weight: 600; padding: 4px 10px;
+  border-radius: 12px; letter-spacing: 0.5px;
+}
+.whale-a .tag {
+  background: rgba(0, 180, 255, 0.12); color: #00b4ff;
+  border: 1px solid rgba(0, 180, 255, 0.25);
+}
+.whale-b .tag {
+  background: rgba(163, 113, 247, 0.12); color: #a371f7;
+  border: 1px solid rgba(163, 113, 247, 0.25);
+}
+
+/* ── Center VS ── */
+.vs-divider {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 60px; flex-shrink: 0; position: relative;
+}
+.vs-circle {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: linear-gradient(135deg, #00b4ff, #a371f7);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #0d1117; letter-spacing: -0.5px;
+  box-shadow: 0 0 24px rgba(0, 180, 255, 0.3), 0 0 24px rgba(163, 113, 247, 0.3);
+}
+.vs-line {
+  width: 2px; flex: 1;
+  background: linear-gradient(180deg, transparent, rgba(0,180,255,0.3), rgba(163,113,247,0.3), transparent);
+}
+
+/* ── Bottom bar ── */
+.bottom-bar {
+  display: flex; gap: 16px; margin-top: 20px;
+  align-items: center; justify-content: center;
+}
+.metric-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px; padding: 10px 16px;
+}
+.metric-pill .pill-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+  color: #8b949e;
+}
+.metric-pill .pill-value {
+  font-size: 16px; font-weight: 700; color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.metric-pill .pill-desc {
+  font-size: 10px; color: #8b949e;
+}
+.metric-pill.highlight {
+  border-color: rgba(0, 180, 255, 0.3);
+  background: rgba(0, 180, 255, 0.06);
+}
+.metric-pill.warn {
+  border-color: rgba(240, 185, 11, 0.3);
+  background: rgba(240, 185, 11, 0.06);
+}
+
+/* ── Footer ── */
+.footer {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 16px; padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.footer-left {
+  font-size: 11px; color: #8b949e;
+}
+.footer-left strong { color: #00b4ff; font-weight: 600; }
+.footer-right {
+  font-size: 10px; color: #656d76; letter-spacing: 0.5px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>DeFi 鯨魚行為<span>指紋對比</span></h1>
+  <div class="badge">3,608 Swaps Analyzed</div>
+</div>
+
+<div class="columns">
+  <!-- Whale A -->
+  <div class="whale-card whale-a">
+    <div class="whale-label">鯨魚 A</div>
+    <div class="whale-name">機構 DeFi Farmer</div>
+    <div class="whale-subtitle">1,945 筆交易 · 2024.05 – 2025.07 · $405 億</div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">操作節奏</div>
+        <div class="stat-value cyan">Steady</div>
+        <div class="tempo-bar"><div class="tempo-fill" style="width: 56%"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Aave 佔比</div>
+        <div class="stat-value cyan">42%</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">平均單筆</div>
+        <div class="stat-value">$21.2M</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">活躍高峰</div>
+        <div class="stat-value">週一 · 08:00</div>
+      </div>
+    </div>
+
+    <div class="tags">
+      <span class="tag">wstETH</span>
+      <span class="tag">USDC</span>
+      <span class="tag">Aave</span>
+      <span class="tag">Spark</span>
+      <span class="tag">Gas 不敏感</span>
+    </div>
+  </div>
+
+  <!-- VS -->
+  <div class="vs-divider">
+    <div class="vs-line"></div>
+    <div class="vs-circle">VS</div>
+    <div class="vs-line"></div>
+  </div>
+
+  <!-- Whale B -->
+  <div class="whale-card whale-b">
+    <div class="whale-label">鯨魚 B</div>
+    <div class="whale-name">事件驅動投機者</div>
+    <div class="whale-subtitle">1,663 筆交易 · 2020.12 – 2023.04 · $7.7 億</div>
+
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">操作節奏</div>
+        <div class="stat-value purple">Burst</div>
+        <div class="tempo-bar"><div class="tempo-fill" style="width: 99%"></div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Aave 佔比</div>
+        <div class="stat-value purple">0.2%</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">平均單筆</div>
+        <div class="stat-value">$903K</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">活躍高峰</div>
+        <div class="stat-value">週日 · 12:00</div>
+      </div>
+    </div>
+
+    <div class="tags">
+      <span class="tag">USDT</span>
+      <span class="tag">WETH</span>
+      <span class="tag">USDC</span>
+      <span class="tag">不碰 Aave</span>
+      <span class="tag">Gas 不敏感</span>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom metrics -->
+<div class="bottom-bar">
+  <div class="metric-pill highlight">
+    <div>
+      <div class="pill-label">時段重疊</div>
+      <div class="pill-value">0.87</div>
+    </div>
+    <div class="pill-desc">同一個市場</div>
+  </div>
+  <div class="metric-pill warn">
+    <div>
+      <div class="pill-label">Token 分歧</div>
+      <div class="pill-value">0.89</div>
+    </div>
+    <div class="pill-desc">完全不同的遊戲</div>
+  </div>
+  <div class="metric-pill">
+    <div>
+      <div class="pill-label">交易量差距</div>
+      <div class="pill-value">52×</div>
+    </div>
+    <div class="pill-desc">$405億 vs $7.7億</div>
+  </div>
+  <div class="metric-pill">
+    <div>
+      <div class="pill-label">節奏差距</div>
+      <div class="pill-value">1.8×</div>
+    </div>
+    <div class="pill-desc">CV 0.84 vs 1.49</div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-left">Built with <strong>TradeMemory Protocol</strong> · DeFi Behavior Fingerprinting</div>
+  <div class="footer-right">github.com/mnemox-ai/tradememory-protocol · 2026-03-20</div>
+</div>
+
+</body>
+</html>
