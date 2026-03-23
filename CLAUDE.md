@@ -64,6 +64,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-23] feat: Phase 15 Batch C scripts + DeFi assets committed
+- [2026-03-23] fix: mt5_sync_v3 import path + MAGIC_TO_STRATEGY mapping
 - [2026-03-22] GEO: README + README_ZH 加 FAQ 式開頭、When to use、How it works、Comparison table
 - [2026-03-21] deflated-sharpe v0.1.0 published to PyPI + GitHub (mnemox-ai/deflated-sharpe). DSR/MinBTL/BH-FDR/RegimeDecayDetector extracted as standalone package. 27 tests.
 - [2026-03-21] Phase 15 Batch C: LLM WFO pilot FAIL — 0/150 graduated (5 periods × 30 hypotheses), Cohen's d=0.000 vs Grid. Structural novelty PASS (6 novel fields). Bottleneck is EvolutionEngine graduation, not DSR. STOP decision.
