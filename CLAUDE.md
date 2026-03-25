@@ -260,7 +260,7 @@ class LLMReEvolutionPipeline:
 ---
 
 ## Current Status
-- **v0.5.0**, 1189 tests passing, 1 skipped
+- **v0.5.0**, 1199 tests passing, 1 skipped
 - **Phase 0 COMPLETE**: mt5_sync_v3 enriched (EventLogReader, dynamic confidence, pnl_r, exit_reasoning, references, regime context). See `docs/EXECUTION_LOG.md`.
 - **Phase 15 COMPLETE** — 結論：1H timeframe + 3mo window + single-hour entry 條件下，grid 和 LLM 都無法產出通過 DSR gate 的策略。瓶頸是 trade count，不是 search method。Evolution Engine 驗證延後到更高交易頻率的設定。
 - Exp 4a Layer 1 Gate: FAIL (3/3). Exp 4b Layer 2 Gate: FAIL (2/3, Cohen's d=0.000 → STOP).
