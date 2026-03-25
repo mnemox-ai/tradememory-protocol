@@ -397,6 +397,47 @@ def main():
     time.sleep(1)
 
     # ──────────────────────────────────────────────────
+    # Phase 6: Audit — Trading Decision Record
+    # ──────────────────────────────────────────────────
+    print_header("Phase 6: Audit — Trading Decision Record (TDR)")
+    slow_print("  Every trade produces a tamper-evident audit record.")
+    slow_print("  This is the compliance layer for AI trading agents.")
+    print()
+
+    try:
+        from tradememory.domain.tdr import TradingDecisionRecord, MemoryContext
+
+        # Pick the first trade to demonstrate TDR
+        sample = db.get_trade("DEMO-001")
+        if sample:
+            mem = MemoryContext(
+                similar_trades=sample.get("references", []),
+                anti_resonance_applied=True,
+                negative_ratio=0.22,
+                recall_count=len(sample.get("references", [])),
+            )
+            tdr = TradingDecisionRecord.from_trade_record(sample, memory_ctx=mem)
+            import json
+            tdr_json = tdr.model_dump(mode="json")
+            # Show key fields
+            print(f"  Record ID:    {tdr_json['record_id']}")
+            print(f"  Strategy:     {tdr_json['strategy']}")
+            print(f"  Confidence:   {tdr_json['confidence_score']}")
+            print(f"  Signal:       {tdr_json['signal_source'][:60]}...")
+            print(f"  Anti-Res:     {tdr_json['memory']['anti_resonance_applied']}")
+            print(f"  Data Hash:    {tdr_json['data_hash'][:32]}...")
+            if tdr_json.get("pnl") is not None:
+                print(f"  P&L:          ${tdr_json['pnl']:+.2f} (R={tdr_json.get('pnl_r', 'N/A')})")
+            print()
+            slow_print("  Full TDR JSON available via: GET /audit/decision-record/{trade_id}")
+            slow_print("  Batch export: GET /audit/export?start=2026-03-01&end=2026-04-01")
+            slow_print("  Verify hash:  GET /audit/verify/{trade_id}")
+    except Exception as e:
+        print(f"  [TDR demo skipped: {e}]")
+    print()
+    time.sleep(1)
+
+    # ──────────────────────────────────────────────────
     # Final summary
     # ──────────────────────────────────────────────────
     print_header("Demo complete!")

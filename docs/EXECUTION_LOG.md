@@ -98,3 +98,33 @@ Commit: pending | Tests: 1214 passed, 1 skipped
 ### Test Results
 - 15 new tests in `tests/test_audit.py`
 - Covers: TDR schema, hash determinism, hash tamper detection, single record, export JSON/JSONL, date range filter, strategy filter, verify endpoint
+
+---
+
+## Phase 3: Open Source & Promotion — MATERIALS READY
+
+### 3.1 TDR Spec v1.0
+- Status: DONE
+- File: `docs/TDR_SPEC_v1.md`
+- RFC-style spec: 7 sections, record structure, tamper detection, regulatory mapping, API reference, example
+
+### 3.2 anti-resonance Package Design
+- Status: DRAFT
+- File: `docs/anti-resonance-package.md`
+- Package structure, API design, README outline, target audience
+- Next: extract code into standalone repo `mnemox-ai/anti-resonance`
+
+### 3.3 MQL5 Forum Article
+- Status: DRAFT
+- File: `docs/article-adding-memory-to-ea.md`
+- "Adding Memory to Your EA: A Practical Guide" — 7 sections + zh-TW outline
+- Placeholder for Section 6 (real data results from Phase 1)
+
+### 3.4 Blog Post
+- Status: BLOCKED on Phase 1 results
+- Will use A/B comparison data once baseline collection completes
+
+### 3.5 Demo Script Update
+- Status: DONE
+- Added Phase 6 (TDR audit) to `scripts/demo.py`
+- Shows: record_id, strategy, confidence, signal, anti_resonance, data_hash, P&L

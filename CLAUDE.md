@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-25] docs: Phase 3 materials — TDR Spec v1.0, anti-resonance package design, MQL5 article draft, demo script + TDR output
 - [2026-03-25] feat: Phase 2 complete — TDR schema + 4 audit REST endpoints + 2 MCP tools + SHA256 tamper detection. 1214 tests.
 - [2026-03-25] feat: Phase 0 complete — mt5_sync_v3 now sends rich context (EventLogReader + dynamic confidence + pnl_r + exit_reasoning + references + regime). 1199 tests.
 - [2026-03-23] feat: Phase 15 Batch C scripts + DeFi assets committed
