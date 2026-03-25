@@ -1356,4 +1356,9 @@ async def verify_audit_hash(trade_id: str) -> dict:
 
 def main():
     """Entry point for MCP server."""
+    import sys
+    from pathlib import Path
+    _data_dir = Path.home() / ".tradememory"
+    if not (_data_dir / ".setup_done").exists():
+        print("First time? Run: tradememory setup", file=sys.stderr)
     mcp.run()

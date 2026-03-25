@@ -24,6 +24,7 @@ dependencies = [
     "pydantic>=2.5.3",
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
+    "click>=8.0.0",
 ]
 
 [project.optional-dependencies]
@@ -66,6 +67,7 @@ Issues = "https://github.com/mnemox-ai/tradememory-protocol/issues"
 Changelog = "https://github.com/mnemox-ai/tradememory-protocol/blob/master/CHANGELOG.md"
 
 [project.scripts]
+tradememory = "tradememory.cli:cli"
 tradememory-protocol = "tradememory:main"
 tradememory-api = "tradememory.server:main"
 
