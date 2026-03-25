@@ -108,11 +108,12 @@ Commit: pending | Tests: 1214 passed, 1 skipped
 - File: `docs/TDR_SPEC_v1.md`
 - RFC-style spec: 7 sections, record structure, tamper detection, regulatory mapping, API reference, example
 
-### 3.2 anti-resonance Package Design
-- Status: DRAFT
-- File: `docs/anti-resonance-package.md`
-- Package structure, API design, README outline, target audience
-- Next: extract code into standalone repo `mnemox-ai/anti-resonance`
+### 3.2 anti-resonance Package v0.2.0
+- Status: DONE
+- Repo: `github.com/mnemox-ai/anti-resonance` commit `273ed91`
+- v0.2.0: score-aware replacement, ensure_negative_balance alias, 20 tests
+- README: Parametric-External Memory Resonance explanation, FinMem + DEV.to refs
+- PyPI: `pip install anti-resonance` (needs publish)
 
 ### 3.3 MQL5 Forum Article
 - Status: DRAFT
