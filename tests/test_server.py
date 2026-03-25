@@ -67,7 +67,7 @@ class TestTradeEndpoints:
         assert "timestamp" in data
 
     def test_record_decision_invalid_confidence(self, real_client):
-        """POST /trade/record_decision with confidence > 1.0 returns 400."""
+        """POST /trade/record_decision with confidence > 1.0 returns 422 (validation error)."""
         resp = real_client.post("/trade/record_decision", json={
             "trade_id": "T-2026-0002",
             "symbol": "XAUUSD",
@@ -78,7 +78,7 @@ class TestTradeEndpoints:
             "reasoning": "Bad confidence",
             "market_context": {"price": 2890.0},
         })
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
     def test_record_outcome(self, real_client):
         """POST /trade/record_outcome updates trade with exit data."""

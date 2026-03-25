@@ -115,8 +115,8 @@ class TestEvolutionDiscover:
 
         resp = client.post("/evolution/discover", json={"symbol": "BTCUSDT"})
 
-        assert resp.status_code == 400
-        assert "LLM API down" in resp.json()["detail"]
+        assert resp.status_code == 500
+        assert resp.json()["detail"] == "Internal server error"
 
 
 # --- POST /evolution/backtest ---
@@ -151,7 +151,7 @@ class TestEvolutionBacktest:
             "pattern_dict": {"bad": "data"},
         })
 
-        assert resp.status_code == 400
+        assert resp.status_code == 500
 
     def test_backtest_missing_pattern(self):
         resp = client.post("/evolution/backtest", json={})
@@ -189,8 +189,8 @@ class TestEvolutionEvolve:
 
         resp = client.post("/evolution/evolve", json={"symbol": "BTCUSDT"})
 
-        assert resp.status_code == 400
-        assert "Engine crash" in resp.json()["detail"]
+        assert resp.status_code == 500
+        assert resp.json()["detail"] == "Internal server error"
 
 
 # --- GET /evolution/log ---

@@ -15,7 +15,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .adaptive_risk import AdaptiveRisk
 from .db import Database
@@ -23,6 +23,12 @@ from .journal import TradeJournal
 from .models import SessionState, TradeDirection, TradeProposal
 from .mt5_connector import MT5Connector
 from .owm import ContextVector, outcome_weighted_recall
+from .owm_helpers import (
+    ensure_tz,
+    update_affective_from_trade,
+    update_procedural_from_trade,
+    update_semantic_from_trade,
+)
 from .owm.migration import (
     initialize_affective,
     migrate_patterns_to_semantic,
@@ -30,6 +36,11 @@ from .owm.migration import (
 )
 from .reflection import ReflectionEngine
 from .state import StateManager
+
+# NOTE: No authentication on endpoints. Server binds to 127.0.0.1 by default.
+# For network exposure, add API key middleware (see docs/SECURITY.md).
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="TradeMemory Protocol",
@@ -72,7 +83,7 @@ class RecordDecisionRequest(BaseModel):
     direction: str
     lot_size: float
     strategy: str
-    confidence: float
+    confidence: float = Field(ge=0.0, le=1.0)
     reasoning: str
     market_context: Dict[str, Any]
     references: Optional[List[str]] = None
@@ -95,7 +106,7 @@ class QueryHistoryRequest(BaseModel):
     """Request for trade.query_history"""
     strategy: Optional[str] = None
     symbol: Optional[str] = None
-    limit: int = 100
+    limit: int = Field(default=100, le=1000)
 
 
 class LoadStateRequest(BaseModel):
@@ -136,7 +147,8 @@ async def trade_record_decision(req: RecordDecisionRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/trade/record_outcome")
@@ -164,7 +176,8 @@ async def trade_record_outcome(req: RecordOutcomeRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/trade/query_history")
@@ -187,7 +200,8 @@ async def trade_query_history(req: QueryHistoryRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/trade/get_active")
@@ -206,7 +220,8 @@ async def trade_get_active():
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/state/load")
@@ -224,7 +239,8 @@ async def state_load(req: LoadStateRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/state/save")
@@ -244,7 +260,8 @@ async def state_save(req: SaveStateRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/reflect/run_daily")
@@ -272,7 +289,8 @@ async def reflect_run_daily(date: Optional[str] = None):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/reflect/run_weekly")
@@ -300,7 +318,8 @@ async def reflect_run_weekly(week_ending: Optional[str] = None):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/reflect/run_monthly")
@@ -329,7 +348,8 @@ async def reflect_run_monthly(year: Optional[int] = None, month: Optional[int] =
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/mt5/sync")
@@ -351,7 +371,8 @@ async def mt5_sync(agent_id: str = "ng-gold-agent"):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 class MT5ConnectRequest(BaseModel):
@@ -382,7 +403,8 @@ async def mt5_connect(req: MT5ConnectRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ========== Risk Endpoints ==========
@@ -429,7 +451,8 @@ async def risk_get_constraints(req: GetConstraintsRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/risk/check_trade")
@@ -461,7 +484,8 @@ async def risk_check_trade(req: CheckTradeRequest):
         }
 
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ========== Pattern Discovery Endpoints ==========
@@ -497,7 +521,8 @@ async def reflect_discover_patterns(req: DiscoverPatternsRequest):
             "patterns": patterns,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/patterns/query")
@@ -522,7 +547,8 @@ async def query_patterns(req: QueryPatternsRequest):
             "patterns": patterns,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ========== L3 Strategy Adjustment Endpoints ==========
@@ -564,7 +590,8 @@ async def reflect_generate_adjustments(req: GenerateAdjustmentsRequest):
             "adjustments": adjustments,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/adjustments/query")
@@ -590,7 +617,8 @@ async def query_adjustments(
             "adjustments": adjustments,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/adjustments/update_status")
@@ -622,7 +650,8 @@ async def update_adjustment_status(req: UpdateAdjustmentStatusRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/health")
@@ -636,150 +665,6 @@ async def health_check():
 
 
 # ========== OWM (Outcome-Weighted Memory) Endpoints ==========
-
-def _ensure_tz(ts: Optional[str]) -> str:
-    """Ensure a timestamp string is timezone-aware (UTC)."""
-    if ts is None:
-        return datetime.now(timezone.utc).isoformat()
-    if "+" not in ts and "Z" not in ts and ts.count("-") <= 2:
-        return ts + "+00:00"
-    return ts
-
-
-def _update_semantic_from_trade(
-    db: Database,
-    symbol: str,
-    strategy_name: str,
-    pnl: float,
-    pnl_r: Optional[float],
-    context_regime: Optional[str],
-    trade_id: str,
-) -> None:
-    """Update semantic memories with Bayesian evidence from a new trade."""
-    existing = db.query_semantic(strategy=strategy_name, symbol=symbol, limit=10)
-    weight = min(2.0, abs(pnl_r)) if pnl_r is not None else 1.0
-    confirmed = pnl > 0
-
-    if existing:
-        for mem in existing:
-            db.update_semantic_bayesian(
-                memory_id=mem["id"],
-                confirmed=confirmed,
-                weight=weight,
-                evidence_id=trade_id,
-            )
-    else:
-        sem_id = f"sem-{strategy_name.lower()}-{symbol.lower()}-{uuid.uuid4().hex[:8]}"
-        alpha = 1.0 + (weight if confirmed else 0.0)
-        beta = 1.0 + (0.0 if confirmed else weight)
-        db.insert_semantic({
-            "id": sem_id,
-            "proposition": f"{strategy_name} on {symbol} tends to be profitable",
-            "alpha": alpha,
-            "beta": beta,
-            "sample_size": 1,
-            "strategy": strategy_name,
-            "symbol": symbol,
-            "regime": context_regime,
-            "volatility_regime": None,
-            "validity_conditions": {"symbol": symbol, "strategy": strategy_name},
-            "last_confirmed": trade_id if confirmed else None,
-            "last_contradicted": None if confirmed else trade_id,
-            "source": "remember_trade",
-            "retrieval_strength": 1.0,
-        })
-
-
-def _update_procedural_from_trade(
-    db: Database,
-    symbol: str,
-    strategy_name: str,
-    pnl: float,
-    lot_size: float = 0.0,
-) -> None:
-    """Update procedural memory with running averages from a new trade."""
-    proc_id = f"proc-{strategy_name.lower()}-{symbol.lower()}"
-    existing = db.query_procedural(strategy=strategy_name, symbol=symbol, limit=1)
-
-    if existing:
-        rec = existing[0]
-        n = rec.get("sample_size", 0)
-        new_n = n + 1
-        old_mean = rec.get("actual_lot_mean") or 0.0
-        new_mean = old_mean + (lot_size - old_mean) / new_n if new_n > 0 else lot_size
-        db.upsert_procedural({
-            "id": proc_id,
-            "strategy": strategy_name,
-            "symbol": symbol,
-            "behavior_type": "trade_execution",
-            "sample_size": new_n,
-            "avg_hold_winners": rec.get("avg_hold_winners") or 0.0,
-            "avg_hold_losers": rec.get("avg_hold_losers") or 0.0,
-            "disposition_ratio": rec.get("disposition_ratio"),
-            "actual_lot_mean": new_mean,
-            "actual_lot_variance": rec.get("actual_lot_variance") or 0.0,
-            "kelly_fraction_suggested": rec.get("kelly_fraction_suggested"),
-            "lot_vs_kelly_ratio": rec.get("lot_vs_kelly_ratio"),
-        })
-    else:
-        db.upsert_procedural({
-            "id": proc_id,
-            "strategy": strategy_name,
-            "symbol": symbol,
-            "behavior_type": "trade_execution",
-            "sample_size": 1,
-            "avg_hold_winners": 0.0,
-            "avg_hold_losers": 0.0,
-            "disposition_ratio": None,
-            "actual_lot_mean": lot_size,
-            "actual_lot_variance": 0.0,
-            "kelly_fraction_suggested": None,
-            "lot_vs_kelly_ratio": None,
-        })
-
-
-def _update_affective_from_trade(
-    db: Database,
-    pnl: float,
-    confidence: float,
-) -> None:
-    """Update affective state: EWMA confidence, streaks, equity/drawdown."""
-    state = db.load_affective()
-    ewma_alpha = 0.3
-
-    if state is None:
-        db.init_affective(peak_equity=10000.0, current_equity=10000.0)
-        state = db.load_affective()
-        if state is None:
-            return
-
-    old_conf = state.get("confidence_level", 0.5)
-    new_conf = ewma_alpha * confidence + (1 - ewma_alpha) * old_conf
-    new_conf = max(0.0, min(1.0, new_conf))
-
-    if pnl > 0:
-        consec_wins = state.get("consecutive_wins", 0) + 1
-        consec_losses = 0
-    else:
-        consec_wins = 0
-        consec_losses = state.get("consecutive_losses", 0) + 1
-
-    current_equity = state.get("current_equity", 10000.0) + pnl
-    peak_equity = max(state.get("peak_equity", current_equity), current_equity)
-    drawdown_state = (peak_equity - current_equity) / peak_equity if peak_equity > 0 else 0.0
-
-    db.save_affective({
-        "confidence_level": new_conf,
-        "risk_appetite": state.get("risk_appetite", 1.0),
-        "momentum_bias": state.get("momentum_bias", 0.0),
-        "peak_equity": peak_equity,
-        "current_equity": current_equity,
-        "drawdown_state": drawdown_state,
-        "max_acceptable_drawdown": state.get("max_acceptable_drawdown", 0.20),
-        "consecutive_wins": consec_wins,
-        "consecutive_losses": consec_losses,
-        "history_json": state.get("history_json", []),
-    })
 
 
 class RememberTradeRequest(BaseModel):
@@ -809,7 +694,7 @@ class RecallMemoriesRequest(BaseModel):
     context_atr_d1: Optional[float] = None
     strategy_name: Optional[str] = None
     memory_types: Optional[List[str]] = None
-    limit: int = 10
+    limit: int = Field(default=10, le=1000)
 
 
 class CreatePlanRequest(BaseModel):
@@ -869,9 +754,9 @@ async def owm_remember(req: RememberTradeRequest):
         }
         db.insert_episodic(episodic_data)
 
-        _update_semantic_from_trade(db, symbol_upper, req.strategy_name, req.pnl, req.pnl_r, req.context_regime, tid)
-        _update_procedural_from_trade(db, symbol_upper, req.strategy_name, req.pnl)
-        _update_affective_from_trade(db, req.pnl, req.confidence)
+        update_semantic_from_trade(db, symbol_upper, req.strategy_name, req.pnl, req.pnl_r, req.context_regime, tid)
+        update_procedural_from_trade(db, symbol_upper, req.strategy_name, req.pnl)
+        update_affective_from_trade(db, req.pnl, req.confidence)
 
         trade_data = {
             "id": tid,
@@ -910,7 +795,8 @@ async def owm_remember(req: RememberTradeRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/owm/recall")
@@ -950,7 +836,7 @@ async def owm_recall(req: RecallMemoriesRequest):
                 candidates.append({
                     "id": ep["id"],
                     "memory_type": "episodic",
-                    "timestamp": _ensure_tz(ep.get("timestamp")),
+                    "timestamp": ensure_tz(ep.get("timestamp")),
                     "confidence": ep.get("confidence", 0.5),
                     "context": ctx,
                     "pnl_r": ep.get("pnl_r"),
@@ -966,7 +852,7 @@ async def owm_recall(req: RecallMemoriesRequest):
                 candidates.append({
                     "id": sem["id"],
                     "memory_type": "semantic",
-                    "timestamp": _ensure_tz(sem.get("updated_at") or sem.get("created_at")),
+                    "timestamp": ensure_tz(sem.get("updated_at") or sem.get("created_at")),
                     "confidence": sem.get("confidence", 0.5),
                     "context": {
                         "symbol": sem.get("symbol"),
@@ -1069,7 +955,8 @@ async def owm_recall(req: RecallMemoriesRequest):
 
         return response
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/owm/behavioral")
@@ -1109,7 +996,8 @@ async def owm_behavioral(
             "behaviors": results,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/owm/state")
@@ -1147,7 +1035,8 @@ async def owm_state():
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/owm/plan")
@@ -1198,7 +1087,8 @@ async def owm_plan(req: CreatePlanRequest):
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/owm/plans")
@@ -1274,7 +1164,8 @@ async def owm_plans(
             "pending": pending,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/owm/migrate")
@@ -1293,7 +1184,8 @@ async def owm_migrate():
             "affective_initialized": affective_ok,
         }
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # ========== Evolution Engine Endpoints (Phase 11 — P2) ==========
@@ -1338,7 +1230,8 @@ async def evolution_discover(req: EvolutionDiscoverRequest):
             llm=llm, days=req.days,
         )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/evolution/backtest")
@@ -1351,7 +1244,8 @@ async def evolution_backtest(req: EvolutionBacktestRequest):
             req.pattern_dict, req.symbol, req.timeframe, req.days,
         )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.post("/evolution/evolve")
@@ -1367,7 +1261,8 @@ async def evolution_evolve(req: EvolutionEvolveRequest):
             llm=llm, days=req.days,
         )
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @app.get("/evolution/log")
@@ -1378,7 +1273,8 @@ async def evolution_log():
 
         return get_evolution_log()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        logger.error(f"Request failed: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # =====================================================================

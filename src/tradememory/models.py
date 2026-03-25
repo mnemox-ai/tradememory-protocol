@@ -3,7 +3,7 @@ Data models for TradeMemory Protocol.
 Based on Blueprint Section 5: Trade Journal Data Schema
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
@@ -135,7 +135,7 @@ class RiskConstraints(BaseModel):
     kelly_fraction: float = Field(default=0.0, ge=0.0, le=0.25, description="Quarter-Kelly fraction")
     status: RiskStatus = Field(default=RiskStatus.ACTIVE)
     reason: str = Field(default="Default constraints - insufficient trade history")
-    updated_at: datetime = Field(default_factory=lambda: datetime.now())
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 
 class TradeProposal(BaseModel):

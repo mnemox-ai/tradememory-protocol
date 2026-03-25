@@ -4,10 +4,13 @@ Single file database, no ORM (per CIO directive).
 """
 
 import json
+import logging
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class Database:
@@ -324,7 +327,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting trade: {e}")
+            logger.error(f"Error inserting trade: {e}")
             return False
         finally:
             conn.close()
@@ -364,7 +367,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error updating trade outcome: {e}")
+            logger.error(f"Error updating trade outcome: {e}")
             return False
         finally:
             conn.close()
@@ -476,7 +479,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error saving session state: {e}")
+            logger.error(f"Error saving session state: {e}")
             return False
         finally:
             conn.close()
@@ -535,7 +538,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting pattern: {e}")
+            logger.error(f"Error inserting pattern: {e}")
             return False
         finally:
             conn.close()
@@ -645,7 +648,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting adjustment: {e}")
+            logger.error(f"Error inserting adjustment: {e}")
             return False
         finally:
             conn.close()
@@ -721,7 +724,7 @@ class Database:
             conn.commit()
             return result.rowcount > 0
         except Exception as e:
-            print(f"Error updating adjustment status: {e}")
+            logger.error(f"Error updating adjustment status: {e}")
             return False
         finally:
             conn.close()
@@ -762,7 +765,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting episodic memory: {e}")
+            logger.error(f"Error inserting episodic memory: {e}")
             return False
         finally:
             conn.close()
@@ -814,7 +817,7 @@ class Database:
             conn.commit()
             return result.rowcount > 0
         except Exception as e:
-            print(f"Error updating episodic retrieval: {e}")
+            logger.error(f"Error updating episodic retrieval: {e}")
             return False
         finally:
             conn.close()
@@ -842,7 +845,7 @@ class Database:
             conn.commit()
             return result.rowcount > 0
         except Exception as e:
-            print(f"Error updating episodic embedding: {e}")
+            logger.error(f"Error updating episodic embedding: {e}")
             return False
         finally:
             conn.close()
@@ -878,7 +881,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting semantic memory: {e}")
+            logger.error(f"Error inserting semantic memory: {e}")
             return False
         finally:
             conn.close()
@@ -955,7 +958,7 @@ class Database:
             conn.commit()
             return result.rowcount > 0
         except Exception as e:
-            print(f"Error updating semantic bayesian: {e}")
+            logger.error(f"Error updating semantic bayesian: {e}")
             return False
         finally:
             conn.close()
@@ -987,7 +990,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error upserting procedural memory: {e}")
+            logger.error(f"Error upserting procedural memory: {e}")
             return False
         finally:
             conn.close()
@@ -1041,7 +1044,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error initializing affective state: {e}")
+            logger.error(f"Error initializing affective state: {e}")
             return False
         finally:
             conn.close()
@@ -1085,7 +1088,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error saving affective state: {e}")
+            logger.error(f"Error saving affective state: {e}")
             return False
         finally:
             conn.close()
@@ -1125,7 +1128,7 @@ class Database:
             conn.commit()
             return True
         except Exception as e:
-            print(f"Error inserting prospective memory: {e}")
+            logger.error(f"Error inserting prospective memory: {e}")
             return False
         finally:
             conn.close()
@@ -1192,7 +1195,7 @@ class Database:
             conn.commit()
             return result.rowcount > 0
         except Exception as e:
-            print(f"Error updating prospective status: {e}")
+            logger.error(f"Error updating prospective status: {e}")
             return False
         finally:
             conn.close()
