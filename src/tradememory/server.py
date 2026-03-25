@@ -5,6 +5,7 @@ Implements MCP tools from Blueprint Section 3.1.
 
 import json
 import logging
+import os
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -467,7 +468,6 @@ async def risk_check_trade(req: CheckTradeRequest):
 
 class DiscoverPatternsRequest(BaseModel):
     """Request for reflect.discover_patterns"""
-    db_path: Optional[str] = None
     starting_balance: float = 10000.0
 
 
@@ -484,11 +484,10 @@ async def reflect_discover_patterns(req: DiscoverPatternsRequest):
     Trigger L2 pattern discovery from backtest data.
 
     Args:
-        db_path: Path to backtest database (default: tradememory.db)
         starting_balance: Baseline for PnL% calculation
     """
     try:
-        db = Database(req.db_path) if req.db_path else None
+        db = None  # uses default tradememory.db
         patterns = reflection_engine.discover_patterns_from_backtest(
             db=db, starting_balance=req.starting_balance
         )
@@ -530,7 +529,7 @@ async def query_patterns(req: QueryPatternsRequest):
 
 class GenerateAdjustmentsRequest(BaseModel):
     """Request for reflect.generate_adjustments"""
-    db_path: Optional[str] = None
+    pass
 
 
 class QueryAdjustmentsRequest(BaseModel):
@@ -555,10 +554,9 @@ async def reflect_generate_adjustments(req: GenerateAdjustmentsRequest):
     to produce adjustment proposals (status='proposed').
 
     Args:
-        db_path: Path to database (default: tradememory.db)
     """
     try:
-        db = Database(req.db_path) if req.db_path else None
+        db = None  # uses default tradememory.db
         adjustments = reflection_engine.generate_l3_adjustments(db=db)
         return {
             "success": True,
@@ -1567,7 +1565,10 @@ if _dashboard_dist.exists():
         if full_path.startswith(_API_PREFIXES):
             raise HTTPException(status_code=404, detail="Not found")
         # Serve static files (e.g. vite.svg) if they exist on disk
-        static_file = _dashboard_dist / full_path
+        # Path traversal protection: resolve and verify within dashboard_dist
+        static_file = (_dashboard_dist / full_path).resolve()
+        if not str(static_file).startswith(str(_dashboard_dist.resolve())):
+            raise HTTPException(status_code=404, detail="Not found")
         if full_path and static_file.exists() and static_file.is_file():
             return FileResponse(str(static_file))
         return FileResponse(str(_dashboard_dist / "index.html"))
@@ -1576,7 +1577,8 @@ if _dashboard_dist.exists():
 def main():
     """Entry point for `tradememory` CLI command."""
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)  # nosec B104 — server deployment
+    host = os.environ.get("HOST", "127.0.0.1")  # default local-only, set HOST=0.0.0.0 for network
+    uvicorn.run(app, host=host, port=8000)
 
 
 if __name__ == "__main__":

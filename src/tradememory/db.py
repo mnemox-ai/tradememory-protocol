@@ -271,6 +271,20 @@ class Database:
                 ON prospective_memory(trigger_type)
             """)
 
+            # Recall event logging (for MCP recall analytics)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS recall_events (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT NOT NULL,
+                    query_symbol TEXT,
+                    query_context TEXT,
+                    query_regime TEXT,
+                    num_candidates INTEGER DEFAULT 0,
+                    num_returned INTEGER DEFAULT 0,
+                    avg_score REAL DEFAULT 0.0
+                )
+            """)
+
             conn.commit()
         finally:
             conn.close()

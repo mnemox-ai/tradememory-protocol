@@ -1319,8 +1319,32 @@ async def verify_audit_hash(trade_id: str) -> dict:
         market_context=market_context,
     )
 
-    # The stored_hash is computed at read time (same inputs = same hash)
-    stored = recomputed  # Both use same deterministic algorithm
+    # Build TDR from stored trade to get the stored hash
+    # This mirrors the REST /audit/verify endpoint logic
+    refs = trade.get("references", [])
+    if isinstance(refs, str):
+        refs = _json.loads(refs)
+
+    beliefs = []
+    try:
+        sem = database.query_semantic(strategy=trade.get("strategy"), limit=5)
+        beliefs = [
+            f"{b.get('proposition', '')} (conf={b.get('confidence', 0):.2f})"
+            for b in sem
+        ]
+    except Exception:
+        pass
+
+    from .domain.tdr import MemoryContext
+    mem = MemoryContext(
+        similar_trades=refs,
+        relevant_beliefs=beliefs,
+        anti_resonance_applied=len(refs) > 0,
+        negative_ratio=None,
+        recall_count=len(refs),
+    )
+    tdr = TradingDecisionRecord.from_trade_record(trade, memory_ctx=mem)
+    stored = tdr.data_hash
 
     return {
         "trade_id": trade_id,
