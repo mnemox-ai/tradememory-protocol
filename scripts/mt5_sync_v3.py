@@ -11,7 +11,9 @@ Architecture:
   or: uvicorn scripts.mt5_sync_v3:app --port 9001
 """
 
+import csv
 import os
+import re
 import sys
 import time
 import logging
@@ -20,6 +22,7 @@ import threading
 import requests
 from datetime import datetime, timezone
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Any, Optional, Tuple
 
 from dotenv import load_dotenv
@@ -78,6 +81,305 @@ MAGIC_TO_STRATEGY = {
 MT5_API_TIMEOUT = 30
 MAX_CONSECUTIVE_ERRORS = 10
 LONG_WAIT_SECONDS = 300
+
+# Event log directory (EA writes to Common/Files/NG_Gold/)
+EVENT_LOG_DIR = Path(os.getenv(
+    "EVENT_LOG_DIR",
+    r"C:\Users\johns\AppData\Roaming\MetaQuotes\Terminal\Common\Files\NG_Gold",
+))
+
+
+# ---------------------------------------------------------------------------
+# EventLogReader — extract entry context from EA event_log CSVs
+# ---------------------------------------------------------------------------
+
+class EventLogReader:
+    """Reads NG_Gold event_log CSVs to extract trade entry context.
+
+    Matching: position_id from MT5 deal == pos_id in TRADE_OPEN event.
+    Falls back to timestamp proximity if pos_id not found.
+    """
+
+    def __init__(self, event_log_dir: Path = EVENT_LOG_DIR):
+        self.dir = event_log_dir
+
+    def find_entry_context(
+        self, symbol: str, magic: int, position_id: int, entry_time: int
+    ) -> dict:
+        """Look up entry context from event_log CSV.
+
+        Args:
+            symbol: e.g. "XAUUSD"
+            magic: EA magic number (260112, 260118, etc.)
+            position_id: MT5 position_id (matches pos_id in event_log)
+            entry_time: Unix timestamp of entry deal
+
+        Returns:
+            dict with keys: reasoning, confidence, market_data, matched
+        """
+        if not self.dir.exists():
+            return self._fallback(magic, "event_log_dir not found")
+
+        # Find CSVs matching symbol and magic from filename pattern
+        # Pattern: event_log_*_{symbol}_PERIOD_M5_M{magic}_*.csv
+        pattern = f"event_log_*_{symbol}_PERIOD_M5_M{magic}_*.csv"
+        csv_files = sorted(self.dir.glob(pattern), key=lambda f: f.stat().st_mtime, reverse=True)
+
+        if not csv_files:
+            return self._fallback(magic, f"no event_log for {symbol}/M{magic}")
+
+        # Search for TRADE_OPEN with matching pos_id (most recent files first)
+        pos_id_str = str(position_id)
+        for csv_path in csv_files[:20]:  # limit to 20 most recent files
+            match = self._search_csv_for_position(csv_path, pos_id_str, entry_time)
+            if match:
+                return match
+
+        # Fallback: no match found
+        return self._fallback(magic, f"pos_id={position_id} not found in event_logs")
+
+    def _search_csv_for_position(
+        self, csv_path: Path, pos_id_str: str, entry_time: int
+    ) -> Optional[dict]:
+        """Search a single CSV for TRADE_OPEN with matching pos_id."""
+        try:
+            with open(csv_path, "r", encoding="utf-8", errors="replace") as f:
+                reader = csv.DictReader(f)
+                trade_open_row = None
+                decision_row = None
+
+                for row in reader:
+                    evt = (row.get("evt") or "").strip()
+                    reason = (row.get("reason") or "").strip()
+
+                    # Match TRADE_OPEN by pos_id
+                    if evt == "TRADE_OPEN" and f"pos_id={pos_id_str}" in reason:
+                        trade_open_row = row
+
+                    # Collect DECISION events near the entry time
+                    if evt == "DECISION" and row.get("score_total"):
+                        ts_str = (row.get("ts") or "").strip()
+                        row_time = self._parse_ts(ts_str)
+                        if row_time and abs(row_time - entry_time) < 600:  # within 10 min
+                            decision_row = row
+
+                if trade_open_row:
+                    return self._build_context(trade_open_row, decision_row)
+
+        except Exception as e:
+            log.warning(f"EventLogReader: error reading {csv_path.name}: {e}")
+        return None
+
+    def _build_context(self, trade_open: dict, decision: Optional[dict]) -> dict:
+        """Build rich context from event_log rows."""
+        direction = (trade_open.get("decision") or "").strip()
+        atr_m5 = self._safe_float(trade_open.get("atr_m5"))
+        spread_pts = self._safe_int(trade_open.get("spread_points"))
+        bid = self._safe_float(trade_open.get("bid"))
+        ask = self._safe_float(trade_open.get("ask"))
+        ema_fast_h1 = self._safe_float(trade_open.get("ema_fast_h1"))
+        ema_slow_h1 = self._safe_float(trade_open.get("ema_slow_h1"))
+        ema_fast_m30 = self._safe_float(trade_open.get("ema_fast_m30"))
+        ema_slow_m30 = self._safe_float(trade_open.get("ema_slow_m30"))
+
+        # Build reasoning string
+        parts = [f"{direction} entry"]
+
+        if decision:
+            # Rich context from DECISION event
+            score_bd = (decision.get("score_breakdown") or "").strip()
+            dec_reason = (decision.get("reason") or "").strip()
+            if score_bd:
+                parts.append(f"Score: {score_bd}")
+            if dec_reason:
+                parts.append(f"Signal: {dec_reason}")
+        else:
+            # Context from TRADE_OPEN market data
+            if atr_m5 and atr_m5 > 0:
+                parts.append(f"ATR(M5)={atr_m5:.2f}")
+            if spread_pts is not None:
+                parts.append(f"Spread={spread_pts}pts")
+            if ema_fast_h1 and ema_slow_h1:
+                trend = "bullish" if ema_fast_h1 > ema_slow_h1 else "bearish"
+                parts.append(f"H1 EMA {trend} (fast={ema_fast_h1:.1f} slow={ema_slow_h1:.1f})")
+
+        reasoning = ". ".join(parts)
+
+        # Dynamic confidence
+        if decision:
+            score_total = self._safe_float(decision.get("score_total"))
+            confidence = min(score_total / 100.0, 1.0) if score_total and score_total > 0 else 0.6
+        else:
+            # Derive from market data quality: confirmed EA entry = 0.6 base
+            confidence = 0.6
+            if spread_pts is not None and atr_m5 and atr_m5 > 0:
+                # Higher confidence if spread is low relative to ATR
+                spread_price = self._safe_float(trade_open.get("spread_price")) or 0
+                if atr_m5 > 0 and spread_price > 0:
+                    spread_ratio = spread_price / atr_m5
+                    if spread_ratio < 0.05:
+                        confidence = 0.7
+                    elif spread_ratio > 0.15:
+                        confidence = 0.5
+
+        return {
+            "reasoning": reasoning,
+            "confidence": round(confidence, 2),
+            "market_data": {
+                "atr_m5": atr_m5,
+                "spread_points": spread_pts,
+                "bid": bid,
+                "ask": ask,
+                "ema_fast_h1": ema_fast_h1,
+                "ema_slow_h1": ema_slow_h1,
+                "ema_fast_m30": ema_fast_m30,
+                "ema_slow_m30": ema_slow_m30,
+            },
+            "matched": True,
+        }
+
+    def _fallback(self, magic: int, reason: str) -> dict:
+        log.debug(f"EventLogReader fallback: {reason}")
+        return {
+            "reasoning": f"Auto-synced from MT5 (magic={magic})",
+            "confidence": 0.5,
+            "market_data": {},
+            "matched": False,
+        }
+
+    @staticmethod
+    def _parse_ts(ts_str: str) -> Optional[int]:
+        """Parse event_log timestamp '2026.03.24 07:55:05' to unix timestamp."""
+        try:
+            dt = datetime.strptime(ts_str, "%Y.%m.%d %H:%M:%S")
+            return int(dt.replace(tzinfo=timezone.utc).timestamp())
+        except (ValueError, AttributeError):
+            return None
+
+    @staticmethod
+    def _safe_float(val) -> Optional[float]:
+        try:
+            v = float(val)
+            return v if v != 0.0 else None
+        except (TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _safe_int(val) -> Optional[int]:
+        try:
+            return int(val)
+        except (TypeError, ValueError):
+            return None
+
+
+# Global reader instance
+event_log_reader = EventLogReader()
+
+
+# ---------------------------------------------------------------------------
+# RegimeReader — read NG_Regime.dat binary file (Task 0.6)
+# ---------------------------------------------------------------------------
+
+import struct
+
+MT5_TERMINAL_ID = "5B52BD5C4A58F66C26AE407260A02BE6"
+MT5_FILES_DIR = Path(os.getenv(
+    "MT5_FILES_DIR",
+    rf"C:\Users\johns\AppData\Roaming\MetaQuotes\Terminal\{MT5_TERMINAL_ID}\MQL5\Files",
+))
+
+REGIME_LABELS = {0: "UNKNOWN", 1: "TRENDING", 2: "RANGING", 3: "TRANSITIONING"}
+REGIME_FMT = "<i3diqi"
+REGIME_SIZE = struct.calcsize(REGIME_FMT)  # 44 bytes
+
+
+def read_regime() -> Optional[dict]:
+    """Read current regime from NG_Regime.dat binary file."""
+    path = MT5_FILES_DIR / "NG_Regime.dat"
+    if not path.exists():
+        return None
+    try:
+        data = path.read_bytes()
+        if len(data) < REGIME_SIZE:
+            return None
+        vals = struct.unpack(REGIME_FMT, data[:REGIME_SIZE])
+        magic, atr_h1, atr_d1, ratio, label, last_update, count = vals
+        if magic != 0x5247:
+            return None
+        return {
+            "regime": REGIME_LABELS.get(label, f"UNKNOWN({label})"),
+            "atr_h1": round(atr_h1, 2),
+            "atr_d1": round(atr_d1, 2),
+            "atr_ratio": round(ratio, 4),
+        }
+    except Exception as e:
+        log.debug(f"read_regime error: {e}")
+        return None
+
+# ---------------------------------------------------------------------------
+# pnl_r helpers — extract SL for real R-multiple calculation (Task 0.3 revised)
+# ---------------------------------------------------------------------------
+
+# Regex to parse [sl XXXX.XX] or [tp XXXX.XX] from deal/order comment
+_SL_COMMENT_RE = re.compile(r'\[sl\s+([\d.]+)\]', re.IGNORECASE)
+_TP_COMMENT_RE = re.compile(r'\[tp\s+([\d.]+)\]', re.IGNORECASE)
+
+# Contract sizes for common symbols (fallback if MT5 not available)
+_CONTRACT_SIZES = {
+    "XAUUSD": 100,   # 100 oz per lot
+    "XAGUSD": 5000,  # 5000 oz per lot
+    "EURUSD": 100000, # standard forex
+    "GBPUSD": 100000,
+}
+
+
+def _extract_sl_from_comment(comment: str) -> Optional[float]:
+    """Extract SL price from deal comment like '[sl 4385.04]'."""
+    if not comment:
+        return None
+    m = _SL_COMMENT_RE.search(comment)
+    if m:
+        try:
+            return float(m.group(1))
+        except ValueError:
+            pass
+    return None
+
+
+def _get_sl_from_orders(position_id: int) -> Optional[float]:
+    """Try to get SL from MT5 history_orders for this position."""
+    try:
+        import MetaTrader5 as MT5
+        from_date = datetime(2020, 1, 1, tzinfo=timezone.utc)
+        to_date = datetime.now(timezone.utc)
+        orders = MT5.history_orders_get(from_date, to_date)
+        if not orders:
+            return None
+        for order in orders:
+            if order.position_id == position_id and order.sl > 0:
+                return order.sl
+        # Also check close order comment for [sl XXXX]
+        for order in orders:
+            if order.position_id == position_id:
+                sl = _extract_sl_from_comment(getattr(order, 'comment', '') or '')
+                if sl:
+                    return sl
+    except Exception as e:
+        log.debug(f"_get_sl_from_orders error: {e}")
+    return None
+
+
+def _get_contract_size(symbol: str) -> float:
+    """Get contract size from MT5 symbol info, fallback to hardcoded."""
+    try:
+        import MetaTrader5 as MT5
+        info = MT5.symbol_info(symbol)
+        if info and info.trade_contract_size > 0:
+            return info.trade_contract_size
+    except Exception:
+        pass
+    return _CONTRACT_SIZES.get(symbol, 100000)
+
 
 # ---------------------------------------------------------------------------
 # SQLite helpers
@@ -422,6 +724,13 @@ class MT5Poller:
         except Exception as e:
             log.error(f"[ADVISOR] Error for ticket {pos.ticket}: {e}")
 
+    # --- pnl_r helpers (Task 0.3 revised) ---
+
+    @staticmethod
+    def _extract_sl_comment(comment: str) -> Optional[float]:
+        """Extract SL price from deal comment like '[sl 4385.04]'."""
+        return _extract_sl_from_comment(comment)
+
     # --- Closed trade sync (history-based, same as v2) ---
 
     def _sync_closed_trades_to_memory(self, closed_tickets: list[int]) -> list[int]:
@@ -497,6 +806,18 @@ class MT5Poller:
         pnl = sum(d.profit for d in deals)
         hold_duration = int((exit_deal.time - entry_deal.time) / 60)
 
+        # --- Event log context (Task 0.1 + 0.2) ---
+        entry_ctx = event_log_reader.find_entry_context(
+            symbol=symbol,
+            magic=magic,
+            position_id=ticket,  # ticket IS position_id in our deal_map grouping
+            entry_time=entry_deal.time,
+        )
+        reasoning = entry_ctx["reasoning"]
+        confidence = entry_ctx["confidence"]
+        if entry_ctx["matched"]:
+            log.info(f"EventLog matched for {trade_id}: confidence={confidence}")
+
         # Session from entry time
         hour = datetime.fromtimestamp(entry_deal.time, tz=timezone.utc).hour
         if 0 <= hour < 8:
@@ -515,6 +836,13 @@ class MT5Poller:
             "session": session,
             "magic_number": magic,
         }
+        # Merge event_log market data into context
+        if entry_ctx.get("market_data"):
+            market_context["event_log"] = entry_ctx["market_data"]
+        # Task 0.6: Regime context from binary file
+        regime = read_regime()
+        if regime:
+            market_context["regime"] = regime
 
         # --- (2) Close Discord embed (fire before TradeMemory API) ---
         emoji = "\U0001f7e2" if pnl >= 0 else "\U0001f534"
@@ -527,6 +855,18 @@ class MT5Poller:
         )
 
         try:
+            # Task 0.5: References backfill — recall similar trades before recording
+            references = []
+            try:
+                similar = recall_similar(symbol, strategy, session)
+                references = [
+                    f"{m.get('id', 'unknown')} ({m.get('direction', '?')} "
+                    f"pnl={m.get('pnl', 0):.2f})"
+                    for m in similar[:5]  # top 5
+                ]
+            except Exception as e:
+                log.debug(f"recall_similar failed for {trade_id}: {e}")
+
             # 1. record_decision
             resp1 = requests.post(
                 f"{TRADEMEMORY_API}/trade/record_decision",
@@ -536,10 +876,10 @@ class MT5Poller:
                     "direction": direction,
                     "lot_size": lot_size,
                     "strategy": strategy,
-                    "confidence": 0.5,
-                    "reasoning": f"Auto-synced from MT5 (magic={magic})",
+                    "confidence": confidence,
+                    "reasoning": reasoning,
                     "market_context": market_context,
-                    "references": [],
+                    "references": references,
                 },
                 timeout=10,
             )
@@ -547,14 +887,73 @@ class MT5Poller:
                 log.error(f"record_decision failed for {trade_id}: {resp1.status_code}")
                 return False
 
-            # 2. record_outcome
+            # 2. record_outcome (Task 0.3: pnl_r + Task 0.4: exit_reasoning)
+            # pnl_r = PnL / initial risk, where risk = |entry - SL| * lots * contract_size
+            exit_comment = getattr(exit_deal, 'comment', '') or ''
+            sl_price = _extract_sl_from_comment(exit_comment)
+            pnl_r = None
+            sl_source = None
+
+            if sl_price and sl_price > 0 and entry_price > 0:
+                # Source 1: SL price from exit deal comment [sl XXXX.XX]
+                sl_distance = abs(entry_price - sl_price)
+                sl_source = "deal_comment"
+            else:
+                # Source 2: Try MT5 history_orders for the position
+                sl_from_order = _get_sl_from_orders(ticket)
+                if sl_from_order and sl_from_order > 0 and entry_price > 0:
+                    sl_distance = abs(entry_price - sl_from_order)
+                    sl_source = "order_history"
+                    sl_price = sl_from_order
+                else:
+                    # Source 3: Estimate from ATR(M5) in event_log
+                    atr_m5 = (entry_ctx.get("market_data") or {}).get("atr_m5")
+                    if atr_m5 and atr_m5 > 0:
+                        # VB uses ~1.5x ATR for SL, IM uses ~1.0x ATR
+                        sl_mult = 1.5 if strategy == "VolBreakout" else 1.0
+                        sl_distance = atr_m5 * sl_mult
+                        sl_source = "atr_estimate"
+                    else:
+                        sl_distance = 0
+
+            if sl_distance > 0 and lot_size > 0:
+                # XAUUSD contract_size = 100 oz
+                contract_size = _get_contract_size(symbol)
+                risk_dollars = sl_distance * lot_size * contract_size
+                if risk_dollars > 0:
+                    pnl_r = round(pnl / risk_dollars, 4)
+                    log.info(
+                        f"pnl_r={pnl_r:.4f} for {trade_id} "
+                        f"(sl_dist={sl_distance:.2f}, source={sl_source})"
+                    )
+
+            # Exit reasoning: determine from deal properties
+            exit_reason_parts = []
+            if 'sl' in exit_comment.lower():
+                exit_reason_parts.append(f"SL hit at {sl_price:.2f}" if sl_price else "SL hit")
+            elif 'tp' in exit_comment.lower():
+                exit_reason_parts.append("TP hit")
+            elif hold_duration >= 1440:  # 24h = 1440 min (MaxHoldingBars=288 * 5min)
+                exit_reason_parts.append("Timeout (max holding bars)")
+            else:
+                exit_reason_parts.append("Manual or EA close")
+
+            if pnl >= 0:
+                exit_reason_parts.append(f"Profit ${pnl:+.2f}")
+            else:
+                exit_reason_parts.append(f"Loss ${pnl:+.2f}")
+            if pnl_r is not None:
+                exit_reason_parts.append(f"R={pnl_r:+.2f}")
+            exit_reasoning = ". ".join(exit_reason_parts)
+
             resp2 = requests.post(
                 f"{TRADEMEMORY_API}/trade/record_outcome",
                 json={
                     "trade_id": trade_id,
                     "exit_price": exit_price,
                     "pnl": pnl,
-                    "exit_reasoning": "Position closed",
+                    "pnl_r": pnl_r,
+                    "exit_reasoning": exit_reasoning,
                     "hold_duration": hold_duration,
                 },
                 timeout=10,

@@ -33,7 +33,10 @@ env/
 
 # Environment variables (contains credentials)
 .env
-.env.local
+.env.*
+!.env.example
+*.key
+*secrets*
 
 # Claude Code
 .claude/settings.local.json
