@@ -40,6 +40,7 @@ TradeMemory Protocol is an MCP server that gives AI trading agents persistent me
 
 ## News
 
+- [2026-03] **Onboarding CLI** — `tradememory setup` wizard, `doctor` health check, 8-platform config generator
 - [2026-03] **v0.5.0** — Evolution Engine + OWM 5 memory types. 1,087 tests. [Release Notes](https://github.com/mnemox-ai/tradememory-protocol/releases/tag/v0.5.0)
 - [2026-03] **Statistical Validation** — Strategy E passes P100% random baseline, Sharpe 3.24 walk-forward
 - [2026-03] **Live Paper Trading** — Strategy E running on Binance via GitHub Actions (hourly)
@@ -94,6 +95,41 @@ docker compose up -d
 ```
 
 </details>
+
+## Setup & Configuration
+
+First-time guided setup:
+
+```bash
+tradememory setup
+```
+
+This walks you through:
+1. **Terms acceptance** — trading disclaimer and data storage policy
+2. **Platform detection** — auto-detects Claude Desktop, Claude Code, Cursor, Windsurf, Cline
+3. **Config generation** — prints the exact JSON snippet for your platform
+4. **Health check** — verifies database, MCP tools, and core functionality
+
+### Platform Configs
+
+Generate config for any supported platform:
+
+```bash
+tradememory config              # interactive menu
+tradememory config claude_code  # direct: auto-installs via CLI
+tradememory config cursor       # prints .cursor/mcp.json snippet
+tradememory config windsurf     # prints Windsurf config
+tradememory config raw_json     # generic MCP JSON
+```
+
+Supported: Claude Desktop · Claude Code · Cursor · Windsurf · Cline · Smithery · Docker
+
+### Health Check
+
+```bash
+tradememory doctor        # core checks (~3s)
+tradememory doctor --full # + REST API, MT5, Anthropic API
+```
 
 ## MCP Tools (15)
 
