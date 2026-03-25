@@ -1,0 +1,1 @@
+"""Domain objects for TradeMemory."""

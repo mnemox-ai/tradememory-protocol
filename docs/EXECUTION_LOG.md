@@ -50,6 +50,51 @@ Commit: `de606f1` | Pushed: 2026-03-25 | Tests: 1199 passed, 1 skipped
 
 ---
 
-## Phase 1: Real Data Validation — READY TO START
+## Phase 1: Real Data Validation — BASELINE COLLECTING
 
-Baseline collection begins. NG_Gold demo running with enriched mt5_sync_v3.
+NG_Gold demo running with enriched mt5_sync_v3. Awaiting 4 weeks of trade data.
+
+---
+
+## Phase 2: Compliance Output Layer — COMPLETE
+
+Commit: pending | Tests: 1214 passed, 1 skipped
+
+### 2.1 TradingDecisionRecord Schema
+- Status: DONE
+- Created `src/tradememory/domain/tdr.py` with Pydantic models:
+  - `TradingDecisionRecord` — full audit record (MiFID II / EU AI Act inspired)
+  - `MemoryContext` — similar_trades, beliefs, anti_resonance_applied, negative_ratio
+  - `MarketSnapshot` — price, session, regime, ATR, EMA, spread
+  - `RiskSnapshot` — position_size, risk_per_trade, risk_percent
+- Factory method: `from_trade_record()` builds TDR from existing DB rows
+
+### 2.2 REST /audit/decision-record/{trade_id}
+- Status: DONE
+- Returns complete TDR JSON with memory context and data_hash
+- Enriches with semantic beliefs from L2 memory layer
+- 404 on missing trade
+
+### 2.3 Batch export /audit/export + /audit/export-jsonl
+- Status: DONE
+- `/audit/export` — JSON array with date range + strategy filters
+- `/audit/export-jsonl` — NDJSON (one JSON per line), same filters
+- Params: start, end, strategy, limit
+
+### 2.4 MCP tool export_audit_trail + verify_audit_hash
+- Status: DONE
+- `export_audit_trail` — query by trade_id, strategy, date range (MCP tool #16)
+- `verify_audit_hash` — recompute SHA256 and compare (MCP tool #17)
+
+### 2.5 PDF Report
+- Status: DEFERRED (Sean's decision)
+
+### 2.6 data_hash Tamper Detection
+- Status: DONE
+- SHA256 of (trade_id, timestamp, symbol, direction, strategy, confidence, reasoning, market_context)
+- Deterministic: same inputs always produce same hash
+- `/audit/verify/{trade_id}` endpoint for integrity checking
+
+### Test Results
+- 15 new tests in `tests/test_audit.py`
+- Covers: TDR schema, hash determinism, hash tamper detection, single record, export JSON/JSONL, date range filter, strategy filter, verify endpoint

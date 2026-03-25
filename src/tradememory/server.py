@@ -1383,13 +1383,175 @@ async def evolution_log():
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# =====================================================================
+# Audit API — Trading Decision Records (Phase 2)
+# =====================================================================
+
+from .domain.tdr import TradingDecisionRecord, MemoryContext
+
+
+def _build_tdr(trade: Dict[str, Any], database=None) -> TradingDecisionRecord:
+    """Build a TDR from a trade_records row, enriching with memory context."""
+    if database is None:
+        database = journal.db
+
+    # Try to get memory context from the trade's references
+    refs = trade.get("references", [])
+    if isinstance(refs, str):
+        refs = json.loads(refs)
+
+    # Query semantic beliefs for the strategy
+    beliefs = []
+    try:
+        sem = database.query_semantic(strategy=trade.get("strategy"), limit=5)
+        beliefs = [
+            f"{b.get('proposition', '')} (conf={b.get('confidence', 0):.2f})"
+            for b in sem
+        ]
+    except Exception:
+        pass
+
+    mem = MemoryContext(
+        similar_trades=refs,
+        relevant_beliefs=beliefs,
+        anti_resonance_applied=len(refs) > 0,  # if recall was used, AR was applied
+        negative_ratio=None,
+        recall_count=len(refs),
+    )
+    return TradingDecisionRecord.from_trade_record(trade, memory_ctx=mem)
+
+
+@app.get("/audit/decision-record/{trade_id}")
+async def audit_get_decision_record(trade_id: str):
+    """Get a complete Trading Decision Record for a single trade.
+
+    Returns the full audit trail including decision context, memory state,
+    risk parameters, outcome, and tamper-detection hash.
+    """
+    db = journal.db
+    trade = db.get_trade(trade_id)
+    if not trade:
+        raise HTTPException(status_code=404, detail=f"Trade {trade_id} not found")
+    tdr = _build_tdr(trade, db)
+    return tdr.model_dump(mode="json")
+
+
+@app.get("/audit/export")
+async def audit_export(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    strategy: Optional[str] = None,
+    limit: int = 1000,
+):
+    """Export Trading Decision Records as JSON array.
+
+    Query params:
+        start: ISO date string (inclusive), e.g. 2026-03-01
+        end: ISO date string (exclusive), e.g. 2026-04-01
+        strategy: Filter by strategy name
+        limit: Max records (default 1000)
+
+    Returns JSON array of TDRs. For JSON Lines, use /audit/export-jsonl.
+    """
+    db = journal.db
+    trades = db.query_trades(strategy=strategy, limit=limit)
+
+    # Date range filter
+    if start or end:
+        filtered = []
+        for t in trades:
+            ts = t.get("timestamp", "")
+            if start and ts < start:
+                continue
+            if end and ts >= end:
+                continue
+            filtered.append(t)
+        trades = filtered
+
+    return [_build_tdr(t, db).model_dump(mode="json") for t in trades]
+
+
+@app.get("/audit/export-jsonl")
+async def audit_export_jsonl(
+    start: Optional[str] = None,
+    end: Optional[str] = None,
+    strategy: Optional[str] = None,
+    limit: int = 1000,
+):
+    """Export Trading Decision Records as JSON Lines (one JSON object per line).
+
+    Same parameters as /audit/export but returns text/plain with JSONL format.
+    """
+    from fastapi.responses import PlainTextResponse
+
+    db = journal.db
+    trades = db.query_trades(strategy=strategy, limit=limit)
+
+    if start or end:
+        filtered = []
+        for t in trades:
+            ts = t.get("timestamp", "")
+            if start and ts < start:
+                continue
+            if end and ts >= end:
+                continue
+            filtered.append(t)
+        trades = filtered
+
+    lines = []
+    for t in trades:
+        tdr = _build_tdr(t, db)
+        lines.append(tdr.model_dump_json())
+
+    return PlainTextResponse(
+        content="\n".join(lines) + ("\n" if lines else ""),
+        media_type="application/x-ndjson",
+    )
+
+
+@app.get("/audit/verify/{trade_id}")
+async def audit_verify(trade_id: str):
+    """Verify integrity of a Trading Decision Record.
+
+    Recomputes the data_hash from stored inputs and compares with
+    the hash that was computed at decision time.
+    """
+    db = journal.db
+    trade = db.get_trade(trade_id)
+    if not trade:
+        raise HTTPException(status_code=404, detail=f"Trade {trade_id} not found")
+
+    market_context = trade.get("market_context", {})
+    if isinstance(market_context, str):
+        market_context = json.loads(market_context)
+
+    recomputed = TradingDecisionRecord.compute_hash(
+        trade_id=trade.get("id", ""),
+        timestamp=trade.get("timestamp", ""),
+        symbol=trade.get("symbol", ""),
+        direction=trade.get("direction", ""),
+        strategy=trade.get("strategy", ""),
+        confidence=trade.get("confidence", 0.0),
+        reasoning=trade.get("reasoning", ""),
+        market_context=market_context,
+    )
+
+    tdr = _build_tdr(trade, db)
+    return {
+        "trade_id": trade_id,
+        "stored_hash": tdr.data_hash,
+        "recomputed_hash": recomputed,
+        "verified": tdr.data_hash == recomputed,
+    }
+
+
 # --- Dashboard static file serving ---
 _logger = logging.getLogger(__name__)
 _dashboard_dist = Path(__file__).parent.parent.parent / "dashboard" / "dist"
 
 # API prefixes that must NOT be caught by the SPA catch-all
 _API_PREFIXES = (
-    "dashboard/", "trade/", "state/", "reflect/", "mt5/", "risk/",
+    "audit/", "dashboard/", "trade/", "state/", "reflect/", "mt5/", "risk/",
     "patterns/", "adjustments/", "owm/", "evolution/", "health",
 )
 

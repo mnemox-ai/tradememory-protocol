@@ -64,7 +64,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
-- [2026-03-25] feat: Phase 0 complete — mt5_sync_v3 now sends rich context (EventLogReader + dynamic confidence + pnl_r + exit_reasoning + references + regime). 1189 tests, 7 new.
+- [2026-03-25] feat: Phase 2 complete — TDR schema + 4 audit REST endpoints + 2 MCP tools + SHA256 tamper detection. 1214 tests.
+- [2026-03-25] feat: Phase 0 complete — mt5_sync_v3 now sends rich context (EventLogReader + dynamic confidence + pnl_r + exit_reasoning + references + regime). 1199 tests.
 - [2026-03-23] feat: Phase 15 Batch C scripts + DeFi assets committed
 - [2026-03-23] fix: mt5_sync_v3 import path + MAGIC_TO_STRATEGY mapping
 - [2026-03-22] GEO: README + README_ZH 加 FAQ 式開頭、When to use、How it works、Comparison table
@@ -260,8 +261,9 @@ class LLMReEvolutionPipeline:
 ---
 
 ## Current Status
-- **v0.5.0**, 1199 tests passing, 1 skipped
-- **Phase 0 COMPLETE**: mt5_sync_v3 enriched (EventLogReader, dynamic confidence, pnl_r, exit_reasoning, references, regime context). See `docs/EXECUTION_LOG.md`.
+- **v0.5.0**, 1214 tests passing, 1 skipped
+- **Phase 2 COMPLETE**: TDR audit schema + REST endpoints + MCP tools + data_hash. See `docs/EXECUTION_LOG.md`.
+- **Phase 0 COMPLETE**: mt5_sync_v3 enriched with full trade context pipeline.
 - **Phase 15 COMPLETE** — 結論：1H timeframe + 3mo window + single-hour entry 條件下，grid 和 LLM 都無法產出通過 DSR gate 的策略。瓶頸是 trade count，不是 search method。Evolution Engine 驗證延後到更高交易頻率的設定。
 - Exp 4a Layer 1 Gate: FAIL (3/3). Exp 4b Layer 2 Gate: FAIL (2/3, Cohen's d=0.000 → STOP).
 - Structural novelty confirmed (LLM 用了 6 種 grid 之外的 features)，但 graduation rate=0% 使比較無意義。
