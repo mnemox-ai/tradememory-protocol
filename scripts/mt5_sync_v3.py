@@ -12,6 +12,7 @@ Architecture:
 """
 
 import csv
+import json
 import os
 import re
 import sys
@@ -274,6 +275,217 @@ class EventLogReader:
 
 # Global reader instance
 event_log_reader = EventLogReader()
+
+
+# ---------------------------------------------------------------------------
+# DecisionLogReader — extract rich context from EA decision_log JSONL files
+# ---------------------------------------------------------------------------
+
+class DecisionLogReader:
+    """Reads NG_Gold decision_log JSONL files for rich trade decision context.
+
+    JSONL files written by NG_DecisionLogger.mqh contain full decision context:
+    conditions, filters, indicators, execution details, regime, risk state.
+
+    Priority: JSONL > event_log CSV (JSONL has structured JSON fields that CSV lacks).
+    """
+
+    def __init__(self, decision_log_dir: Path = EVENT_LOG_DIR):
+        self.dir = decision_log_dir
+
+    def find_decision_for_trade(
+        self, strategy: str, entry_time: int, exec_ticket: int = 0
+    ) -> Optional[dict]:
+        """Find the EXECUTED decision event matching a trade.
+
+        Args:
+            strategy: Strategy name (e.g. "VolBreakout")
+            entry_time: Unix timestamp of entry deal
+            exec_ticket: MT5 position ticket (matches exec_ticket in JSONL)
+
+        Returns:
+            dict with keys: reasoning, confidence, market_data, decision_raw, matched
+            or None if no JSONL files or no match found.
+        """
+        if not self.dir.exists():
+            return None
+
+        # Map strategy names to EA strategy identifiers in JSONL
+        strategy_map = {
+            "VolBreakout": "NG_Gold",
+            "IntradayMomentum": "NG_Gold",
+            "Pullback": "Pullback",
+        }
+        ea_strategy = strategy_map.get(strategy)
+        if not ea_strategy:
+            return None
+
+        # Find JSONL files sorted by recency
+        jsonl_files = sorted(
+            self.dir.glob("decision_log_*.jsonl"),
+            key=lambda f: f.name,
+            reverse=True,
+        )
+        if not jsonl_files:
+            return None
+
+        # Search recent files for EXECUTED event matching ticket or timestamp
+        for jsonl_path in jsonl_files[:7]:  # last 7 days
+            match = self._search_jsonl(jsonl_path, ea_strategy, entry_time, exec_ticket)
+            if match:
+                return match
+
+        return None
+
+    def _search_jsonl(
+        self, path: Path, ea_strategy: str, entry_time: int, exec_ticket: int
+    ) -> Optional[dict]:
+        """Search a single JSONL file for matching EXECUTED decision."""
+        best_match = None
+        best_time_diff = float("inf")
+
+        try:
+            with open(path, "r", encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        evt = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+
+                    # Only match EXECUTED or SIGNAL_* events
+                    decision = evt.get("decision", "")
+                    if decision not in ("EXECUTED", "SIGNAL_LONG", "SIGNAL_SHORT"):
+                        continue
+
+                    if evt.get("strategy") != ea_strategy:
+                        continue
+
+                    # Match by exec_ticket (strongest match)
+                    if exec_ticket and evt.get("exec_ticket") == exec_ticket:
+                        return self._build_rich_context(evt)
+
+                    # Match by timestamp proximity (within 5 min)
+                    evt_time = self._parse_ts(evt.get("ts", ""))
+                    if evt_time:
+                        diff = abs(evt_time - entry_time)
+                        if diff < 300 and diff < best_time_diff:
+                            best_time_diff = diff
+                            best_match = evt
+
+        except Exception as e:
+            log.warning(f"DecisionLogReader: error reading {path.name}: {e}")
+
+        if best_match:
+            return self._build_rich_context(best_match)
+        return None
+
+    def _build_rich_context(self, evt: dict) -> dict:
+        """Build rich reasoning from JSONL decision event."""
+        parts = []
+
+        # Direction
+        direction = evt.get("signal_direction", "NONE")
+        decision = evt.get("decision", "")
+        parts.append(f"{direction} {decision}")
+
+        # Strategy + timeframe
+        parts.append(f"Strategy: {evt.get('strategy')}/{evt.get('timeframe')}")
+
+        # Signal strength
+        strength = evt.get("signal_strength")
+        if strength is not None:
+            parts.append(f"Signal strength: {strength:.4f}")
+
+        # Conditions (the WHY)
+        conditions = evt.get("conditions_json")
+        if conditions and isinstance(conditions, dict):
+            cond_list = conditions.get("conditions", [])
+            if cond_list:
+                parts.append(f"Conditions: {', '.join(str(c) for c in cond_list)}")
+
+        # Filters
+        filters = evt.get("filters_json")
+        if filters and isinstance(filters, dict):
+            filter_list = filters.get("filters", [])
+            if filter_list:
+                parts.append(f"Filters passed: {', '.join(str(f) for f in filter_list)}")
+
+        # Indicators snapshot
+        indicators = evt.get("indicators_json")
+        if indicators and isinstance(indicators, dict):
+            ind_parts = [f"{k}={v}" for k, v in indicators.items() if v is not None]
+            if ind_parts:
+                parts.append(f"Indicators: {', '.join(ind_parts)}")
+
+        # Execution details
+        if evt.get("exec_ticket"):
+            exec_parts = []
+            exec_parts.append(f"price={evt.get('exec_price')}")
+            if evt.get("exec_slippage") is not None:
+                exec_parts.append(f"slippage={evt.get('exec_slippage')}pts")
+            if evt.get("exec_latency_ms") is not None:
+                exec_parts.append(f"latency={evt.get('exec_latency_ms')}ms")
+            parts.append(f"Execution: {', '.join(exec_parts)}")
+
+        # Regime
+        regime = evt.get("regime")
+        if regime:
+            ratio = evt.get("regime_ratio", 0)
+            parts.append(f"Regime: {regime} (ratio={ratio:.3f})")
+
+        # Risk state
+        risk_parts = []
+        if evt.get("consec_losses", 0) > 0:
+            risk_parts.append(f"consec_losses={evt['consec_losses']}")
+        if evt.get("cooldown_active"):
+            risk_parts.append("COOLDOWN")
+        if evt.get("risk_daily_pct", 0) != 0:
+            risk_parts.append(f"daily_risk={evt['risk_daily_pct']:.3f}%")
+        if risk_parts:
+            parts.append(f"Risk: {', '.join(risk_parts)}")
+
+        # Confidence from signal_strength (0-1 scale)
+        confidence = 0.7  # base for EXECUTED
+        if strength is not None and strength > 0:
+            confidence = min(strength, 1.0)
+
+        # Market data for context enrichment
+        market_data = {
+            "bar_close": evt.get("bar_close"),
+            "spread_points": evt.get("spread_points"),
+            "account_balance": evt.get("account_balance"),
+            "account_equity": evt.get("account_equity"),
+            "open_positions": evt.get("open_positions"),
+            "daily_pnl": evt.get("daily_pnl"),
+        }
+        if indicators and isinstance(indicators, dict):
+            market_data["indicators"] = indicators
+
+        return {
+            "reasoning": ". ".join(parts),
+            "confidence": round(confidence, 2),
+            "market_data": market_data,
+            "decision_raw": evt,  # full JSONL event for audit
+            "matched": True,
+        }
+
+    @staticmethod
+    def _parse_ts(ts_str: str) -> Optional[int]:
+        """Parse JSONL timestamp '2026-03-26 20:39:13' to unix timestamp."""
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"):
+            try:
+                dt = datetime.strptime(ts_str, fmt)
+                return int(dt.replace(tzinfo=timezone.utc).timestamp())
+            except (ValueError, AttributeError):
+                continue
+        return None
+
+
+# Global decision log reader instance
+decision_log_reader = DecisionLogReader()
 
 
 # ---------------------------------------------------------------------------
@@ -806,17 +1018,30 @@ class MT5Poller:
         pnl = sum(d.profit for d in deals)
         hold_duration = int((exit_deal.time - entry_deal.time) / 60)
 
-        # --- Event log context (Task 0.1 + 0.2) ---
-        entry_ctx = event_log_reader.find_entry_context(
-            symbol=symbol,
-            magic=magic,
-            position_id=ticket,  # ticket IS position_id in our deal_map grouping
+        # --- Decision context: prefer JSONL (rich) over CSV (basic) ---
+        # 1. Try JSONL decision log first (has conditions, filters, indicators)
+        decision_ctx = decision_log_reader.find_decision_for_trade(
+            strategy=strategy,
             entry_time=entry_deal.time,
+            exec_ticket=ticket,
         )
-        reasoning = entry_ctx["reasoning"]
-        confidence = entry_ctx["confidence"]
-        if entry_ctx["matched"]:
-            log.info(f"EventLog matched for {trade_id}: confidence={confidence}")
+        if decision_ctx and decision_ctx["matched"]:
+            reasoning = decision_ctx["reasoning"]
+            confidence = decision_ctx["confidence"]
+            log.info(f"DecisionLog JSONL matched for {trade_id}: confidence={confidence}")
+        else:
+            # 2. Fallback to event_log CSV (Task 0.1 + 0.2)
+            entry_ctx = event_log_reader.find_entry_context(
+                symbol=symbol,
+                magic=magic,
+                position_id=ticket,
+                entry_time=entry_deal.time,
+            )
+            reasoning = entry_ctx["reasoning"]
+            confidence = entry_ctx["confidence"]
+            decision_ctx = entry_ctx  # use CSV context for market_data merge
+            if entry_ctx["matched"]:
+                log.info(f"EventLog CSV matched for {trade_id}: confidence={confidence}")
 
         # Session from entry time
         hour = datetime.fromtimestamp(entry_deal.time, tz=timezone.utc).hour
@@ -836,9 +1061,12 @@ class MT5Poller:
             "session": session,
             "magic_number": magic,
         }
-        # Merge event_log market data into context
-        if entry_ctx.get("market_data"):
-            market_context["event_log"] = entry_ctx["market_data"]
+        # Merge decision context market data
+        if decision_ctx.get("market_data"):
+            market_context["decision_data"] = decision_ctx["market_data"]
+        # Include full JSONL decision event for audit trail (if from JSONL)
+        if decision_ctx.get("decision_raw"):
+            market_context["decision_event"] = decision_ctx["decision_raw"]
         # Task 0.6: Regime context from binary file
         regime = read_regime()
         if regime:
