@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes
+- [2026-03-27] feat: DecisionLogReader — JSONL decision context (conditions/filters/indicators/exec/regime/risk) 接入 mt5_sync_v3。優先 JSONL > CSV > fallback。20 new tests, 1234 total.
 - [2026-03-25] refactor: owm_helpers.py 抽共用, str(e)→generic error, print→logging(×16), confidence/limit bounds, UTC datetime. 1214 tests.
 - [2026-03-25] feat: onboarding CLI — `tradememory setup/doctor/config`, 8 platforms, TERMS.md. README updated.
 - [2026-03-25] security: fix path traversal, audit hash, recall_events table, bind 127.0.0.1. 1214 tests.
@@ -265,7 +266,8 @@ class LLMReEvolutionPipeline:
 ---
 
 ## Current Status
-- **v0.5.0**, 1214 tests passing, 1 skipped
+- **v0.5.0**, 1234 tests passing, 1 skipped
+- **DecisionLogReader**: JSONL decision context 已接入 mt5_sync_v3。EA 重編譯+部署到 Terminal A，等重掛產出 JSONL 驗證。
 - **Phase 2 COMPLETE**: TDR audit schema + REST endpoints + MCP tools + data_hash. See `docs/EXECUTION_LOG.md`.
 - **Phase 0 COMPLETE**: mt5_sync_v3 enriched with full trade context pipeline.
 - **Phase 15 COMPLETE** — 結論：1H timeframe + 3mo window + single-hour entry 條件下，grid 和 LLM 都無法產出通過 DSR gate 的策略。瓶頸是 trade count，不是 search method。Evolution Engine 驗證延後到更高交易頻率的設定。
