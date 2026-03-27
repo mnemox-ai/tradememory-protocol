@@ -145,7 +145,7 @@ def generate_hero(theme_name):
 
     # Version + stats line
     stats_font = get_font(18)
-    stats = "v0.5.0  |  1,055 Tests  |  15 MCP Tools  |  5 Memory Types  |  Evolution Engine"
+    stats = "v0.5.1  |  1,233 Tests  |  17 MCP Tools  |  5 Memory Types  |  Evolution Engine"
     bbox = draw.textbbox((0, 0), stats, font=stats_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) // 2, 230), stats, fill=hex_to_rgb(t["accent"]), font=stats_font)

@@ -41,7 +41,7 @@ cp .env.example .env
 
 ```bash
 python -m pytest tests/ -q
-# 預期結果：1,055 passed
+# 預期結果：1,233 passed
 ```
 
 ---
@@ -265,7 +265,7 @@ Agent 現在知道：
 
 ## MCP 工具參考
 
-TradeMemory 提供 15 個 MCP 工具，分為三大類：
+TradeMemory 提供 17 個 MCP 工具，分為四大類：
 
 ### 核心記憶（4 個工具）
 
@@ -296,6 +296,13 @@ TradeMemory 提供 15 個 MCP 工具，分為三大類：
 | `evolution_run_backtest` | 候選模式的向量化回測 |
 | `evolution_evolve_strategy` | 完整進化循環 — 生成、回測、篩選、重複 |
 | `evolution_get_log` | 查看歷史進化紀錄與畢業策略 |
+
+### 決策審計追蹤（2 個工具）
+
+| 工具 | 說明 |
+|------|------|
+| `export_audit_trail` | 匯出交易決策記錄，含 SHA-256 防竄改驗證 |
+| `verify_audit_hash` | 驗證決策記錄完整性，重新計算 SHA-256 雜湊 |
 
 ---
 

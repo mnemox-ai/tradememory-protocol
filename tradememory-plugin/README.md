@@ -45,7 +45,7 @@ claude mcp add tradememory -- uvx tradememory-protocol
 | **evolution-engine** | LLM-powered strategy discovery, vectorized backtesting, OOS validation |
 | **risk-management** | Affective state monitoring, tilt detection, position sizing, behavioral guardrails |
 
-## MCP Tools (15 total)
+## MCP Tools (17 total)
 
 ### Core Memory (4)
 - `store_trade_memory` — Store a trade with context
@@ -67,6 +67,10 @@ claude mcp add tradememory -- uvx tradememory-protocol
 - `evolution_run_backtest` — Vectorized backtesting
 - `evolution_evolve_strategy` — Full evolution loop
 - `evolution_get_log` — Evolution history and graveyard
+
+### Decision Audit Trail (2)
+- `export_audit_trail` — Export decision records with SHA-256 tamper detection
+- `verify_audit_hash` — Verify integrity of a decision record
 
 ## Example Workflows
 

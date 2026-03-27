@@ -197,4 +197,4 @@ TradeMemory Protocol is exchange-agnostic. While this skill documents the Binanc
 2. `pnl_r` (R-multiple) is optional but significantly improves recall quality.
 3. The `context_regime` field enables regime-filtered recall — strongly recommended.
 4. TradeMemory stores data locally by default (SQLite). No data is sent to external servers unless you configure a hosted endpoint.
-5. All 15 MCP tools are free and open source under MIT license.
+5. All 17 MCP tools are free and open source under MIT license.

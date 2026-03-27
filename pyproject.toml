@@ -1,12 +1,12 @@
 [project]
 name = "tradememory-protocol"
 version = "0.5.1"
-description = "MCP memory system for AI trading agents. Store, recall, and learn from past trades."
+description = "Decision audit trail + persistent memory for AI trading agents. SHA-256 tamper detection, outcome-weighted recall, strategy evolution via MCP."
 authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["mcp", "trading", "ai", "memory", "agent", "reflection"]
+keywords = ["mcp", "trading", "ai", "memory", "agent", "reflection", "audit", "compliance"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

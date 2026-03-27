@@ -37,7 +37,7 @@ This runs ruff, mypy, and formatting checks automatically on every commit.
 
 ```bash
 python -m pytest tests/ -v
-# Expected: 1,055 passed
+# Expected: 1,233 passed
 ```
 
 ---
@@ -120,7 +120,7 @@ git push origin feat/your-feature
 
 Before submitting, confirm:
 
-- [ ] `python -m pytest tests/ -v` passes (1,055+ tests)
+- [ ] `python -m pytest tests/ -v` passes (1,233+ tests)
 - [ ] New features include tests
 - [ ] `ruff check` and `mypy` pass (or use pre-commit hooks)
 - [ ] Commit messages follow conventional commits

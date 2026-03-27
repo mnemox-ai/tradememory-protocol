@@ -156,7 +156,7 @@ def generate_hero(theme_name):
 
     # Stats line in Chinese
     stats_font = get_font(18)
-    stats = "v0.5.0  |  1,055 測試  |  15 MCP 工具  |  5 記憶類型  |  進化引擎"
+    stats = "v0.5.1  |  1,233 測試  |  17 MCP 工具  |  5 記憶類型  |  進化引擎"
     bbox = draw.textbbox((0, 0), stats, font=stats_font)
     tw = bbox[2] - bbox[0]
     draw.text(((W - tw) // 2, 230), stats, fill=hex_to_rgb(t["accent"]), font=stats_font)

@@ -41,7 +41,7 @@ Verify installation:
 
 ```bash
 python -m pytest tests/ -q
-# Expected: 1,055 passed
+# Expected: 1,233 passed
 ```
 
 ---
@@ -265,7 +265,7 @@ Your AI went from **"stateless calculator"** to **"trader with memory."**
 
 ## MCP Tools Reference
 
-TradeMemory exposes 15 MCP tools across three categories:
+TradeMemory exposes 17 MCP tools across four categories:
 
 ### Core Memory (4 tools)
 
@@ -296,6 +296,13 @@ TradeMemory exposes 15 MCP tools across three categories:
 | `evolution_run_backtest` | Vectorized backtest of a candidate pattern |
 | `evolution_evolve_strategy` | Full evolution loop — generate, backtest, select, repeat |
 | `evolution_get_log` | View past evolution runs and graduated strategies |
+
+### Decision Audit Trail (2 tools)
+
+| Tool | Description |
+|------|-------------|
+| `export_audit_trail` | Export trading decision records with SHA-256 tamper detection |
+| `verify_audit_hash` | Verify integrity of a decision record by recomputing its hash |
 
 ---
 

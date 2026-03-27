@@ -1,10 +1,10 @@
 ---
 name: tradememory
 slug: tradememory
-version: 0.5.0
+version: 0.5.1
 description: >-
   AI trading memory with outcome-weighted recall and autonomous strategy evolution.
-  15 MCP tools, 1,055 tests, works with any trading platform.
+  17 MCP tools, 1,233 tests, works with any trading platform.
 source: https://github.com/mnemox-ai/tradememory-protocol
 repository: https://github.com/mnemox-ai/tradememory-protocol
 homepage: https://github.com/mnemox-ai/tradememory-protocol
@@ -29,7 +29,7 @@ Give your AI agent persistent trading memory. TradeMemory records every trade, r
 
 **Evolution Engine** — LLM-powered strategy discovery. Feed it OHLCV data from any exchange, it generates candidate patterns, backtests them vectorized, validates out-of-sample, and graduates survivors. No manual rule writing.
 
-**Platform-agnostic** — works with MT5, Binance, Alpaca, or any broker that outputs trade data. 1,055 tests passing. MIT licensed.
+**Platform-agnostic** — works with MT5, Binance, Alpaca, or any broker that outputs trade data. 1,233 tests passing. MIT licensed.
 
 ## Installation
 
@@ -110,6 +110,13 @@ python -m tradememory.server
 | `evolution_run_backtest` | Vectorized backtest of a candidate pattern — returns Sharpe, win rate, max drawdown |
 | `evolution_evolve_strategy` | Full evolution loop: generate → backtest → select → eliminate across generations |
 | `evolution_get_log` | Get log of past evolution runs with graduated strategies and graveyard |
+
+### Decision Audit Trail (2 tools)
+
+| Tool | Purpose |
+|------|---------|
+| `export_audit_trail` | Export trading decision records with SHA-256 tamper detection for compliance review |
+| `verify_audit_hash` | Verify integrity of a trading decision record by recomputing its SHA-256 hash |
 
 ## Available Commands
 
