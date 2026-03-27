@@ -310,15 +310,12 @@ class DecisionLogReader:
         if not self.dir.exists():
             return None
 
-        # Map strategy names to EA strategy identifiers in JSONL
-        strategy_map = {
-            "VolBreakout": "NG_Gold",
-            "IntradayMomentum": "NG_Gold",
-            "Pullback": "Pullback",
-        }
-        ea_strategy = strategy_map.get(strategy)
-        if not ea_strategy:
+        # Strategy names in JSONL match TradeMemory strategy names directly
+        # EA writes: "VolBreakout", "IntradayMomentum", "Pullback"
+        known_strategies = {"VolBreakout", "IntradayMomentum", "Pullback"}
+        if strategy not in known_strategies:
             return None
+        ea_strategy = strategy
 
         # Find JSONL files sorted by recency
         jsonl_files = sorted(
@@ -350,30 +347,37 @@ class DecisionLogReader:
                     line = line.strip()
                     if not line:
                         continue
-                    try:
-                        evt = json.loads(line)
-                    except json.JSONDecodeError:
-                        continue
+                    # Handle concurrent write corruption: split merged JSON objects
+                    # e.g. '{"ts":"..."}{"ts":"..."}' → two separate objects
+                    segments = line.replace("}{", "}\n{").split("\n") if "}{" in line else [line]
+                    for segment in segments:
+                        segment = segment.strip()
+                        if not segment:
+                            continue
+                        try:
+                            evt = json.loads(segment)
+                        except json.JSONDecodeError:
+                            continue
 
-                    # Only match EXECUTED or SIGNAL_* events
-                    decision = evt.get("decision", "")
-                    if decision not in ("EXECUTED", "SIGNAL_LONG", "SIGNAL_SHORT"):
-                        continue
+                        # Only match EXECUTED or SIGNAL_* events
+                        decision = evt.get("decision", "")
+                        if decision not in ("EXECUTED", "SIGNAL_LONG", "SIGNAL_SHORT"):
+                            continue
 
-                    if evt.get("strategy") != ea_strategy:
-                        continue
+                        if evt.get("strategy") != ea_strategy:
+                            continue
 
-                    # Match by exec_ticket (strongest match)
-                    if exec_ticket and evt.get("exec_ticket") == exec_ticket:
-                        return self._build_rich_context(evt)
+                        # Match by exec_ticket (strongest match)
+                        if exec_ticket and evt.get("exec_ticket") == exec_ticket:
+                            return self._build_rich_context(evt)
 
-                    # Match by timestamp proximity (within 5 min)
-                    evt_time = self._parse_ts(evt.get("ts", ""))
-                    if evt_time:
-                        diff = abs(evt_time - entry_time)
-                        if diff < 300 and diff < best_time_diff:
-                            best_time_diff = diff
-                            best_match = evt
+                        # Match by timestamp proximity (within 5 min)
+                        evt_time = self._parse_ts(evt.get("ts", ""))
+                        if evt_time:
+                            diff = abs(evt_time - entry_time)
+                            if diff < 300 and diff < best_time_diff:
+                                best_time_diff = diff
+                                best_match = evt
 
         except Exception as e:
             log.warning(f"DecisionLogReader: error reading {path.name}: {e}")

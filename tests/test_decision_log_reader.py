@@ -25,7 +25,7 @@ def _write_jsonl(path: Path, events: list[dict]):
 
 SAMPLE_EXECUTED = {
     "ts": "2026-03-27 08:35:05",
-    "strategy": "NG_Gold",
+    "strategy": "VolBreakout",
     "timeframe": "M5",
     "bar_open": 3050.10,
     "bar_high": 3051.20,
@@ -60,7 +60,7 @@ SAMPLE_EXECUTED = {
 
 SAMPLE_NO_SIGNAL = {
     "ts": "2026-03-27 08:30:00",
-    "strategy": "NG_Gold",
+    "strategy": "VolBreakout",
     "timeframe": "M5",
     "bar_close": 3049.50,
     "spread_points": 30,
@@ -112,11 +112,11 @@ class TestDecisionLogReaderMatch:
 
         reader = DecisionLogReader(tmp_dir)
         result = reader.find_decision_for_trade(
-            strategy="Pullback",  # event is NG_Gold
+            strategy="Pullback",  # event is VolBreakout
             entry_time=1774600505,
             exec_ticket=12345678,
         )
-        # Pullback maps to "Pullback" but event is "NG_Gold"
+        # Pullback != VolBreakout
         assert result is None
 
     def test_no_match_time_too_far(self, tmp_dir):
@@ -298,13 +298,14 @@ class TestDecisionLogReaderEdgeCases:
         assert result is not None
         assert result["matched"] is True
 
-    def test_im_strategy_maps_to_ng_gold(self, tmp_dir):
+    def test_im_strategy_direct_match(self, tmp_dir):
+        im_event = {**SAMPLE_EXECUTED, "strategy": "IntradayMomentum"}
         jsonl_path = tmp_dir / "decision_log_20260327.jsonl"
-        _write_jsonl(jsonl_path, [SAMPLE_EXECUTED])  # strategy=NG_Gold
+        _write_jsonl(jsonl_path, [im_event])
 
         reader = DecisionLogReader(tmp_dir)
         result = reader.find_decision_for_trade(
-            strategy="IntradayMomentum",  # maps to NG_Gold
+            strategy="IntradayMomentum",
             entry_time=1774600505,
             exec_ticket=12345678,
         )

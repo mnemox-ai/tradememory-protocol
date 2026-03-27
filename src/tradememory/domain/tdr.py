@@ -169,16 +169,25 @@ class TradingDecisionRecord(BaseModel):
         event_log = market_context.get("event_log", {})
         regime_data = market_context.get("regime", {})
 
+        # JSONL decision context (richer than CSV event_log)
+        decision_data = market_context.get("decision_data", {})
+        decision_indicators = decision_data.get("indicators", {})
+
+        # Prefer JSONL indicators > CSV event_log > regime file
         market = MarketSnapshot(
             price=market_context.get("price"),
             session=market_context.get("session"),
             regime=regime_data.get("regime"),
-            atr_m5=event_log.get("atr_m5"),
-            atr_h1=regime_data.get("atr_h1"),
-            atr_d1=regime_data.get("atr_d1"),
-            spread_points=event_log.get("spread_points"),
-            ema_fast_h1=event_log.get("ema_fast_h1"),
-            ema_slow_h1=event_log.get("ema_slow_h1"),
+            atr_m5=decision_indicators.get("atr_m5") or event_log.get("atr_m5"),
+            atr_h1=decision_indicators.get("atr_h1") or regime_data.get("atr_h1"),
+            atr_d1=decision_indicators.get("atr_d1") or regime_data.get("atr_d1"),
+            spread_points=(
+                decision_indicators.get("spread_pts")
+                or decision_data.get("spread_points")
+                or event_log.get("spread_points")
+            ),
+            ema_fast_h1=decision_indicators.get("ema_fast_h1") or event_log.get("ema_fast_h1"),
+            ema_slow_h1=decision_indicators.get("ema_slow_h1") or event_log.get("ema_slow_h1"),
         )
 
         # Compute data_hash from original inputs
