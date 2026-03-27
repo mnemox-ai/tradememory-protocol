@@ -79,7 +79,7 @@ class TradingDecisionRecord(BaseModel):
     record_id: str = Field(..., description="Unique, immutable (matches trade_id)")
     timestamp: datetime = Field(..., description="Decision timestamp (UTC)")
     agent_id: str = Field(default="mt5_sync_v3", description="Which agent/EA made this decision")
-    model_version: str = Field(default="0.5.0", description="TradeMemory version at decision time")
+    model_version: str = Field(default="0.5.1", description="TradeMemory version at decision time")
 
     # --- Decision ---
     decision_type: str = Field(

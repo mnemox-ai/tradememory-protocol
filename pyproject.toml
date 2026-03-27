@@ -1,6 +1,6 @@
 [project]
 name = "tradememory-protocol"
-version = "0.5.0"
+version = "0.5.1"
 description = "MCP memory system for AI trading agents. Store, recall, and learn from past trades."
 authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
 license = {text = "MIT"}

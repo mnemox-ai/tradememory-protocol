@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="TradeMemory Protocol",
     description="AI Agent Trading Memory & Adaptive Decision Layer",
-    version="0.5.0"
+    version="0.5.1"
 )
 
 # CORS middleware — allow dashboard dev server
@@ -660,7 +660,7 @@ async def health_check():
     return {
         "status": "healthy",
         "service": "TradeMemory Protocol",
-        "version": "0.5.0"
+        "version": "0.5.1"
     }
 
 
