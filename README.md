@@ -169,6 +169,10 @@ docker compose up -d
 
 </details>
 
+## Hosted deployment
+
+A hosted deployment is available on [Fronteir AI](https://fronteir.ai/mcp/mnemox-ai-tradememory-protocol).
+
 ## Setup & Configuration
 
 First-time guided setup:
