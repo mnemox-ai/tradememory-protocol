@@ -230,8 +230,8 @@ Then reflection uses Claude to generate deeper insights like:
 The next time the agent starts, it loads its state:
 
 ```python
-from src.tradememory.state import StateManager
-from src.tradememory.db import Database
+from tradememory.state import StateManager
+from tradememory.db import Database
 
 db = Database("data/tradememory.db")
 state = StateManager(db=db)

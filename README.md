@@ -131,6 +131,12 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&end=2026-03-31&format=js
 pip install tradememory-protocol
 ```
 
+**Try the demo** (no API key needed):
+
+```bash
+tradememory demo
+```
+
 Add to `claude_desktop_config.json`:
 
 ```json
@@ -204,7 +210,7 @@ tradememory doctor --full # + REST API, MT5, Anthropic API
 |----------|-------|
 | **Core Memory** | `store_trade_memory` · `recall_similar_trades` · `get_strategy_performance` · `get_trade_reflection` |
 | **OWM Cognitive** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
-| **Evolution** | `evolution_run` · `evolution_status` · `evolution_results` · `evolution_compare` · `evolution_config` |
+| **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
 | **Audit** | `export_audit_trail` · `verify_audit_hash` |
 
 <details>

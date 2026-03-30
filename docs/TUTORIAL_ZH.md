@@ -230,8 +230,8 @@ ANTHROPIC_API_KEY=sk-ant-...
 Agent 下次啟動時，會載入它的狀態：
 
 ```python
-from src.tradememory.state import StateManager
-from src.tradememory.db import Database
+from tradememory.state import StateManager
+from tradememory.db import Database
 
 db = Database("data/tradememory.db")
 state = StateManager(db=db)

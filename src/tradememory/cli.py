@@ -33,5 +33,13 @@ def config(platform):
     show_config_menu(platform)
 
 
+@cli.command()
+@click.option("--fast", is_flag=True, help="Skip typewriter effect and pauses")
+def demo(fast):
+    """Run interactive demo with 30 simulated trades (no API key needed)."""
+    from .demo import main as demo_main
+    demo_main(fast=fast)
+
+
 if __name__ == "__main__":
     cli()

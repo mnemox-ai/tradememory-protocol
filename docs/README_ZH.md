@@ -131,6 +131,12 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&end=2026-03-31&format=js
 pip install tradememory-protocol
 ```
 
+**試試互動 Demo**（不需要 API key）：
+
+```bash
+tradememory demo
+```
+
 加到 Claude Desktop 設定檔 (`claude_desktop_config.json`)：
 
 ```json
@@ -204,7 +210,7 @@ tradememory doctor --full # + REST API、MT5、Anthropic API
 |------|------|
 | **核心記憶** | `store_trade_memory` · `recall_similar_trades` · `get_strategy_performance` · `get_trade_reflection` |
 | **OWM 認知** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
-| **Evolution** | `evolution_run` · `evolution_status` · `evolution_results` · `evolution_compare` · `evolution_config` |
+| **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
 | **審計** | `export_audit_trail` · `verify_audit_hash` |
 
 <details>
