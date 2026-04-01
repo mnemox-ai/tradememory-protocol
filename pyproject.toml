@@ -52,6 +52,9 @@ replay = [
     "anthropic>=0.39.0",
     "pyyaml>=6.0",
 ]
+validate = [
+    "deflated-sharpe>=0.1.0",
+]
 postgres = [
     "sqlalchemy[asyncio]>=2.0",
     "asyncpg>=0.29",

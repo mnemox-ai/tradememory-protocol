@@ -1197,6 +1197,66 @@ async def verify_audit_hash(trade_id: str) -> dict:
     }
 
 
+# ---------------------------------------------------------------------------
+# Strategy Validation
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def validate_strategy(
+    file_path: str,
+    format: str = "quantconnect",
+    strategy_name: str = "",
+    num_strategies: int = 1,
+) -> dict:
+    """Validate a trading strategy using statistical tests (DSR + Walk-Forward + Regime + CPCV).
+
+    For educational and research purposes only. Not financial advice.
+
+    Upload a trade log CSV (QuantConnect format) or daily returns CSV.
+    The tool runs four statistical tests:
+    1. Deflated Sharpe Ratio (DSR) — detects overfitting from multiple testing
+    2. Walk-Forward Validation — checks out-of-sample consistency
+    3. Regime Analysis — performance across bull/bear/crisis markets
+    4. CPCV — cross-validated Sharpe stability across time periods
+
+    Args:
+        file_path: Absolute path to the CSV file on your local machine.
+        format: CSV format — "quantconnect" for trade logs (columns: Entry Time, Exit Time,
+                Direction, Entry Price, Exit Price, Quantity, P&L, Fees, IsWin) or
+                "returns" for daily returns (columns: date,return or single column of returns).
+        strategy_name: Name of the strategy (for the report).
+        num_strategies: How many strategies you tested before picking this one.
+                        Higher M = stricter DSR threshold (corrects for selection bias).
+
+    Returns:
+        Complete validation report with per-test verdicts and overall PASS/CAUTION/FAIL.
+    """
+    from .strategy_validator import validate_from_trades, validate_from_returns
+
+    try:
+        if format == "returns":
+            return validate_from_returns(
+                file_path=file_path,
+                strategy_name=strategy_name,
+                num_strategies=num_strategies,
+            )
+        else:
+            return validate_from_trades(
+                file_path=file_path,
+                format=format,
+                strategy_name=strategy_name,
+                num_strategies=num_strategies,
+            )
+    except FileNotFoundError as e:
+        return {"error": str(e), "hint": "Provide the full absolute path to your CSV file."}
+    except ValueError as e:
+        return {"error": str(e)}
+    except Exception as e:
+        logger.error("validate_strategy failed: %s", e)
+        return {"error": f"Validation failed: {e}"}
+
+
 def main():
     """Entry point for MCP server."""
     import sys

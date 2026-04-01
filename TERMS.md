@@ -1,13 +1,18 @@
 # TradeMemory Protocol - Terms of Use
 
-Last updated: 2026-03-25
+Last updated: 2026-04-02
 
 ## 1. Not Financial Advice
 
-TradeMemory Protocol is a software tool for recording, organizing, and analyzing
-trade data. It does NOT provide financial advice, investment recommendations, or
-trading signals. The Evolution Engine generates hypotheses for research purposes
-only.
+TradeMemory Protocol is a general-purpose analytical tool for recording,
+organizing, and analyzing trade data. It does NOT provide financial advice,
+investment recommendations, or trading signals. The Evolution Engine generates
+hypotheses for research purposes only.
+
+The `validate_strategy` tool performs statistical tests (Deflated Sharpe Ratio,
+Walk-Forward Validation, Regime Analysis, CPCV) on user-provided data. These
+are descriptive statistics — a "PASS" verdict means the strategy survived
+specific statistical tests, NOT that it will be profitable in the future.
 
 ## 2. No Warranty
 
