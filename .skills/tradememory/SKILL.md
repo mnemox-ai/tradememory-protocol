@@ -199,3 +199,9 @@ Returns disposition ratio, hold time asymmetry, lot sizing variance vs Kelly cri
 - PyPI: https://pypi.org/project/tradememory-protocol/
 - Tutorial: https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/TUTORIAL.md
 - Demo: `python scripts/demo.py` (30 simulated trades, full L1→L2→L3 pipeline)
+
+## Related Skills
+
+| Skill | Path | Description |
+|-------|------|-------------|
+| Strategy Validator | `.skills/strategy-validator/SKILL.md` | Validate trading strategies for overfitting using 4 statistical tests (DSR, Walk-Forward, Regime, CPCV). Use when the user says "validate my strategy", "check my backtest", or "is this overfitting?". |
