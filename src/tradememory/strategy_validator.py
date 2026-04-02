@@ -424,7 +424,7 @@ def walk_forward_validation(
         is_end = is_start + is_years - 1
         oos_year = is_end + 1
         windows.append({"is_start": is_start, "is_end": is_end, "oos_year": oos_year})
-        is_start += is_years
+        is_start += oos_years  # Slide by OOS length for more windows
 
     results = []
     for w in windows:
@@ -497,7 +497,7 @@ def walk_forward_returns(
         is_end = is_start + is_years - 1
         oos_year = is_end + 1
         windows.append({"is_start": is_start, "is_end": is_end, "oos_year": oos_year})
-        is_start += is_years
+        is_start += oos_years  # Slide by OOS length for more windows
 
     results = []
     for w in windows:
@@ -697,8 +697,8 @@ def cpcv_sharpe(
             for i in range(block_end + 1, block_end + 1 + embargo_window):
                 exclude.add(i)
 
-        # Test returns (the OOS portion)
-        test_returns = [daily_returns[i] for i in sorted_test]
+        # Test returns (the OOS portion, excluding purged/embargoed bars)
+        test_returns = [daily_returns[i] for i in sorted_test if i not in exclude]
         sharpe = _raw_sharpe(test_returns) if test_returns else 0.0
         fold_sharpes.append(sharpe)
 
