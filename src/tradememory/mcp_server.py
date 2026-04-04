@@ -17,6 +17,7 @@ from .db import Database
 from .embedding import embed_trade_context
 from .hybrid_recall import hybrid_recall
 from .owm import ContextVector, outcome_weighted_recall
+from .owm.drift import compute_context_drift, compute_drift_summary
 from .owm_helpers import (
     ensure_tz,
     update_affective_from_trade,
@@ -193,13 +194,22 @@ async def recall_similar_trades(
         )
 
         results = []
+        drift_results = []
         for sm in scored:
+            # Extract memory's market context for drift comparison
+            mem_ctx = sm.data.get("context", {})
+            mem_ctx_str = (
+                json.dumps(mem_ctx) if isinstance(mem_ctx, dict) else str(mem_ctx)
+            )
+            drift = compute_context_drift(mem_ctx_str, market_context)
+            drift_results.append(drift)
+
             results.append({
                 "trade_id": sm.memory_id,
-                "symbol": sm.data.get("context", {}).get("symbol", symbol_upper),
+                "symbol": mem_ctx.get("symbol", symbol_upper) if isinstance(mem_ctx, dict) else symbol_upper,
                 "direction": sm.data.get("direction"),
                 "strategy": sm.data.get("strategy"),
-                "entry_context": sm.data.get("context", {}),
+                "entry_context": mem_ctx,
                 "pnl": sm.data.get("pnl"),
                 "exit_reasoning": sm.data.get("reflection"),
                 "lessons": sm.data.get("reflection"),
@@ -207,6 +217,7 @@ async def recall_similar_trades(
                 "relevance_score": sm.score,
                 "owm_components": sm.components,
                 "timestamp": sm.data.get("timestamp"),
+                "context_drift": drift,
             })
 
         return {
@@ -215,6 +226,7 @@ async def recall_similar_trades(
             "matches_found": len(results),
             "recall_method": "owm",
             "trades": results,
+            "drift_summary": compute_drift_summary(drift_results),
         }
 
     # Fallback: original keyword matching on trade_records
@@ -237,19 +249,28 @@ async def recall_similar_trades(
     top = scored_kw[:limit]
 
     results = []
+    drift_results = []
     for score, t in top:
+        mem_ctx = t.get("market_context", {})
+        mem_ctx_str = (
+            json.dumps(mem_ctx) if isinstance(mem_ctx, dict) else str(mem_ctx)
+        )
+        drift = compute_context_drift(mem_ctx_str, market_context)
+        drift_results.append(drift)
+
         results.append({
             "trade_id": t["id"],
             "symbol": t["symbol"],
             "direction": t["direction"],
             "strategy": t["strategy"],
-            "entry_context": t.get("market_context", {}),
+            "entry_context": mem_ctx,
             "pnl": t.get("pnl"),
             "exit_reasoning": t.get("exit_reasoning"),
             "lessons": t.get("lessons"),
             "grade": t.get("grade"),
             "relevance_score": score,
             "timestamp": t.get("timestamp"),
+            "context_drift": drift,
         })
 
     return {
@@ -258,6 +279,7 @@ async def recall_similar_trades(
         "matches_found": len(results),
         "recall_method": "keyword",
         "trades": results,
+        "drift_summary": compute_drift_summary(drift_results),
     }
 
 
@@ -621,12 +643,29 @@ async def recall_memories(
     )
 
     results = []
+    drift_results = []
     for sm in scored:
+        # Build memory context string for drift comparison
+        mem_ctx = sm.data.get("context", {})
+        if sm.memory_type == "semantic":
+            # Semantic memories store context differently
+            mem_ctx = {
+                "symbol": sm.data.get("context", {}).get("symbol"),
+                "regime": sm.data.get("context", {}).get("regime"),
+                "volatility_regime": sm.data.get("context", {}).get("volatility_regime"),
+            }
+        mem_ctx_str = (
+            json.dumps(mem_ctx) if isinstance(mem_ctx, dict) else str(mem_ctx)
+        )
+        drift = compute_context_drift(mem_ctx_str, market_context)
+        drift_results.append(drift)
+
         entry: Dict[str, Any] = {
             "memory_id": sm.memory_id,
             "memory_type": sm.memory_type,
             "score": round(sm.score, 6),
             "components": {k: round(v, 6) for k, v in sm.components.items()},
+            "context_drift": drift,
         }
         if sm.memory_type == "episodic":
             entry["strategy"] = sm.data.get("strategy")
@@ -677,6 +716,7 @@ async def recall_memories(
         "matches_found": len(results),
         "affective_state": affective_state,
         "memories": results,
+        "drift_summary": compute_drift_summary(drift_results),
     }
 
 
@@ -1255,6 +1295,94 @@ async def validate_strategy(
     except Exception as e:
         logger.error("validate_strategy failed: %s", e)
         return {"error": f"Validation failed: {e}"}
+
+
+# ---------------------------------------------------------------------------
+# Decision Legitimacy Gate
+# ---------------------------------------------------------------------------
+
+
+@mcp.tool()
+async def check_trade_legitimacy(
+    strategy_name: str,
+    symbol: str = "XAUUSD",
+    current_regime: Optional[str] = None,
+    current_atr_d1: Optional[float] = None,
+) -> dict:
+    """Check if the agent has sufficient data and confidence to trade.
+
+    Call this before making any trade decision. Evaluates sample size,
+    memory quality, regime experience, streak state, and drawdown to
+    determine whether the agent has earned the right to trade at full size.
+
+    Args:
+        strategy_name: Strategy to evaluate (e.g. "VolBreakout").
+        symbol: Trading instrument (default "XAUUSD").
+        current_regime: Current market regime (trending_up/trending_down/ranging/volatile).
+        current_atr_d1: Current ATR(14) on D1 in dollars (informational).
+
+    Returns:
+        Legitimacy assessment with score, tier (full/reduced/skip),
+        factor breakdown, recommendation, and position_multiplier.
+    """
+    from .owm.legitimacy import compute_legitimacy_score
+
+    db = _get_db()
+
+    # 1. Total trades for this strategy
+    trades = db.query_trades(strategy=strategy_name, symbol=symbol, limit=10000)
+    memory_count = len(trades)
+
+    # 2. Regime-specific trade count
+    regime_trade_count = 0
+    if current_regime:
+        episodic = db.query_episodic(strategy=strategy_name, regime=current_regime, limit=10000)
+        regime_trade_count = len(episodic)
+
+    # 3. Win rate
+    win_rate = None
+    if memory_count > 0:
+        wins = sum(1 for t in trades if (t.get("pnl") or 0) > 0)
+        win_rate = wins / memory_count
+
+    # 4. Affective state (drawdown + streak)
+    state = db.load_affective()
+    if state is None:
+        db.init_affective(peak_equity=10000.0, current_equity=10000.0)
+        state = db.load_affective() or {}
+
+    consecutive_losses = state.get("consecutive_losses", 0)
+    drawdown_pct = state.get("drawdown_state", 0.0) * 100  # stored as 0-1, we need 0-100
+
+    # 5. Average context drift — default 0.0 (no drift = good)
+    # Drift computation requires ContextVector pairs; future enhancement.
+    avg_context_drift = 0.0
+
+    result = compute_legitimacy_score(
+        strategy_name=strategy_name,
+        current_regime=current_regime,
+        memory_count=memory_count,
+        avg_context_drift=avg_context_drift,
+        win_rate=win_rate,
+        consecutive_losses=consecutive_losses,
+        drawdown_pct=drawdown_pct,
+        regime_trade_count=regime_trade_count,
+    )
+
+    # Add context info
+    result["context"] = {
+        "symbol": symbol,
+        "strategy": strategy_name,
+        "regime": current_regime,
+        "atr_d1": current_atr_d1,
+        "total_trades": memory_count,
+        "regime_trades": regime_trade_count,
+        "win_rate": round(win_rate, 4) if win_rate is not None else None,
+        "consecutive_losses": consecutive_losses,
+        "drawdown_pct": round(drawdown_pct, 2),
+    }
+
+    return result
 
 
 def main():
