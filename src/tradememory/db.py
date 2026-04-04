@@ -16,13 +16,24 @@ logger = logging.getLogger(__name__)
 class Database:
     """SQLite database manager"""
 
-    def __init__(self, db_path: str = "data/tradememory.db"):
+    def __init__(self, db_path: str | None = None):
         """
         Initialize database connection.
 
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file.
+                     Defaults to TRADEMEMORY_DB env var, then ~/.tradememory/tradememory.db,
+                     then data/tradememory.db (legacy fallback).
         """
+        if db_path is None:
+            import os
+            db_path = os.environ.get("TRADEMEMORY_DB")
+            if not db_path:
+                home_db = Path.home() / ".tradememory" / "tradememory.db"
+                if home_db.exists():
+                    db_path = str(home_db)
+                else:
+                    db_path = "data/tradememory.db"
         self.db_path = Path(db_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_schema()
