@@ -7,8 +7,8 @@
 <div align="center">
 
 [![PyPI](https://img.shields.io/pypi/v/tradememory-protocol?style=flat-square&color=blue)](https://pypi.org/project/tradememory-protocol/)
-[![Tests](https://img.shields.io/badge/tests-1%2C233_passed-brightgreen?style=flat-square)](https://github.com/mnemox-ai/tradememory-protocol/actions)
-[![MCP Tools](https://img.shields.io/badge/MCP_tools-17-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
+[![Tests](https://img.shields.io/badge/tests-1%2C324_passed-brightgreen?style=flat-square)](https://github.com/mnemox-ai/tradememory-protocol/actions)
+[![MCP Tools](https://img.shields.io/badge/MCP_tools-19-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
@@ -44,11 +44,12 @@ Every AI trading tool executes trades. None of them record **why**. TradeMemory 
 
 ## News
 
+- [2026-04] **Context Drift Monitor** — Every recalled memory now includes a drift score (ΔS) indicating how relevant it is to current market conditions. Four zones: safe / transit / risk / danger
+- [2026-04] **Decision Legitimacy Gate** — Pre-trade confidence check: 5-factor scoring (sample sufficiency, memory quality, regime confidence, streak state, drawdown) with position sizing recommendations
+- [2026-04] **Strategy Validator** — Four-layer statistical validation (DSR + Walk-Forward + Regime + CPCV). [Web UI](https://mnemox.ai/validate) + MCP tool + Claude Code skill
+- [2026-04] **Trading AI Failure Taxonomy** — 11 failure modes documented with real experiment data. [Read it](docs/trading-ai-failure-taxonomy.md)
 - [2026-03] **Decision Audit Trail** — Trading Decision Records (TDR) with SHA-256 tamper detection, 4 audit REST endpoints, 2 MCP tools, JSONL decision context ingestion
-- [2026-03] **Onboarding CLI** — `tradememory setup` wizard, `doctor` health check, 8-platform config generator
 - [2026-03] **v0.5.0** — Evolution Engine + OWM 5 memory types. [Release Notes](https://github.com/mnemox-ai/tradememory-protocol/releases/tag/v0.5.0)
-- [2026-03] **Statistical Validation** — Strategy E passes P100% random baseline, Sharpe 3.24 walk-forward
-- [2026-02] **v0.4.0** — OWM Framework, 15 MCP tools, Smithery + Glama listed
 
 ## Architecture
 
@@ -204,12 +205,13 @@ tradememory doctor        # core checks (~3s)
 tradememory doctor --full # + REST API, MT5, Anthropic API
 ```
 
-## MCP Tools (17)
+## MCP Tools (19)
 
 | Category | Tools |
 |----------|-------|
 | **Core Memory** | `store_trade_memory` · `recall_similar_trades` · `get_strategy_performance` · `get_trade_reflection` |
 | **OWM Cognitive** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
+| **Risk & Governance** | `check_trade_legitimacy` · `validate_strategy` |
 | **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
 | **Audit** | `export_audit_trail` · `verify_audit_hash` |
 
@@ -244,7 +246,7 @@ Full reference: [docs/API.md](docs/API.md)
 - **Read and record only.** The agent calls TradeMemory after making a decision, passing the context. TradeMemory stores it.
 - **No external network calls.** The server runs locally. No data is sent to third parties.
 - **SHA-256 tamper detection.** Every record is hashed at creation time. Verify integrity at any point with `/audit/verify`.
-- **1,233 tests passing.** Full test suite with CI.
+- **1,324 tests passing.** Full test suite with CI.
 
 ## Documentation
 
@@ -256,6 +258,7 @@ Full reference: [docs/API.md](docs/API.md)
 | [API Reference](docs/API.md) | All REST endpoints |
 | [MT5 Setup](docs/MT5_SYNC_SETUP.md) | MetaTrader 5 integration |
 | [Research Log](docs/RESEARCH_LOG.md) | 11 evolution experiments |
+| [Failure Taxonomy](docs/trading-ai-failure-taxonomy.md) | 11 trading AI failure modes with real data |
 | [Roadmap](docs/ROADMAP.md) | Development roadmap |
 | [中文版](docs/README_ZH.md) | Traditional Chinese |
 
