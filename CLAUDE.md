@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-05] docs: README 商業化重寫 — hook + pricing + enterprise section + use cases + getting started 雙軌
 - [2026-04-04] feat: Decision Legitimacy Gate — 5-factor pre-trade confidence check（sample sufficiency, memory quality, regime confidence, streak, drawdown）。新 MCP tool check_trade_legitimacy + owm/legitimacy.py。11 new tests（1324 total）。
 - [2026-04-04] feat: ΔS Context Drift Monitor — Jaccard-based drift scoring on recall tools。每筆 recalled memory 加 context_drift {delta_s, zone, warning} + drift_summary。20 new tests（1313 total）。
 - [2026-04-03] feat: Strategy Validator Claude Code skill — Layer 2 product，5-step rigid workflow，plain-language 解釋四層驗證。
@@ -92,6 +93,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - **Waiting on**: NG_Gold demo 交易數據（Phase 1 Real Data Validation）、anti-resonance PyPI publish
 - **Strategic pivot**: OWM = free infra, Evolution Engine = paid product (pending validation at higher frequency)
 - **方向**: Trading AI Service 接案→數據驗證→SaaS（等 NexusOS 完成後啟動）
+- **README 重寫完成**：商業定位（hook + pricing Free/$29/Enterprise + use cases + getting started 雙軌）。舊 README 備份在 docs/README_OLD_2026-04-05.md
+- **P1 待做**：README_ZH.md 中文版更新、mnemox.ai/tradememory landing page
 
 ## Compact Instructions
 
