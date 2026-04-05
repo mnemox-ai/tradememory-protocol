@@ -141,7 +141,7 @@ docker compose up -d
 
 **免費 30 分鐘策略諮詢** — 我們會為你的 agent 規劃記憶需求，設計適合你工作流程的護欄。
 
-[dev@mnemox.ai](mailto:dev@mnemox.ai) | [預約通話](https://calendly.com/mnemox)
+[dev@mnemox.ai](mailto:dev@mnemox.ai) | [預約通話](https://calendly.com/johnson90207/30min)
 
 > *我們已協助交易者建立交易前檢查清單、串接 MT5/Binance，並為外匯、美股、加密貨幣設計客製化護欄。*
 
