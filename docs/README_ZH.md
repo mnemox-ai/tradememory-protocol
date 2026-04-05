@@ -135,6 +135,16 @@ docker compose up -d
 | 支援 | GitHub Issues | 優先支援 | 專屬支援 |
 | | [立即開始 →](GETTING_STARTED.md) | *即將推出* | [dev@mnemox.ai](mailto:dev@mnemox.ai) |
 
+### 需要整合協助？
+
+正在建立交易 AI agent，想要經過實戰驗證的記憶架構？
+
+**免費 30 分鐘策略諮詢** — 我們會為你的 agent 規劃記憶需求，設計適合你工作流程的護欄。
+
+[dev@mnemox.ai](mailto:dev@mnemox.ai) | [預約通話](https://calendly.com/mnemox)
+
+> *我們已協助交易者建立交易前檢查清單、串接 MT5/Binance，並為外匯、美股、加密貨幣設計客製化護欄。*
+
 ## Enterprise 與合規
 
 你的 agent 做的每一個交易決策——包括決定**不交易**——都會被記錄為 Trading Decision Record (TDR)，並在建立時計算 SHA-256 雜湊以進行竄改偵測。

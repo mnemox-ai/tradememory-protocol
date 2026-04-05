@@ -135,6 +135,16 @@ docker compose up -d
 | Support | GitHub Issues | Priority support | Dedicated support |
 | | [Get Started →](docs/GETTING_STARTED.md) | *Coming soon* | [dev@mnemox.ai](mailto:dev@mnemox.ai) |
 
+### Need Help Integrating?
+
+Building a trading AI agent and want battle-tested memory architecture?
+
+**Free 30-min strategy call** — we'll map your agent's memory needs and design guardrails for your specific workflow.
+
+[dev@mnemox.ai](mailto:dev@mnemox.ai) | [Book a call](https://calendly.com/mnemox)
+
+> *We've helped traders build pre-flight checklists, connect MT5/Binance, and design custom guardrails for forex, equities, and crypto.*
+
 ## Enterprise & Compliance
 
 Every trading decision your agent makes — including decisions **not** to trade — is recorded as a Trading Decision Record (TDR), SHA-256 hashed at creation for tamper detection.
