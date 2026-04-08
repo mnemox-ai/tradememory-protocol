@@ -233,6 +233,25 @@ async def remember_trade(
         "description": market_context,
     }
 
+    # Compute DQS (best-effort — don't block trade storage on failure)
+    try:
+        from .owm.dqs import DQSEngine
+        dqs_engine = DQSEngine(db)
+        dqs_result = dqs_engine.compute(
+            symbol=symbol_upper,
+            strategy_name=strategy_name,
+            direction=direction_lower,
+            market_context=market_context,
+            context_regime=context_regime,
+            context_atr_d1=context_atr_d1,
+        )
+        context_dict["dqs_score"] = dqs_result.score
+        context_dict["dqs_tier"] = dqs_result.tier
+    except Exception as e:
+        logger.warning(f"DQS computation skipped for trade {tid}: {e}")
+        context_dict["dqs_score"] = None
+        context_dict["dqs_tier"] = None
+
     # 1) Insert into episodic_memory
     episodic_data = {
         "id": tid,
@@ -1177,6 +1196,66 @@ async def check_trade_legitimacy(
     }
 
     return result
+
+
+@mcp.tool()
+async def compute_dqs(
+    symbol: str,
+    strategy_name: str,
+    direction: str,
+    proposed_lot_size: float = 0.1,
+    market_context: str = "",
+    context_regime: Optional[str] = None,
+    context_atr_d1: Optional[float] = None,
+) -> dict:
+    """Compute Decision Quality Score before executing a trade.
+
+    Evaluates the quality of the decision *process* (not outcome) across
+    5 factors: regime match, position sizing vs Kelly, process adherence
+    (OWM similarity), risk state, and historical pattern.
+
+    Args:
+        symbol: Trading instrument (e.g. "XAUUSD").
+        strategy_name: Strategy being considered (e.g. "VolBreakout").
+        direction: Intended direction ("long" or "short").
+        proposed_lot_size: Planned position size in lots (default 0.1).
+        market_context: Description of current market conditions.
+        context_regime: Market regime (trending_up/trending_down/ranging/volatile).
+        context_atr_d1: ATR(14) on D1 in dollars.
+
+    Returns:
+        DQS assessment with score (0-10), factor breakdown, tier
+        (go/caution/skip), position_multiplier, and recommendation.
+    """
+    from .owm.dqs import DQSEngine
+
+    db = _get_db()
+    engine = DQSEngine(db)
+    result = engine.compute(
+        symbol=symbol.upper(),
+        strategy_name=strategy_name,
+        direction=direction.lower(),
+        proposed_lot_size=proposed_lot_size,
+        market_context=market_context,
+        context_regime=context_regime,
+        context_atr_d1=context_atr_d1,
+    )
+
+    return {
+        "dqs_score": result.score,
+        "tier": result.tier,
+        "position_multiplier": result.position_multiplier,
+        "factors": result.factors,
+        "recommendation": result.recommendation,
+        "context": {
+            "symbol": symbol.upper(),
+            "strategy": strategy_name,
+            "direction": direction.lower(),
+            "proposed_lot": proposed_lot_size,
+            "regime": context_regime,
+            "atr_d1": context_atr_d1,
+        },
+    }
 
 
 def main():

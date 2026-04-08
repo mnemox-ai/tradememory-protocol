@@ -1,8 +1,10 @@
 """OWM (Outcome-Weighted Memory) module."""
 
 from .affective import ewma_confidence, risk_appetite
+from .changepoint import BayesianChangepoint, ChangePointResult
 from .context import ContextVector, context_similarity
 from .decay import episodic_decay, regime_match_factor, semantic_decay
+from .dqs import DQSEngine, DQSResult
 from .drift import compute_context_drift, compute_drift_summary, cusum_drift_detect
 from .induction import check_auto_induction
 from .kelly import kelly_from_memory
@@ -19,7 +21,11 @@ from .recall import (
 )
 
 __all__ = [
+    "BayesianChangepoint",
+    "ChangePointResult",
     "ContextVector",
+    "DQSEngine",
+    "DQSResult",
     "ScoredMemory",
     "check_auto_induction",
     "compute_context_drift",
