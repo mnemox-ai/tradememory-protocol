@@ -756,7 +756,7 @@ async def owm_remember(req: RememberTradeRequest):
 
         update_semantic_from_trade(db, symbol_upper, req.strategy_name, req.pnl, req.pnl_r, req.context_regime, tid)
         update_procedural_from_trade(db, symbol_upper, req.strategy_name, req.pnl)
-        update_affective_from_trade(db, req.pnl, req.confidence)
+        update_affective_from_trade(db, req.pnl, req.confidence, strategy_name=req.strategy_name, symbol=symbol_upper)
 
         trade_data = {
             "id": tid,

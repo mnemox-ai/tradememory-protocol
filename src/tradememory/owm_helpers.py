@@ -268,8 +268,15 @@ def update_affective_from_trade(
     db: Database,
     pnl: float,
     confidence: float,
+    strategy_name: Optional[str] = None,
+    symbol: Optional[str] = None,
 ) -> None:
-    """Update affective state: EWMA confidence, streaks, equity/drawdown."""
+    """Update affective state: EWMA confidence, streaks, equity/drawdown.
+
+    Also reads procedural memory: if disposition_ratio > 2.0 (cutting winners
+    too early), reduces risk_appetite by 0.1 — making the affective state
+    behaviorally aware, not just emotional.
+    """
     state = db.load_affective()
 
     ewma_alpha = 0.3
@@ -295,9 +302,23 @@ def update_affective_from_trade(
     peak_equity = max(state.get("peak_equity", current_equity), current_equity)
     drawdown_state = (peak_equity - current_equity) / peak_equity if peak_equity > 0 else 0.0
 
+    # Read procedural memory — adjust risk_appetite based on behavioral patterns
+    risk_appetite = state.get("risk_appetite", 1.0)
+    if strategy_name and symbol:
+        proc = db.query_procedural(strategy=strategy_name, symbol=symbol, limit=1)
+        if proc:
+            disp = proc[0].get("disposition_ratio")
+            if disp is not None and disp > 2.0:
+                # Cutting winners too early relative to losers → reduce risk appetite
+                risk_appetite = max(0.1, risk_appetite - 0.1)
+                logger.info(
+                    "Disposition ratio %.2f > 2.0 for %s/%s — reducing risk_appetite to %.2f",
+                    disp, strategy_name, symbol, risk_appetite,
+                )
+
     db.save_affective({
         "confidence_level": new_conf,
-        "risk_appetite": state.get("risk_appetite", 1.0),
+        "risk_appetite": risk_appetite,
         "momentum_bias": state.get("momentum_bias", 0.0),
         "peak_equity": peak_equity,
         "current_equity": current_equity,

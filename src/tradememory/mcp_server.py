@@ -268,7 +268,7 @@ async def remember_trade(
         hold_duration_seconds=episodic_data.get("hold_duration_seconds"),
         pnl_r=pnl_r,
     )
-    update_affective_from_trade(db, pnl, confidence)
+    update_affective_from_trade(db, pnl, confidence, strategy_name=strategy_name, symbol=symbol_upper)
 
     # 3) Backward compatibility: also store in trade_records
     trade_data = {
