@@ -64,6 +64,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-09] feat: [Phase 3] Agent Simulation Framework — BaseAgent/CalibratedAgent A/B, ABExperiment IS/OOS, 4-variant ablation, 3 preset strategies, ExperimentRunner, 10 tests
+- [2026-04-09] fix: DQS continuous scoring (was discrete), CUSUM complementary detector, 4-tier system (go/proceed/caution/skip)
 - [2026-04-09] feat: [Phase 1] Bayesian Online Changepoint Detection — Adams & MacKay 2007 BOCPD, Beta-Bernoulli + NIG conjugate models, DB persistence, integrated into semantic update flow, 8 tests
 - [2026-04-09] feat: [Phase 2] Decision Quality Score — 5-factor process-oriented pre-trade evaluation + compute_dqs MCP tool + calibrate() + 10 tests
 - [2026-04-08] **深度重構 — 審計行動計劃全部完成**：
@@ -84,10 +86,11 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 
 ## Current Status
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
-- **1358 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint - 9 removed), 1 skipped
+- **1370 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation - 9 removed), 1 skipped
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
-- **Bayesian Changepoint Detection**: Adams & MacKay 2007 BOCPD, 4 behavioral signals (won, pnl_r, hold_seconds, lot_vs_kelly), DB-persisted state, integrated into semantic update
-- **DQS Engine**: 5 factors (regime match, sizing, process adherence, risk state, historical pattern) + calibrate() from history + integrated into remember_trade
+- **Agent Simulation Framework**: BaseAgent vs CalibratedAgent A/B, IS/OOS walk-forward, 4-variant ablation, 3 preset strategies, full experiment runner
+- **Bayesian Changepoint Detection**: BOCPD + CUSUM complementary detector, 4 behavioral signals, DB-persisted, cusum_alert in ChangePointResult
+- **DQS Engine**: 5 continuous factors + 4-tier system (go/proceed/caution/skip) + calibrate() + integrated into remember_trade
 - **5 層記憶真正互通**：Semantic↔Episodic（drift detection → BOCPD），Procedural（hold time/Kelly/disposition），Affective←Procedural（behavioral risk）
 - **db.py 重構**：TradeMemoryDBError 階層 + get_connection() context manager + 18→2 return False
 - **4 ADR** in docs/adr/ — OWM scoring, SQLite, MCP protocol, Evolution gates
