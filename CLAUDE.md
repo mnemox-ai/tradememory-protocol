@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-09] feat: [Phase 4] Full experiment — 3yr × 2tf × 2sym, 8-section research report, DSR validation, DQS distribution, ablation importance, NO-GO verdict (honest)
 - [2026-04-09] feat: [Phase 3] Agent Simulation Framework — BaseAgent/CalibratedAgent A/B, ABExperiment IS/OOS, 4-variant ablation, 3 preset strategies, ExperimentRunner, 10 tests
 - [2026-04-09] fix: DQS continuous scoring (was discrete), CUSUM complementary detector, 4-tier system (go/proceed/caution/skip)
 - [2026-04-09] feat: [Phase 1] Bayesian Online Changepoint Detection — Adams & MacKay 2007 BOCPD, Beta-Bernoulli + NIG conjugate models, DB persistence, integrated into semantic update flow, 8 tests
@@ -88,6 +89,10 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
 - **1370 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation - 9 removed), 1 skipped
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
+- **Phase 4 Experiment Complete**: 12 A/B + 48 ablation runs on real Binance data (BTCUSDT/ETHUSDT × 1h/4h × 3 strategies)
+  - Result: **NO-GO** — DQS on cold-start DB is neutral (no skip), 0/12 significant
+  - 6/12 DSR PASS, skip precision 10.5%, DQS-PnL r = -0.02
+  - Report: `scripts/research/phase4_results.md` (8-section research-grade)
 - **Agent Simulation Framework**: BaseAgent vs CalibratedAgent A/B, IS/OOS walk-forward, 4-variant ablation, 3 preset strategies, full experiment runner
 - **Bayesian Changepoint Detection**: BOCPD + CUSUM complementary detector, 4 behavioral signals, DB-persisted, cusum_alert in ChangePointResult
 - **DQS Engine**: 5 continuous factors + 4-tier system (go/proceed/caution/skip) + calibrate() + integrated into remember_trade
