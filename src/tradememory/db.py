@@ -302,6 +302,20 @@ class Database:
                 ON prospective_memory(trigger_type)
             """)
 
+            # Changepoint detection state (Bayesian BOCPD)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS changepoint_state (
+                    id TEXT PRIMARY KEY,
+                    strategy TEXT NOT NULL,
+                    symbol TEXT NOT NULL,
+                    state_json TEXT NOT NULL,
+                    last_observation_count INTEGER DEFAULT 0,
+                    last_changepoint_prob REAL DEFAULT 0.0,
+                    last_changepoint_at INTEGER,
+                    updated_at TEXT NOT NULL
+                )
+            """)
+
             # Recall event logging (for MCP recall analytics)
             conn.execute("""
                 CREATE TABLE IF NOT EXISTS recall_events (
@@ -1053,6 +1067,49 @@ class Database:
                 return True
         except sqlite3.Error as e:
             raise TradeMemoryDBError(f"Failed to save affective state: {e}") from e
+
+    # ========== OWM: Changepoint Detection State ==========
+
+    def save_changepoint_state(
+        self,
+        cp_id: str,
+        strategy: str,
+        symbol: str,
+        state_json: str,
+        observation_count: int,
+        changepoint_prob: float,
+        changepoint_at: Optional[int] = None,
+    ) -> None:
+        """Save (upsert) changepoint detector state."""
+        try:
+            with self.get_connection() as conn:
+                conn.execute("""
+                    INSERT OR REPLACE INTO changepoint_state (
+                        id, strategy, symbol, state_json,
+                        last_observation_count, last_changepoint_prob,
+                        last_changepoint_at, updated_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    cp_id, strategy, symbol, state_json,
+                    observation_count, changepoint_prob,
+                    changepoint_at,
+                    datetime.now(timezone.utc).isoformat(),
+                ))
+        except sqlite3.Error as e:
+            raise TradeMemoryDBError(f"Failed to save changepoint state: {e}") from e
+
+    def load_changepoint_state(
+        self, strategy: str, symbol: str
+    ) -> Optional[Dict[str, Any]]:
+        """Load changepoint detector state for a strategy+symbol pair."""
+        with self.get_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM changepoint_state WHERE strategy = ? AND symbol = ?",
+                (strategy, symbol),
+            ).fetchone()
+            if not row:
+                return None
+            return dict(row)
 
     # ========== OWM: Prospective Memory ==========
 

@@ -4,16 +4,19 @@ Shared OWM helper functions used by both server.py and mcp_server.py.
 Extracted to eliminate code duplication between REST and MCP entry points.
 """
 
+import json
 import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from .db import Database
+from .owm.changepoint import BayesianChangepoint
 
 logger = logging.getLogger(__name__)
 
 DRIFT_THRESHOLD = 0.15  # 15% divergence triggers drift flag
+CHANGEPOINT_THRESHOLD = 0.8  # Bayesian changepoint detection threshold
 
 
 def ensure_tz(ts: Optional[str]) -> str:
@@ -67,6 +70,66 @@ def _check_episodic_drift(
     }
 
 
+def _run_changepoint_detection(
+    db: Database,
+    strategy_name: str,
+    symbol: str,
+    pnl: float,
+    pnl_r: Optional[float],
+    won: bool,
+) -> Optional[dict]:
+    """Run Bayesian changepoint detection, loading/saving state from DB.
+
+    Returns dict with drift_flag and diagnostics, or None if detection fails.
+    """
+    try:
+        cp_id = f"cp-{strategy_name.lower()}-{symbol.lower()}"
+
+        # Load existing state or create new detector
+        saved = db.load_changepoint_state(strategy_name, symbol)
+        if saved and saved.get("state_json"):
+            state = json.loads(saved["state_json"])
+            detector = BayesianChangepoint.from_state(state)
+        else:
+            detector = BayesianChangepoint(hazard_lambda=50.0)
+
+        # Build observation
+        observation = {
+            "won": won,
+            "pnl_r": pnl_r if pnl_r is not None else (pnl / 100.0),
+        }
+
+        # Run update
+        result = detector.update(observation)
+
+        # Determine if changepoint
+        cp_at = None
+        if result.changepoint_probability > CHANGEPOINT_THRESHOLD:
+            cp_at = result.observation_count
+
+        # Save state
+        db.save_changepoint_state(
+            cp_id=cp_id,
+            strategy=strategy_name,
+            symbol=symbol,
+            state_json=json.dumps(detector.get_state()),
+            observation_count=result.observation_count,
+            changepoint_prob=result.changepoint_probability,
+            changepoint_at=cp_at,
+        )
+
+        return {
+            "drift_flag": result.changepoint_probability > CHANGEPOINT_THRESHOLD,
+            "changepoint_probability": round(result.changepoint_probability, 4),
+            "observation_count": result.observation_count,
+            "max_run_length": result.max_run_length,
+            "method": "bayesian_bocpd",
+        }
+    except Exception as e:
+        logger.warning("Changepoint detection failed for %s/%s: %s", strategy_name, symbol, e)
+        return None
+
+
 def update_semantic_from_trade(
     db: Database,
     symbol: str,
@@ -101,32 +164,53 @@ def update_semantic_from_trade(
                 evidence_id=trade_id,
             )
 
-        # Check episodic drift against updated Bayesian belief
         mem = existing[0]
-        new_alpha = mem["alpha"] + (weight if confirmed else 0.0)
-        new_beta = mem["beta"] + (0.0 if confirmed else weight)
-        bayesian_conf = new_alpha / (new_alpha + new_beta) if (new_alpha + new_beta) > 0 else 0.5
 
-        drift_info = _check_episodic_drift(db, strategy_name, symbol, bayesian_conf)
-        if drift_info["drift_flag"]:
+        # --- Bayesian Changepoint Detection ---
+        cp_drift = _run_changepoint_detection(
+            db, strategy_name, symbol, pnl, pnl_r, confirmed,
+        )
+
+        if cp_drift is not None and cp_drift.get("drift_flag"):
             logger.info(
-                "Drift detected for %s/%s: recent_wr=%.3f vs bayesian=%.3f (delta=%.3f)",
+                "Changepoint detected for %s/%s: cp_prob=%.3f (obs=%d)",
                 strategy_name, symbol,
-                drift_info.get("recent_win_rate", 0),
-                drift_info.get("bayesian_confidence", 0),
-                drift_info.get("delta", 0),
+                cp_drift.get("changepoint_probability", 0),
+                cp_drift.get("observation_count", 0),
             )
-            # Store drift info in validity_conditions
             vc = mem.get("validity_conditions") or {}
             if isinstance(vc, str):
-                import json
                 try:
                     vc = json.loads(vc)
                 except Exception:
                     vc = {}
             vc["drift_flag"] = True
-            vc["drift_info"] = drift_info
+            vc["drift_info"] = cp_drift
             db.update_semantic_validity_conditions(mem["id"], vc)
+        else:
+            # Fallback: heuristic episodic drift check
+            new_alpha = mem["alpha"] + (weight if confirmed else 0.0)
+            new_beta = mem["beta"] + (0.0 if confirmed else weight)
+            bayesian_conf = new_alpha / (new_alpha + new_beta) if (new_alpha + new_beta) > 0 else 0.5
+
+            drift_info = _check_episodic_drift(db, strategy_name, symbol, bayesian_conf)
+            if drift_info["drift_flag"]:
+                logger.info(
+                    "Heuristic drift detected for %s/%s: recent_wr=%.3f vs bayesian=%.3f (delta=%.3f)",
+                    strategy_name, symbol,
+                    drift_info.get("recent_win_rate", 0),
+                    drift_info.get("bayesian_confidence", 0),
+                    drift_info.get("delta", 0),
+                )
+                vc = mem.get("validity_conditions") or {}
+                if isinstance(vc, str):
+                    try:
+                        vc = json.loads(vc)
+                    except Exception:
+                        vc = {}
+                vc["drift_flag"] = True
+                vc["drift_info"] = drift_info
+                db.update_semantic_validity_conditions(mem["id"], vc)
     else:
         sem_id = f"sem-{strategy_name.lower()}-{symbol.lower()}-{uuid.uuid4().hex[:8]}"
         alpha = 1.0 + (weight if confirmed else 0.0)
