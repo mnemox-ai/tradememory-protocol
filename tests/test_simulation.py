@@ -358,7 +358,7 @@ def test_report_generation():
     report = FullExperimentReport(results=sample_results)
     md = report.to_markdown()
 
-    assert "# Phase 3" in md
+    assert "# Self-Calibrating Trading Agent" in md
     assert "BTCUSDT" in md
     assert "TrendFollow" in md
     assert "Ablation" in md

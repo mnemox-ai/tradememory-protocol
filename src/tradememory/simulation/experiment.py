@@ -29,6 +29,13 @@ class ComparisonReport:
     dqs_pnl_correlation: float  # Pearson r between DQS score and trade PnL
     statistical_significance: Dict[str, Any]  # paired t-test on trade PnLs
 
+    # Enriched data for Phase 4 report
+    dqs_stats: Dict[str, Any] = field(default_factory=dict)
+    tier_pnl: Dict[str, List[float]] = field(default_factory=dict)
+    changepoint_stats: Dict[str, Any] = field(default_factory=dict)
+    skip_precision: float = 0.0  # fraction of skipped trades that were losers
+    skip_precision_count: int = 0  # count of skipped losing trades
+
 
 @dataclass
 class AblationResult:
@@ -153,7 +160,7 @@ class ABExperiment:
     def _run_calibrated(
         self, is_series: OHLCVSeries, oos_series: OHLCVSeries
     ) -> SimulationResult:
-        """Run standard CalibratedAgent: IS learn → OOS evaluate."""
+        """Run standard CalibratedAgent: IS learn -> OOS evaluate."""
         agent = CalibratedAgent(self.strategy, fixed_lot=0.01)
         Simulator(agent, is_series, self.timeframe_str).run()
         agent.trades = []
@@ -190,7 +197,7 @@ class ABExperiment:
     def _build_report(
         self, result_a: SimulationResult, result_b: SimulationResult
     ) -> ComparisonReport:
-        """Build comparison report from A/B results."""
+        """Build comparison report from A/B results with enriched data."""
         sharpe_a = result_a.fitness.sharpe_ratio
         sharpe_b = result_b.fitness.sharpe_ratio
         sharpe_imp = (sharpe_b - sharpe_a) / max(abs(sharpe_a), 0.01)
@@ -207,11 +214,67 @@ class ABExperiment:
             t.pnl for t in result_a.trades if t.entry_bar_index in skipped_entries
         )
 
+        # Skip precision: what fraction of skipped trades were losers?
+        skipped_losing = sum(
+            1 for t in result_a.trades
+            if t.entry_bar_index in skipped_entries and t.pnl < 0
+        )
+        skip_precision = skipped_losing / max(len(skipped_entries), 1)
+
         # DQS-PnL correlation
         dqs_pnl_corr = _compute_dqs_pnl_correlation(result_b)
 
-        # Statistical significance: simple paired t-test approximation
+        # Statistical significance
         stat_sig = _paired_significance(result_a.trades, result_b.trades)
+
+        # ── Enriched data ──
+
+        # DQS distribution stats
+        dqs_scores = [d["score"] for d in result_b.dqs_log]
+        dqs_stats = {}
+        if dqs_scores:
+            sorted_scores = sorted(dqs_scores)
+            n = len(sorted_scores)
+            dqs_stats = {
+                "mean": round(sum(dqs_scores) / n, 4),
+                "median": round(
+                    sorted_scores[n // 2] if n % 2 == 1
+                    else (sorted_scores[n // 2 - 1] + sorted_scores[n // 2]) / 2,
+                    4,
+                ),
+                "std": round(
+                    math.sqrt(sum((s - sum(dqs_scores) / n) ** 2 for s in dqs_scores) / max(n - 1, 1)),
+                    4,
+                ),
+                "count": n,
+                "tier_distribution": {
+                    "go": sum(1 for s in dqs_scores if s >= 7) / max(n, 1),
+                    "proceed": sum(1 for s in dqs_scores if 5 <= s < 7) / max(n, 1),
+                    "caution": sum(1 for s in dqs_scores if 3 <= s < 5) / max(n, 1),
+                    "skip": sum(1 for s in dqs_scores if s < 3) / max(n, 1),
+                },
+            }
+
+        # Per-tier PnL breakdown
+        tier_pnl: Dict[str, List[float]] = {"go": [], "proceed": [], "caution": [], "skip": []}
+        for trade in result_b.trades:
+            if trade.dqs_score is not None:
+                tier = _score_to_tier(trade.dqs_score)
+                tier_pnl[tier].append(trade.pnl)
+
+        # Changepoint stats
+        cp_stats = {
+            "total_alerts": sum(
+                1 for c in result_b.changepoint_log if c.get("cp_prob", 0) > 0.5
+            ),
+            "cusum_alerts": sum(
+                1 for c in result_b.changepoint_log if c.get("cusum_alert")
+            ),
+            "max_cp_prob": max(
+                (c.get("cp_prob", 0) for c in result_b.changepoint_log), default=0
+            ),
+            "total_observations": len(result_b.changepoint_log),
+        }
 
         return ComparisonReport(
             agent_a=result_a,
@@ -222,6 +285,11 @@ class ABExperiment:
             pnl_of_skipped_trades=round(skipped_pnl, 4),
             dqs_pnl_correlation=round(dqs_pnl_corr, 4),
             statistical_significance=stat_sig,
+            dqs_stats=dqs_stats,
+            tier_pnl=tier_pnl,
+            changepoint_stats=cp_stats,
+            skip_precision=round(skip_precision, 4),
+            skip_precision_count=skipped_losing,
         )
 
 
@@ -316,6 +384,18 @@ class _AblationAgent(CalibratedAgent):
         )
 
 
+def _score_to_tier(score: float) -> str:
+    """Map DQS score to tier name."""
+    if score >= 7:
+        return "go"
+    elif score >= 5:
+        return "proceed"
+    elif score >= 3:
+        return "caution"
+    else:
+        return "skip"
+
+
 def _compute_dqs_pnl_correlation(result: SimulationResult) -> float:
     """Compute Pearson correlation between DQS score and trade PnL."""
     if not result.dqs_log or len(result.trades) < 3:
@@ -324,9 +404,8 @@ def _compute_dqs_pnl_correlation(result: SimulationResult) -> float:
     # Match DQS scores to trades
     dqs_scores = []
     pnls = []
-    dqs_by_idx = {d["trade_index"]: d["score"] for d in result.dqs_log}
 
-    for i, trade in enumerate(result.trades):
+    for trade in result.trades:
         if trade.dqs_score is not None:
             dqs_scores.append(trade.dqs_score)
             pnls.append(trade.pnl)
@@ -371,8 +450,7 @@ def _paired_significance(
     se = math.sqrt(var_a / n_a + var_b / n_b) if (var_a / n_a + var_b / n_b) > 0 else 0.001
     t_stat = (mean_b - mean_a) / se
 
-    # Approximate p-value using normal distribution (good enough for large n)
-    # |t| > 1.96 → p < 0.05
+    # |t| > 1.96 -> p < 0.05 (normal approximation)
     return {
         "test": "welch_t",
         "t_statistic": round(t_stat, 4),
