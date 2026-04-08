@@ -26,8 +26,8 @@ class DQSResult:
 
     score: float  # 0-10
     factors: Dict[str, Dict[str, Any]]  # {name: {score, max, description}}
-    tier: str  # "go" (>=7), "caution" (4-7), "skip" (<4)
-    position_multiplier: float  # 1.0, 0.5, 0.0
+    tier: str  # "go" (>=7), "proceed" (5-7), "caution" (3-5), "skip" (<3)
+    position_multiplier: float  # 1.0, 0.7, 0.3, 0.0
     recommendation: str
 
 
@@ -110,16 +110,10 @@ class DQSEngine:
 
         deviation = abs(proposed_lot - kelly) / kelly
 
-        if deviation < 0.2:
-            score = 2.0
-        elif deviation < 0.5:
-            score = 1.5
-        elif deviation < 1.0:
-            score = 1.0
-        elif deviation < 2.0:
-            score = 0.5
-        else:
-            score = 0.0
+        # Continuous: exponential decay from 2.0 as deviation grows
+        # deviation=0 → 2.0, deviation=0.5 → ~1.2, deviation=2.0 → ~0.04
+        score = 2.0 * math.exp(-1.5 * deviation)
+        score = max(0.0, min(2.0, score))
 
         desc = f"Proposed={proposed_lot:.3f}, Kelly={kelly:.3f}, deviation={deviation:.1%}"
         return score, desc
@@ -185,12 +179,9 @@ class DQSEngine:
 
         avg_score = sum(m.score for m in scored) / len(scored)
 
-        if avg_score > 0.5:
-            factor_score = 2.0
-        elif avg_score > 0.3:
-            factor_score = 1.0
-        else:
-            factor_score = 0.5
+        # Continuous: linear map [0, 0.7] → [0.5, 2.0], clamped
+        factor_score = 0.5 + (avg_score / 0.7) * 1.5
+        factor_score = max(0.0, min(2.0, factor_score))
 
         desc = f"Top {len(scored)} matches avg OWM score={avg_score:.3f}"
         return factor_score, desc
@@ -295,14 +286,10 @@ class DQSEngine:
 
         avg_pnl_r = sum(pnl_rs) / len(pnl_rs)
 
-        if avg_pnl_r > 0.5:
-            factor_score = 2.0
-        elif avg_pnl_r > 0.0:
-            factor_score = 1.5
-        elif avg_pnl_r > -0.5:
-            factor_score = 1.0
-        else:
-            factor_score = 0.0
+        # Continuous: sigmoid-like mapping centered at 0
+        # avg_pnl_r = -1 → ~0.2, avg_pnl_r = 0 → 1.0, avg_pnl_r = 1 → ~1.8
+        factor_score = 1.0 + math.tanh(avg_pnl_r) * 1.0
+        factor_score = max(0.0, min(2.0, factor_score))
 
         desc = f"Top {len(pnl_rs)} similar trades avg pnl_r={avg_pnl_r:.3f}"
         return factor_score, desc
@@ -350,13 +337,16 @@ class DQSEngine:
 
         score = max(0.0, min(10.0, score))
 
-        # Tier
+        # Tier (4-level)
         if score >= 7.0:
             tier = "go"
             multiplier = 1.0
-        elif score >= 4.0:
+        elif score >= 5.0:
+            tier = "proceed"
+            multiplier = 0.7
+        elif score >= 3.0:
             tier = "caution"
-            multiplier = 0.5
+            multiplier = 0.3
         else:
             tier = "skip"
             multiplier = 0.0
@@ -395,10 +385,15 @@ class DQSEngine:
 
         warning_text = ", ".join(warnings) if warnings else "multiple factors below threshold"
 
+        if tier == "proceed":
+            return (
+                f"{strategy}: DQS {score:.1f}/10 — proceed at 70% size. "
+                f"Weak: {warning_text}."
+            )
         if tier == "caution":
             return (
-                f"{strategy}: DQS {score:.1f}/10 — proceed with caution, "
-                f"half position. Weak: {warning_text}."
+                f"{strategy}: DQS {score:.1f}/10 — caution, 30% size only. "
+                f"Weak: {warning_text}."
             )
         return (
             f"{strategy}: DQS {score:.1f}/10 — skip this trade. "

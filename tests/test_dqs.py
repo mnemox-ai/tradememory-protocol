@@ -85,8 +85,8 @@ def test_dqs_no_history():
     )
 
     assert 4.0 <= result.score <= 6.0, f"Expected neutral ~5, got {result.score}"
-    assert result.tier == "caution"
-    assert result.position_multiplier == 0.5
+    assert result.tier in ("proceed", "caution"), f"Expected proceed/caution, got {result.tier}"
+    assert result.position_multiplier in (0.3, 0.7)
     # All factors should be neutral (1.0/2.0)
     for name, info in result.factors.items():
         assert info["score"] >= 0.5, f"Factor {name} too low: {info['score']}"
@@ -302,8 +302,8 @@ async def test_dqs_mcp_tool():
     assert "context" in result
 
     assert isinstance(result["dqs_score"], float)
-    assert result["tier"] in ("go", "caution", "skip")
-    assert result["position_multiplier"] in (0.0, 0.5, 1.0)
+    assert result["tier"] in ("go", "proceed", "caution", "skip")
+    assert result["position_multiplier"] in (0.0, 0.3, 0.7, 1.0)
     assert 0 <= result["dqs_score"] <= 10
 
     # Context should reflect input
@@ -345,8 +345,8 @@ try:
                 context_atr_d1=atr,
             )
             assert 0.0 <= result.score <= 10.0, f"DQS out of bounds: {result.score}"
-            assert result.tier in ("go", "caution", "skip")
-            assert result.position_multiplier in (0.0, 0.5, 1.0)
+            assert result.tier in ("go", "proceed", "caution", "skip")
+            assert result.position_multiplier in (0.0, 0.3, 0.7, 1.0)
         finally:
             if os.path.exists(prop_db_path):
                 os.remove(prop_db_path)
@@ -396,4 +396,4 @@ async def test_dqs_stored_in_remember_trade():
     # Score should be a number or None
     if ctx["dqs_score"] is not None:
         assert 0 <= ctx["dqs_score"] <= 10
-        assert ctx["dqs_tier"] in ("go", "caution", "skip")
+        assert ctx["dqs_tier"] in ("go", "proceed", "caution", "skip")

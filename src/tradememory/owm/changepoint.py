@@ -21,6 +21,8 @@ class ChangePointResult:
     max_run_length: int  # argmax of run length posterior
     observation_count: int
     signal_posteriors: Dict[str, Dict[str, float]]  # per-signal posterior summaries
+    cusum_alert: bool = False  # True if CUSUM detected gradual drift
+    cusum_value: float = 0.0  # current CUSUM statistic
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +221,11 @@ class BayesianChangepoint:
 
         self._observation_count = 0
 
+        # CUSUM complementary detector for gradual shifts
+        self._cusum_s: float = 0.0  # CUSUM statistic (downward drift)
+        self._cusum_target_wr: float = 0.5  # expected win rate
+        self._cusum_threshold: float = 4.0
+
     def update(self, observation: Dict[str, Any]) -> ChangePointResult:
         """Process one observation and update run length posterior.
 
@@ -326,6 +333,13 @@ class BayesianChangepoint:
                 max_val = lp
                 max_idx = i
 
+        # CUSUM complementary detector (detects gradual downward drift)
+        # Tracks negative deviation: loss = 0, win = 1
+        cusum_x = 1.0 if won_val > 0.5 else 0.0
+        # Detect degradation: accumulate negative deviations
+        self._cusum_s = max(0.0, self._cusum_s + (self._cusum_target_wr - cusum_x))
+        cusum_alert = self._cusum_s > self._cusum_threshold
+
         return ChangePointResult(
             changepoint_probability=cp_prob,
             max_run_length=max_idx,
@@ -334,6 +348,8 @@ class BayesianChangepoint:
                 name: sig.posterior_summary()
                 for name, sig in self._signals.items()
             },
+            cusum_alert=cusum_alert,
+            cusum_value=round(self._cusum_s, 4),
         )
 
     def _truncate_signals(self, keep_indices: List[int]):
@@ -357,6 +373,9 @@ class BayesianChangepoint:
                 name: sig.get_state() for name, sig in self._signals.items()
             },
             "observation_count": self._observation_count,
+            "cusum_s": self._cusum_s,
+            "cusum_target_wr": self._cusum_target_wr,
+            "cusum_threshold": self._cusum_threshold,
         }
 
     @classmethod
@@ -368,6 +387,9 @@ class BayesianChangepoint:
         )
         detector._log_run_probs = state["log_run_probs"]
         detector._observation_count = state["observation_count"]
+        detector._cusum_s = state.get("cusum_s", 0.0)
+        detector._cusum_target_wr = state.get("cusum_target_wr", 0.5)
+        detector._cusum_threshold = state.get("cusum_threshold", 4.0)
 
         for name, sig_state in state["signals"].items():
             if sig_state["type"] == "beta_bernoulli":
