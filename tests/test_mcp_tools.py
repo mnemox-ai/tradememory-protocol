@@ -27,145 +27,8 @@ def _fresh_db(monkeypatch):
         os.remove(_test_db)
 
 
-# -- store_trade_memory --
-
-
-@pytest.mark.asyncio
-async def test_store_trade_memory_basic():
-    from tradememory.mcp_server import store_trade_memory
-
-    result = await store_trade_memory(
-        symbol="XAUUSD",
-        direction="long",
-        entry_price=2650.0,
-        strategy_name="VolBreakout",
-        market_context="Asian session breakout with high ATR",
-    )
-    assert result["status"] == "stored"
-    assert result["symbol"] == "XAUUSD"
-    assert result["direction"] == "long"
-    assert result["has_outcome"] is False
-    assert "memory_id" in result
-
-
-@pytest.mark.asyncio
-async def test_store_trade_memory_with_outcome():
-    from tradememory.mcp_server import store_trade_memory
-
-    result = await store_trade_memory(
-        symbol="XAUUSD",
-        direction="short",
-        entry_price=2700.0,
-        exit_price=2680.0,
-        pnl=200.0,
-        strategy_name="IntradayMomentum",
-        market_context="London open strong bearish momentum",
-        reflection="Good entry, held through pullback",
-    )
-    assert result["status"] == "stored"
-    assert result["has_outcome"] is True
-    assert result["direction"] == "short"
-
-
-@pytest.mark.asyncio
-async def test_store_trade_memory_invalid_direction():
-    from tradememory.mcp_server import store_trade_memory
-
-    result = await store_trade_memory(
-        symbol="XAUUSD",
-        direction="sideways",
-        entry_price=2650.0,
-        strategy_name="VolBreakout",
-        market_context="test",
-    )
-    assert "error" in result
-
-
-@pytest.mark.asyncio
-async def test_store_trade_memory_custom_id():
-    from tradememory.mcp_server import store_trade_memory
-
-    result = await store_trade_memory(
-        symbol="XAUUSD",
-        direction="long",
-        entry_price=2650.0,
-        strategy_name="Pullback",
-        market_context="test",
-        trade_id="my-custom-id",
-    )
-    assert result["memory_id"] == "my-custom-id"
-
-
-# -- recall_similar_trades --
-
-
-@pytest.mark.asyncio
-async def test_recall_similar_trades_empty():
-    from tradememory.mcp_server import recall_similar_trades
-
-    result = await recall_similar_trades(
-        symbol="XAUUSD",
-        market_context="breakout with high volume",
-    )
-    assert result["matches_found"] == 0
-    assert result["trades"] == []
-
-
-@pytest.mark.asyncio
-async def test_recall_similar_trades_with_data():
-    from tradememory.mcp_server import recall_similar_trades, store_trade_memory
-
-    # Store some trades first
-    await store_trade_memory(
-        symbol="XAUUSD",
-        direction="long",
-        entry_price=2650.0,
-        exit_price=2670.0,
-        pnl=200.0,
-        strategy_name="VolBreakout",
-        market_context="Asian session breakout high ATR strong momentum",
-        reflection="Great breakout trade",
-    )
-    await store_trade_memory(
-        symbol="XAUUSD",
-        direction="long",
-        entry_price=2640.0,
-        exit_price=2630.0,
-        pnl=-100.0,
-        strategy_name="VolBreakout",
-        market_context="Quiet range no clear direction",
-        reflection="Should not have entered",
-    )
-
-    result = await recall_similar_trades(
-        symbol="XAUUSD",
-        market_context="Asian session breakout momentum",
-    )
-    assert result["matches_found"] == 2
-    # The first trade should be more relevant (more keyword overlap)
-    assert result["trades"][0]["relevance_score"] >= result["trades"][1]["relevance_score"]
-
-
-@pytest.mark.asyncio
-async def test_recall_similar_trades_with_strategy_filter():
-    from tradememory.mcp_server import recall_similar_trades, store_trade_memory
-
-    await store_trade_memory(
-        symbol="XAUUSD", direction="long", entry_price=2650.0,
-        strategy_name="VolBreakout", market_context="test breakout",
-    )
-    await store_trade_memory(
-        symbol="XAUUSD", direction="long", entry_price=2640.0,
-        strategy_name="Pullback", market_context="test pullback",
-    )
-
-    result = await recall_similar_trades(
-        symbol="XAUUSD",
-        market_context="test",
-        strategy_name="VolBreakout",
-    )
-    assert result["matches_found"] == 1
-    assert result["trades"][0]["strategy"] == "VolBreakout"
+# -- store_trade_memory and recall_similar_trades removed in 2026-04-08 audit --
+# Use remember_trade and recall_memories instead.
 
 
 # -- get_strategy_performance --
@@ -181,20 +44,20 @@ async def test_get_strategy_performance_empty():
 
 @pytest.mark.asyncio
 async def test_get_strategy_performance_with_trades():
-    from tradememory.mcp_server import get_strategy_performance, store_trade_memory
+    from tradememory.mcp_server import get_strategy_performance, remember_trade
 
-    # Store closed trades
-    await store_trade_memory(
+    # Store closed trades via remember_trade (writes to trade_records + episodic)
+    await remember_trade(
         symbol="XAUUSD", direction="long", entry_price=2650.0,
         exit_price=2670.0, pnl=200.0, strategy_name="VolBreakout",
         market_context="test",
     )
-    await store_trade_memory(
+    await remember_trade(
         symbol="XAUUSD", direction="long", entry_price=2640.0,
         exit_price=2630.0, pnl=-100.0, strategy_name="VolBreakout",
         market_context="test",
     )
-    await store_trade_memory(
+    await remember_trade(
         symbol="XAUUSD", direction="short", entry_price=2700.0,
         exit_price=2680.0, pnl=200.0, strategy_name="IntradayMomentum",
         market_context="test",
@@ -217,14 +80,14 @@ async def test_get_strategy_performance_with_trades():
 
 @pytest.mark.asyncio
 async def test_get_strategy_performance_filtered():
-    from tradememory.mcp_server import get_strategy_performance, store_trade_memory
+    from tradememory.mcp_server import get_strategy_performance, remember_trade
 
-    await store_trade_memory(
+    await remember_trade(
         symbol="XAUUSD", direction="long", entry_price=2650.0,
         exit_price=2670.0, pnl=200.0, strategy_name="VolBreakout",
         market_context="test",
     )
-    await store_trade_memory(
+    await remember_trade(
         symbol="EURUSD", direction="long", entry_price=1.08,
         exit_price=1.09, pnl=100.0, strategy_name="VolBreakout",
         market_context="test",
@@ -248,9 +111,9 @@ async def test_get_trade_reflection_not_found():
 
 @pytest.mark.asyncio
 async def test_get_trade_reflection_found():
-    from tradememory.mcp_server import get_trade_reflection, store_trade_memory
+    from tradememory.mcp_server import get_trade_reflection, remember_trade
 
-    stored = await store_trade_memory(
+    stored = await remember_trade(
         symbol="XAUUSD",
         direction="long",
         entry_price=2650.0,

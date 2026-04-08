@@ -449,49 +449,8 @@ async def test_recall_memories_includes_affective_state():
     assert "consecutive_losses" in result["affective_state"]
 
 
-# -- recall_similar_trades OWM integration --
-
-
-@pytest.mark.asyncio
-async def test_recall_similar_trades_uses_owm_when_episodic_exists():
-    """When episodic memory has data, recall_similar_trades should use OWM."""
-    from tradememory.mcp_server import remember_trade, recall_similar_trades
-
-    await remember_trade(
-        symbol="XAUUSD", direction="long", entry_price=2650.0,
-        exit_price=2670.0, pnl=200.0, strategy_name="VolBreakout",
-        market_context="breakout with high ATR",
-        trade_id="owm-recall-001",
-    )
-
-    result = await recall_similar_trades(
-        symbol="XAUUSD",
-        market_context="breakout high ATR",
-    )
-    assert result["recall_method"] == "owm"
-    assert result["matches_found"] >= 1
-    trade = result["trades"][0]
-    assert "owm_components" in trade
-    assert "relevance_score" in trade
-
-
-@pytest.mark.asyncio
-async def test_recall_similar_trades_fallback_keyword():
-    """When no episodic data, recall_similar_trades should use keyword matching."""
-    from tradememory.mcp_server import store_trade_memory, recall_similar_trades
-
-    await store_trade_memory(
-        symbol="XAUUSD", direction="long", entry_price=2650.0,
-        exit_price=2670.0, pnl=200.0, strategy_name="VolBreakout",
-        market_context="breakout high ATR",
-    )
-
-    result = await recall_similar_trades(
-        symbol="XAUUSD",
-        market_context="breakout high ATR",
-    )
-    assert result["recall_method"] == "keyword"
-    assert result["matches_found"] >= 1
+# -- recall_similar_trades removed in 2026-04-08 audit --
+# Use recall_memories instead (OWM scoring + context drift).
 
 
 # -- Full integration: store 3 → recall → verify OWM scoring --

@@ -109,11 +109,11 @@ docker compose up -d
 | **審計** | `export_audit_trail` · `verify_audit_hash` | SHA-256 竄改偵測 + 批次匯出 |
 
 <details>
-<summary>全部 19 個 MCP 工具 + REST API</summary>
+<summary>全部 17 個 MCP 工具 + REST API</summary>
 
 | 類別 | 工具 |
 |------|------|
-| **核心記憶** | `store_trade_memory` · `recall_similar_trades` · `get_strategy_performance` · `get_trade_reflection` |
+| **核心記憶** | `get_strategy_performance` · `get_trade_reflection` |
 | **OWM 認知** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
 | **風險與治理** | `check_trade_legitimacy` · `validate_strategy` |
 | **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
@@ -128,7 +128,7 @@ docker compose up -d
 | | Community | Pro | Enterprise |
 |---|---|---|---|
 | **價格** | **免費** | **$29/月**（即將推出） | **洽詢我們** |
-| MCP 工具 | 19 個工具 | 19 個工具 | 19 個工具 |
+| MCP 工具 | 17 個工具 | 17 個工具 | 17 個工具 |
 | 儲存 | SQLite，自架 | Hosted API | 私有部署 |
 | Dashboard | — | Web dashboard | 客製化 dashboard |
 | 合規 | 審計軌跡含括 | 審計軌跡含括 | 合規報告 + SLA |
@@ -173,6 +173,17 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 - **無外部網路呼叫。** Server 在本地運行。不會將資料傳送給第三方。
 - **SHA-256 竄改偵測。** 每筆紀錄在建立時就計算雜湊。可隨時驗證完整性。
 - **1,324 測試通過。** 完整測試套件與 CI。
+
+## 研究現況
+
+TradeMemory 的 OWM 框架基於認知科學（Tulving 1972）和強化學習（Schaul et al. 2015）。目前狀態：
+
+- **OWM 五因子評分：** 已實作，已測試（1,300+ tests）
+- **統計驗證：** DSR、MBL 已實作（Bailey-de Prado 2014）
+- **審計軌跡：** SHA-256 防竄改 TDR
+- **進化引擎：** 研究階段（策略生成可運作，統計門檻通過率仍在優化中）
+- **混合召回：** OWM-only 模式啟用中，embedding 設定後可啟用向量融合
+- **實證驗證：** 進行中（n=40 筆交易，目標 n>=100 以達統計顯著性）
 
 ## 文件
 

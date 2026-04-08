@@ -8,7 +8,7 @@
 
 [![PyPI](https://img.shields.io/pypi/v/tradememory-protocol?style=flat-square&color=blue)](https://pypi.org/project/tradememory-protocol/)
 [![Tests](https://img.shields.io/badge/tests-1%2C324_passed-brightgreen?style=flat-square)](https://github.com/mnemox-ai/tradememory-protocol/actions)
-[![MCP Tools](https://img.shields.io/badge/MCP_tools-19-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
+[![MCP Tools](https://img.shields.io/badge/MCP_tools-17-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
@@ -109,11 +109,11 @@ docker compose up -d
 | **Audit** | `export_audit_trail` · `verify_audit_hash` | SHA-256 tamper detection + bulk export |
 
 <details>
-<summary>All 19 MCP tools + REST API</summary>
+<summary>All 17 MCP tools + REST API</summary>
 
 | Category | Tools |
 |----------|-------|
-| **Core Memory** | `store_trade_memory` · `recall_similar_trades` · `get_strategy_performance` · `get_trade_reflection` |
+| **Core Memory** | `get_strategy_performance` · `get_trade_reflection` |
 | **OWM Cognitive** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
 | **Risk & Governance** | `check_trade_legitimacy` · `validate_strategy` |
 | **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
@@ -128,7 +128,7 @@ docker compose up -d
 | | Community | Pro | Enterprise |
 |---|---|---|---|
 | **Price** | **Free** | **$29/mo** (Coming Soon) | **Contact Us** |
-| MCP tools | 19 tools | 19 tools | 19 tools |
+| MCP tools | 17 tools | 17 tools | 17 tools |
 | Storage | SQLite, self-hosted | Hosted API | Private deployment |
 | Dashboard | — | Web dashboard | Custom dashboard |
 | Compliance | Audit trail included | Audit trail included | Compliance reports + SLA |
@@ -173,6 +173,18 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 - **No external network calls.** The server runs locally. No data is sent to third parties.
 - **SHA-256 tamper detection.** Every record is hashed at creation. Verify integrity anytime.
 - **1,324 tests passing.** Full test suite with CI.
+
+## Research Status
+
+TradeMemory's OWM framework is grounded in cognitive science (Tulving 1972)
+and reinforcement learning (Schaul et al. 2015). Current status:
+
+- **OWM five-factor scoring:** implemented, tested (1,300+ tests)
+- **Statistical validation:** DSR, MBL implemented (Bailey-de Prado 2014)
+- **Audit trail:** SHA-256 tamper-proof TDR
+- **Evolution engine:** research phase (strategy generation works, statistical gate pass rate under optimization)
+- **Hybrid recall:** OWM-only mode active, vector fusion available when embeddings configured
+- **Empirical validation:** ongoing (n=40 trades, target n>=100 for statistical significance)
 
 ## Documentation
 

@@ -267,12 +267,10 @@ Your AI went from **"stateless calculator"** to **"trader with memory."**
 
 TradeMemory exposes 17 MCP tools across four categories:
 
-### Core Memory (4 tools)
+### Core Memory (2 tools)
 
 | Tool | Description |
 |------|-------------|
-| `store_trade_memory` | Record a trade decision with strategy, confidence, reasoning |
-| `recall_similar_trades` | Find past trades matching symbol, strategy, or context |
 | `get_strategy_performance` | Win rate, avg PnL, trade count per strategy |
 | `get_trade_reflection` | Get AI-generated reflection on recent trades |
 

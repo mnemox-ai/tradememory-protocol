@@ -68,12 +68,10 @@ When you query `recall_memories`, results are scored by:
 
 ## MCP Tools Reference
 
-### Core Memory (4 tools)
+### Core Memory (2 tools)
 
 | Tool | Use Case |
 |------|----------|
-| `store_trade_memory` | Quick store: symbol, direction, entry/exit, P&L, strategy, context |
-| `recall_similar_trades` | Find past trades matching a market context description |
 | `get_strategy_performance` | Aggregate stats: win rate, PF, P&L per strategy |
 | `get_trade_reflection` | Deep-dive into a specific trade's reasoning |
 

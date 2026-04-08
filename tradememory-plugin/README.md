@@ -47,9 +47,7 @@ claude mcp add tradememory -- uvx tradememory-protocol
 
 ## MCP Tools (17 total)
 
-### Core Memory (4)
-- `store_trade_memory` — Store a trade with context
-- `recall_similar_trades` — Find past trades matching current context
+### Core Memory (2)
 - `get_strategy_performance` — Aggregate stats per strategy
 - `get_trade_reflection` — Deep-dive into a trade's reasoning
 

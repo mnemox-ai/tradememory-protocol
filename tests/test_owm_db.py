@@ -10,6 +10,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 
 from tradememory.db import Database
+from tradememory.exceptions import TradeMemoryDBError
 
 
 # ========== Fixtures ==========
@@ -105,7 +106,8 @@ class TestEpisodicMemory:
 
     def test_insert_duplicate_fails(self, db):
         db.insert_episodic(_make_episodic())
-        assert db.insert_episodic(_make_episodic()) is False
+        with pytest.raises(TradeMemoryDBError):
+            db.insert_episodic(_make_episodic())
 
     def test_context_json_dict_serialization(self, db):
         data = _make_episodic()
@@ -425,7 +427,8 @@ class TestProspectiveMemory:
 
     def test_insert_duplicate_fails(self, db):
         db.insert_prospective(self._make_prospective())
-        assert db.insert_prospective(self._make_prospective()) is False
+        with pytest.raises(TradeMemoryDBError):
+            db.insert_prospective(self._make_prospective())
 
     def test_query_ordered_by_priority(self, db):
         p1 = self._make_prospective(id="F-001")

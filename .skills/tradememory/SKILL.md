@@ -81,12 +81,10 @@ python -m tradememory.server
 
 ## MCP Tools Reference
 
-### Core Memory (4 tools)
+### Core Memory (2 tools)
 
 | Tool | Purpose |
 |------|---------|
-| `store_trade_memory` | Store a trade with full context (symbol, direction, price, strategy, market context, reflection) |
-| `recall_similar_trades` | Find past trades matching current market context for pattern recognition |
 | `get_strategy_performance` | Aggregate stats per strategy: win rate, PnL, profit factor, best/worst trades |
 | `get_trade_reflection` | Deep-dive into a specific trade's reasoning and lessons learned |
 

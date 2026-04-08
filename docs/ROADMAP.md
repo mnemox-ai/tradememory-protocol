@@ -414,6 +414,84 @@
 
 ---
 
+## Phase 14：Cross-Asset Validation ✅
+
+### Task 14.1：B1 Stability Test ✅
+- CONDITIONAL PASS — Strategy E stability across multiple runs
+- Report: `validation/b1_stability_report.md`
+
+### Task 14.2：B2 Cross-Asset Transfer ✅
+- PASS — Strategy E transferred to ETHUSDT (P100)
+- Report: `validation/b2_transfer_report.md`
+
+---
+
+## Phase 15：Re-Evolution Validation ✅ (STOP)
+
+### Task 15.1：Batch A — Statistical Gates ✅
+- `regime_detector.py` + `statistical_gates.py` — 46 tests
+- Regime Decay Detector: triple-confirmation (Bayesian + DD + Mahalanobis OOD)
+- Commit: `3f96b6a`
+
+### Task 15.2：Batch B — Grid WFO ✅
+- `re_evolution.py` + `strategy_registry.py` + `run_grid_wfo.py` — 45 tests
+- **Layer 1 Gate: FAIL (3/3)** — DSR 0/23 pass
+- Root cause: M=19,200 + 30-50 trades = mathematically impossible
+- Report: `validation/reevolution_report.md`
+
+### Task 15.3：Batch C — LLM vs Grid H2H ✅ (STOP)
+- `run_llm_wfo.py` + `run_llm_step0.py`
+- **Layer 2 Gate: FAIL (2/3)** — Cohen's d=0.000, graduation rate=0%
+- Structural novelty confirmed (LLM used 6 features outside grid space)
+- **Conclusion**: 1H timeframe + 3mo window 交易數不夠通過 DSR gate。瓶頸是 trade count，不是 search method。Evolution Engine 驗證延後到更高頻設定。
+
+---
+
+## Post-ROADMAP：Compliance & Trust Sprint ✅
+
+### Phase 0：Enriched Sync Pipeline ✅ (2026-03-25)
+- EventLogReader, dynamic confidence, pnl_r, exit reasoning, references, regime context
+- mt5_sync_v3.py 全面升級
+- 17 new tests, 1199 total
+
+### Phase 2：TDR Audit Schema ✅ (2026-03-25)
+- `domain/tdr.py` (MiFID II / EU AI Act inspired)
+- 4 REST endpoints + 2 MCP tools (export_audit_trail, verify_audit_hash)
+- SHA256 tamper detection
+- 15 new tests, 1214 total
+
+### Phase 3：Open Source Materials — PARTIAL
+- TDR Spec v1.0 ✅ (`docs/TDR_SPEC_v1.md`)
+- anti-resonance v0.2.0 code ✅ — **PyPI publish pending**
+- MQL5 article DRAFT — blocked on Phase 1 real data
+- Blog post — blocked on Phase 1 real data
+
+### Trust Sprint (2026-03-27 ~ 03-30) ✅
+- README 重寫 — audit + memory dual core positioning
+- DecisionLogReader — JSONL decision context for rich reasoning
+- Pipeline fixes — strategy_map, TDR JSONL path, corruption handler
+- v0.5.1 bump + GitHub Release
+- P0 trust sprint — tool names alignment, tutorial imports, demo CLI, dead code cleanup
+- 1233 tests, CI green
+
+---
+
+## 待處理（Pending Items）
+
+| # | 項目 | 狀態 | 備註 |
+|---|------|------|------|
+| 1 | ~~v0.5.1 PyPI publish~~ | ✅ 已發 | PyPI + GitHub Release 2026-03-27 |
+| 2 | PR #2 (Fronteir AI hosted) | 🔍 待 review | ElishaKay 外部貢獻，README 加 hosted link |
+| 3 | mt5_sync_v3 close retry 邏輯 | 🔧 未 commit | 5 次重試 + abandon，改善 closed trade sync 穩定性 |
+| 4 | CHANGELOG v0.5.1 | ❌ 未寫 | CHANGELOG.md 停在 v0.5.0 |
+| 5 | Phase 1 Real Data | ⏳ 等數據 | NG_Gold demo running，等 4-6 週交易數據 |
+| 6 | anti-resonance PyPI | ❌ 未 publish | v0.2.0 code done in separate repo |
+| 7 | MQL5 article Section 6 | ⏳ blocked | 等 Phase 1 real data |
+| 8 | PDF Report (Phase 2.5) | 🔄 DEFERRED | Sean 決策延後 |
+| 9 | Live Executor monitoring | ⚠️ 無 alert | GH Actions 每小時跑 Strategy E，但無失敗通知 |
+
+---
+
 ## 進度追蹤
 
 | Phase | 狀態 | 完成日期 |
@@ -431,3 +509,6 @@
 | Phase 11：Evolution MCP Tools | ✅ 完成 | 2026-03-16 |
 | Phase 12：Integration & Validation | ✅ 完成 | 2026-03-16 |
 | Phase 13：Statistical Validation | ✅ 完成 | 2026-03-17 |
+| Phase 14：Cross-Asset Validation | ✅ 完成 | 2026-03-19 |
+| Phase 15：Re-Evolution | ✅ STOP | 2026-03-21 |
+| Post：Compliance & Trust | ✅ 完成 | 2026-03-30 |

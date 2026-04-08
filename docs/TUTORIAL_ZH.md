@@ -267,12 +267,10 @@ Agent 現在知道：
 
 TradeMemory 提供 17 個 MCP 工具，分為四大類：
 
-### 核心記憶（4 個工具）
+### 核心記憶（2 個工具）
 
 | 工具 | 說明 |
 |------|------|
-| `store_trade_memory` | 記錄交易決策，含策略、信心度、推理 |
-| `recall_similar_trades` | 根據標的、策略或上下文查找過去交易 |
 | `get_strategy_performance` | 各策略的勝率、平均盈虧、交易次數 |
 | `get_trade_reflection` | 取得 AI 生成的近期交易反思 |
 

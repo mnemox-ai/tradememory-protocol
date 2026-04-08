@@ -1361,15 +1361,15 @@ The most common objection will be: "Isn't OWM just L1/L2/L3 with better recall?"
 
 | Current MCP Tool | OWM Mapping | Changes Needed |
 |------------------|-------------|----------------|
-| `store_trade_memory` | Write to episodic memory + update procedural + update semantic (Bayesian) + update affective | Refactor to call multiple memory stores; add context vector computation |
-| `recall_similar_trades` | `outcome_weighted_recall()` on episodic + semantic | Replace keyword matching with OWM recall formula |
+| `store_trade_memory` | Write to episodic memory + update procedural + update semantic (Bayesian) + update affective | Replaced by `remember_trade` |
+| `recall_similar_trades` | `outcome_weighted_recall()` on episodic + semantic | Replaced by `recall_memories` |
 | `get_strategy_performance` | Query procedural memory for behavioral stats + aggregate episodic | Return procedural metrics alongside aggregate stats |
 | `get_trade_reflection` | Retrieve episodic memory + connected semantic knowledge + relevant prospective plans | Enrich response with cross-memory links |
 
 ### 7.2 New MCP Tools Needed
 
 ```python
-# 1. Store with full context (replaces store_trade_memory)
+# 1. Store with full context (replaced store_trade_memory)
 @mcp.tool()
 async def remember_trade(
     symbol: str,
@@ -1389,7 +1389,7 @@ async def remember_trade(
     """Store a trade as episodic memory and trigger cross-memory updates."""
     ...
 
-# 2. Outcome-weighted recall (replaces recall_similar_trades)
+# 2. Outcome-weighted recall (replaced recall_similar_trades)
 @mcp.tool()
 async def recall_memories(
     symbol: str,
