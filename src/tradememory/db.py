@@ -923,6 +923,25 @@ class Database:
         except sqlite3.Error as e:
             raise TradeMemoryDBError(f"Failed to update semantic bayesian: {e}") from e
 
+    def update_semantic_validity_conditions(
+        self, memory_id: str, validity_conditions: dict
+    ) -> bool:
+        """Update validity_conditions JSON for a semantic memory."""
+        try:
+            with self.get_connection() as conn:
+                now = datetime.now(timezone.utc).isoformat()
+                vc_json = json.dumps(validity_conditions)
+                result = conn.execute(
+                    "UPDATE semantic_memory SET validity_conditions = ?, "
+                    "updated_at = ? WHERE id = ?",
+                    (vc_json, now, memory_id),
+                )
+                return result.rowcount > 0
+        except sqlite3.Error as e:
+            raise TradeMemoryDBError(
+                f"Failed to update semantic validity_conditions: {e}"
+            ) from e
+
     # ========== OWM: Procedural Memory ==========
 
     def upsert_procedural(self, data: Dict[str, Any]) -> bool:

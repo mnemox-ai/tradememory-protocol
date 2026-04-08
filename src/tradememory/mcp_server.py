@@ -172,12 +172,15 @@ async def remember_trade(
     max_adverse_excursion: Optional[float] = None,
     trade_id: Optional[str] = None,
     timestamp: Optional[str] = None,
+    entry_timestamp: Optional[str] = None,
+    exit_timestamp: Optional[str] = None,
 ) -> dict:
     """Store a trade into OWM multi-layer memory with automatic updates.
 
     Writes to episodic memory and automatically updates semantic (Bayesian),
-    procedural (running averages), and affective (EWMA confidence/streaks).
-    Also writes to trade_records for backward compatibility.
+    procedural (running averages + hold time + Kelly), and affective
+    (EWMA confidence/streaks). Also writes to trade_records for backward
+    compatibility.
 
     Args:
         symbol: Trading instrument (e.g. "XAUUSD")
@@ -195,6 +198,8 @@ async def remember_trade(
         max_adverse_excursion: Maximum adverse excursion during the trade
         trade_id: Optional custom ID. Auto-generated if omitted.
         timestamp: ISO format timestamp. Defaults to now (UTC).
+        entry_timestamp: ISO format entry time. Used to compute hold duration.
+        exit_timestamp: ISO format exit time. Used to compute hold duration.
     """
     db = _get_db()
 
@@ -206,6 +211,18 @@ async def remember_trade(
         return {"error": f"direction must be 'long' or 'short', got '{direction}'"}
 
     symbol_upper = symbol.upper()
+
+    # Compute hold duration if timestamps provided
+    hold_seconds = None
+    if entry_timestamp and exit_timestamp:
+        try:
+            entry_dt = datetime.fromisoformat(entry_timestamp)
+            exit_dt = datetime.fromisoformat(exit_timestamp)
+            hold_seconds = int((exit_dt - entry_dt).total_seconds())
+            if hold_seconds < 0:
+                hold_seconds = None
+        except (ValueError, TypeError):
+            hold_seconds = None
 
     # Build context dict for episodic memory
     context_dict = {
@@ -233,7 +250,7 @@ async def remember_trade(
         "exit_price": exit_price,
         "pnl": pnl,
         "pnl_r": pnl_r,
-        "hold_duration_seconds": None,
+        "hold_duration_seconds": hold_seconds,
         "max_adverse_excursion": max_adverse_excursion,
         "reflection": reflection,
         "confidence": confidence,
@@ -246,7 +263,11 @@ async def remember_trade(
 
     # 2) Update semantic (Bayesian), procedural (running avg), affective (EWMA)
     update_semantic_from_trade(db, symbol_upper, strategy_name, pnl, pnl_r, context_regime, tid)
-    update_procedural_from_trade(db, symbol_upper, strategy_name, pnl)
+    update_procedural_from_trade(
+        db, symbol_upper, strategy_name, pnl,
+        hold_duration_seconds=episodic_data.get("hold_duration_seconds"),
+        pnl_r=pnl_r,
+    )
     update_affective_from_trade(db, pnl, confidence)
 
     # 3) Backward compatibility: also store in trade_records
@@ -375,11 +396,18 @@ async def recall_memories(
     if "semantic" in memory_types:
         semantic = db.query_semantic(strategy=strategy_name, symbol=symbol_upper, limit=limit * 3)
         for sem in semantic:
+            # Check drift_flag — discount confidence if recent performance diverges
+            vc = sem.get("validity_conditions") or {}
+            drift_flag = vc.get("drift_flag", False) if isinstance(vc, dict) else False
+            confidence = sem.get("confidence", 0.5)
+            if drift_flag:
+                confidence *= 0.7  # 30% discount on drifting beliefs
+
             candidates.append({
                 "id": sem["id"],
                 "memory_type": "semantic",
                 "timestamp": ensure_tz(sem.get("updated_at") or sem.get("created_at")),
-                "confidence": sem.get("confidence", 0.5),
+                "confidence": confidence,
                 "context": {
                     "symbol": sem.get("symbol"),
                     "regime": sem.get("regime"),
@@ -389,6 +417,7 @@ async def recall_memories(
                 "alpha": sem.get("alpha"),
                 "beta": sem.get("beta"),
                 "sample_size": sem.get("sample_size"),
+                "drift_flag": drift_flag,
             })
 
     affective = db.load_affective()

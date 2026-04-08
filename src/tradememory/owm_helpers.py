@@ -4,11 +4,16 @@ Shared OWM helper functions used by both server.py and mcp_server.py.
 Extracted to eliminate code duplication between REST and MCP entry points.
 """
 
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
 from .db import Database
+
+logger = logging.getLogger(__name__)
+
+DRIFT_THRESHOLD = 0.15  # 15% divergence triggers drift flag
 
 
 def ensure_tz(ts: Optional[str]) -> str:
@@ -22,6 +27,44 @@ def ensure_tz(ts: Optional[str]) -> str:
     if "+" not in ts and "Z" not in ts and ts.count("-") <= 2:
         return ts + "+00:00"
     return ts
+
+
+def _check_episodic_drift(
+    db: Database,
+    strategy_name: str,
+    symbol: str,
+    bayesian_confidence: float,
+) -> dict:
+    """Check if recent episodic outcomes drift from Bayesian belief.
+
+    Queries last 20 episodic memories for the same strategy+symbol,
+    computes recent win rate, and flags if it diverges >15% from
+    the Bayesian posterior belief.
+
+    Returns:
+        Dict with drift_flag, recent_win_rate, bayesian_confidence, delta.
+    """
+    recent = db.query_episodic(strategy=strategy_name, limit=20)
+    # Filter to same symbol
+    relevant = [
+        ep for ep in recent
+        if (ep.get("context_json") or {}).get("symbol") == symbol
+    ]
+
+    if len(relevant) < 5:
+        return {"drift_flag": False, "reason": "insufficient_data", "sample_size": len(relevant)}
+
+    wins = sum(1 for ep in relevant if (ep.get("pnl") or 0) > 0)
+    recent_wr = wins / len(relevant)
+    delta = abs(recent_wr - bayesian_confidence)
+
+    return {
+        "drift_flag": delta > DRIFT_THRESHOLD,
+        "recent_win_rate": round(recent_wr, 3),
+        "bayesian_confidence": round(bayesian_confidence, 3),
+        "delta": round(delta, 3),
+        "sample_size": len(relevant),
+    }
 
 
 def update_semantic_from_trade(
@@ -39,6 +82,10 @@ def update_semantic_from_trade(
     If none exist, creates one. Then applies Bayesian update:
     pnl > 0 -> alpha += weight, pnl <= 0 -> beta += weight.
     weight = min(2, abs(pnl_r)) if pnl_r available, else 1.0.
+
+    After Bayesian update, checks episodic drift: if the recent 20 trades'
+    win rate diverges >15% from the Bayesian posterior, sets drift_flag
+    in validity_conditions.
     """
     existing = db.query_semantic(strategy=strategy_name, symbol=symbol, limit=10)
 
@@ -53,6 +100,33 @@ def update_semantic_from_trade(
                 weight=weight,
                 evidence_id=trade_id,
             )
+
+        # Check episodic drift against updated Bayesian belief
+        mem = existing[0]
+        new_alpha = mem["alpha"] + (weight if confirmed else 0.0)
+        new_beta = mem["beta"] + (0.0 if confirmed else weight)
+        bayesian_conf = new_alpha / (new_alpha + new_beta) if (new_alpha + new_beta) > 0 else 0.5
+
+        drift_info = _check_episodic_drift(db, strategy_name, symbol, bayesian_conf)
+        if drift_info["drift_flag"]:
+            logger.info(
+                "Drift detected for %s/%s: recent_wr=%.3f vs bayesian=%.3f (delta=%.3f)",
+                strategy_name, symbol,
+                drift_info.get("recent_win_rate", 0),
+                drift_info.get("bayesian_confidence", 0),
+                drift_info.get("delta", 0),
+            )
+            # Store drift info in validity_conditions
+            vc = mem.get("validity_conditions") or {}
+            if isinstance(vc, str):
+                import json
+                try:
+                    vc = json.loads(vc)
+                except Exception:
+                    vc = {}
+            vc["drift_flag"] = True
+            vc["drift_info"] = drift_info
+            db.update_semantic_validity_conditions(mem["id"], vc)
     else:
         sem_id = f"sem-{strategy_name.lower()}-{symbol.lower()}-{uuid.uuid4().hex[:8]}"
         alpha = 1.0 + (weight if confirmed else 0.0)
@@ -75,14 +149,41 @@ def update_semantic_from_trade(
         })
 
 
+def _compute_kelly_simple(win_rate: float, avg_win: float, avg_loss: float) -> Optional[float]:
+    """Compute simple Kelly fraction: f* = p/a - q/b.
+
+    Args:
+        win_rate: proportion of winning trades [0, 1]
+        avg_win: average winning R-multiple (positive)
+        avg_loss: average losing R-multiple (positive magnitude)
+
+    Returns:
+        Kelly fraction clamped to [0, 0.5], or None if insufficient data.
+    """
+    if avg_win <= 0 or avg_loss <= 0 or win_rate <= 0:
+        return None
+    q = 1.0 - win_rate
+    f_star = win_rate / avg_loss - q / avg_win
+    return max(0.0, min(0.5, f_star * 0.25))  # quarter-Kelly
+
+
 def update_procedural_from_trade(
     db: Database,
     symbol: str,
     strategy_name: str,
     pnl: float,
     lot_size: float = 0.0,
+    hold_duration_seconds: Optional[int] = None,
+    pnl_r: Optional[float] = None,
 ) -> None:
-    """Update procedural memory with running averages from a new trade."""
+    """Update procedural memory with running averages from a new trade.
+
+    Computes:
+    - avg_hold_winners / avg_hold_losers (from hold_duration_seconds)
+    - kelly_fraction_suggested (from episodic win/loss statistics)
+    - actual_lot_mean (running average)
+    - disposition_ratio (avg_hold_winners / avg_hold_losers when both > 0)
+    """
     proc_id = f"proc-{strategy_name.lower()}-{symbol.lower()}"
     existing = db.query_procedural(strategy=strategy_name, symbol=symbol, limit=1)
 
@@ -91,8 +192,43 @@ def update_procedural_from_trade(
         n = rec.get("sample_size", 0)
         new_n = n + 1
 
+        # Running average for lot size
         old_mean = rec.get("actual_lot_mean") or 0.0
         new_mean = old_mean + (lot_size - old_mean) / new_n if new_n > 0 else lot_size
+
+        # Update hold time averages
+        avg_hw = rec.get("avg_hold_winners") or 0.0
+        avg_hl = rec.get("avg_hold_losers") or 0.0
+
+        if hold_duration_seconds is not None and hold_duration_seconds > 0:
+            if pnl > 0:
+                # Running average for winner hold times
+                # Count wins from episodic history
+                win_count = max(1, int(n * ((rec.get("disposition_ratio") or 1.0) / (1.0 + (rec.get("disposition_ratio") or 1.0)))) if n > 0 else 1)
+                avg_hw = avg_hw + (hold_duration_seconds - avg_hw) / max(win_count, 1)
+            else:
+                loss_count = max(1, n - int(n * ((rec.get("disposition_ratio") or 1.0) / (1.0 + (rec.get("disposition_ratio") or 1.0)))) if n > 0 else 1)
+                avg_hl = avg_hl + (hold_duration_seconds - avg_hl) / max(loss_count, 1)
+
+        # Disposition ratio: avg_hold_winners / avg_hold_losers
+        disp = avg_hw / avg_hl if avg_hl > 0 and avg_hw > 0 else rec.get("disposition_ratio")
+
+        # Kelly from episodic history
+        kelly = rec.get("kelly_fraction_suggested")
+        episodic_trades = db.query_episodic(strategy=strategy_name, limit=50)
+        ep_same_symbol = [
+            ep for ep in episodic_trades
+            if (ep.get("context_json") or {}).get("symbol") == symbol
+        ]
+        if len(ep_same_symbol) >= 10:
+            wins = [ep for ep in ep_same_symbol if (ep.get("pnl_r") or ep.get("pnl") or 0) > 0]
+            losses = [ep for ep in ep_same_symbol if (ep.get("pnl_r") or ep.get("pnl") or 0) <= 0]
+            wr = len(wins) / len(ep_same_symbol)
+
+            avg_win_r = sum(abs(ep.get("pnl_r") or 1.0) for ep in wins) / max(len(wins), 1)
+            avg_loss_r = sum(abs(ep.get("pnl_r") or 1.0) for ep in losses) / max(len(losses), 1)
+
+            kelly = _compute_kelly_simple(wr, avg_win_r, avg_loss_r)
 
         db.upsert_procedural({
             "id": proc_id,
@@ -100,23 +236,26 @@ def update_procedural_from_trade(
             "symbol": symbol,
             "behavior_type": "trade_execution",
             "sample_size": new_n,
-            "avg_hold_winners": rec.get("avg_hold_winners") or 0.0,
-            "avg_hold_losers": rec.get("avg_hold_losers") or 0.0,
-            "disposition_ratio": rec.get("disposition_ratio"),
+            "avg_hold_winners": avg_hw,
+            "avg_hold_losers": avg_hl,
+            "disposition_ratio": disp,
             "actual_lot_mean": new_mean,
             "actual_lot_variance": rec.get("actual_lot_variance") or 0.0,
-            "kelly_fraction_suggested": rec.get("kelly_fraction_suggested"),
-            "lot_vs_kelly_ratio": rec.get("lot_vs_kelly_ratio"),
+            "kelly_fraction_suggested": kelly,
+            "lot_vs_kelly_ratio": (new_mean / kelly) if kelly and kelly > 0 else None,
         })
     else:
+        avg_hw = float(hold_duration_seconds) if hold_duration_seconds and pnl > 0 else 0.0
+        avg_hl = float(hold_duration_seconds) if hold_duration_seconds and pnl <= 0 else 0.0
+
         db.upsert_procedural({
             "id": proc_id,
             "strategy": strategy_name,
             "symbol": symbol,
             "behavior_type": "trade_execution",
             "sample_size": 1,
-            "avg_hold_winners": 0.0,
-            "avg_hold_losers": 0.0,
+            "avg_hold_winners": avg_hw,
+            "avg_hold_losers": avg_hl,
             "disposition_ratio": None,
             "actual_lot_mean": lot_size,
             "actual_lot_variance": 0.0,
