@@ -91,6 +91,7 @@ class CalibratedAgent(BaseAgent):
         strategy: CandidatePattern,
         db_path: Optional[str] = None,
         fixed_lot: float = 0.01,
+        hazard_lambda: float = 50.0,
     ):
         super().__init__(strategy, fixed_lot)
         from tradememory.db import Database
@@ -102,7 +103,7 @@ class CalibratedAgent(BaseAgent):
             db_path = os.path.join(tempfile.mkdtemp(), f"sim_{uuid.uuid4().hex[:8]}.db")
         self._db_path = db_path
         self.db = Database(db_path=db_path)
-        self.changepoint = BayesianChangepoint(hazard_lambda=50.0)
+        self.changepoint = BayesianChangepoint(hazard_lambda=hazard_lambda)
         self.dqs_engine = DQSEngine(self.db)
         self._trade_count = 0
         self._last_cp_prob = 0.0

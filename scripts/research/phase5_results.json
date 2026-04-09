@@ -1,0 +1,7164 @@
+{
+  "metadata": {
+    "generated": "2026-04-09T14:39:15.926281+00:00",
+    "runtime_seconds": 2541.3,
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT"
+    ],
+    "timeframes": [
+      "1h"
+    ],
+    "grid_strategies": 50,
+    "qualified_experiments": 100
+  },
+  "results": [
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 584,
+      "agents": {
+        "base": {
+          "trades": 273,
+          "sharpe": -5.8392,
+          "total_pnl": -14080.3766,
+          "max_dd_pct": 1393.6478,
+          "win_rate": 0.3773,
+          "equity_total_pnl": -14080.38,
+          "equity_max_dd": 19134.94,
+          "equity_calmar": -5.58,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 9,
+          "sharpe": 6.6232,
+          "total_pnl": 644.8452,
+          "max_dd_pct": 132.3648,
+          "win_rate": 0.4444,
+          "equity_total_pnl": -292.73,
+          "equity_max_dd": 907.89,
+          "equity_calmar": -32.2433,
+          "skipped": 853
+        },
+        "periodic_reduce": {
+          "trades": 273,
+          "sharpe": -5.8392,
+          "total_pnl": -14080.3766,
+          "max_dd_pct": 1393.6478,
+          "win_rate": 0.3773,
+          "equity_total_pnl": -10800.78,
+          "equity_max_dd": 17276.41,
+          "equity_calmar": -4.7407,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 234,
+          "sharpe": -6.6328,
+          "total_pnl": -14208.7029,
+          "max_dd_pct": 1529.7089,
+          "win_rate": 0.3718,
+          "equity_total_pnl": -14208.7,
+          "equity_max_dd": 18354.01,
+          "equity_calmar": -6.6859,
+          "skipped": 120
+        },
+        "simple_wr": {
+          "trades": 273,
+          "sharpe": -5.8392,
+          "total_pnl": -14080.3766,
+          "max_dd_pct": 1393.6478,
+          "win_rate": 0.3773,
+          "equity_total_pnl": -12351.64,
+          "equity_max_dd": 17216.75,
+          "equity_calmar": -5.4402,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 556,
+      "agents": {
+        "base": {
+          "trades": 261,
+          "sharpe": -8.4727,
+          "total_pnl": -20503.9272,
+          "max_dd_pct": 1777.1653,
+          "win_rate": 0.3602,
+          "equity_total_pnl": -20503.93,
+          "equity_max_dd": 24379.16,
+          "equity_calmar": -5.7152,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": 399.663,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.5,
+          "equity_total_pnl": 99.92,
+          "equity_max_dd": 123.6,
+          "equity_calmar": 80.8408,
+          "skipped": 879
+        },
+        "periodic_reduce": {
+          "trades": 261,
+          "sharpe": -8.4727,
+          "total_pnl": -20503.9272,
+          "max_dd_pct": 1777.1653,
+          "win_rate": 0.3602,
+          "equity_total_pnl": -17953.49,
+          "equity_max_dd": 20869.14,
+          "equity_calmar": -5.846,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 224,
+          "sharpe": -6.0292,
+          "total_pnl": -12923.6452,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3705,
+          "equity_total_pnl": -12923.65,
+          "equity_max_dd": 16126.19,
+          "equity_calmar": -6.0771,
+          "skipped": 115
+        },
+        "simple_wr": {
+          "trades": 261,
+          "sharpe": -8.4727,
+          "total_pnl": -20503.9272,
+          "max_dd_pct": 1777.1653,
+          "win_rate": 0.3602,
+          "equity_total_pnl": -16814.73,
+          "equity_max_dd": 19760.32,
+          "equity_calmar": -5.7824,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 549,
+      "agents": {
+        "base": {
+          "trades": 261,
+          "sharpe": -8.6652,
+          "total_pnl": -21012.5184,
+          "max_dd_pct": 1814.2401,
+          "win_rate": 0.3563,
+          "equity_total_pnl": -21012.52,
+          "equity_max_dd": 24887.75,
+          "equity_calmar": -5.6844,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 261,
+          "sharpe": -8.6652,
+          "total_pnl": -21012.5184,
+          "max_dd_pct": 1814.2401,
+          "win_rate": 0.3563,
+          "equity_total_pnl": -18053.88,
+          "equity_max_dd": 20969.52,
+          "equity_calmar": -5.7966,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 224,
+          "sharpe": -6.252,
+          "total_pnl": -13432.2364,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3661,
+          "equity_total_pnl": -13432.24,
+          "equity_max_dd": 15818.37,
+          "equity_calmar": -6.373,
+          "skipped": 115
+        },
+        "simple_wr": {
+          "trades": 261,
+          "sharpe": -8.6652,
+          "total_pnl": -21012.5184,
+          "max_dd_pct": 1814.2401,
+          "win_rate": 0.3563,
+          "equity_total_pnl": -16105.98,
+          "equity_max_dd": 19051.57,
+          "equity_calmar": -5.6918,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 429,
+      "agents": {
+        "base": {
+          "trades": 215,
+          "sharpe": -4.2991,
+          "total_pnl": -10603.1446,
+          "max_dd_pct": 1310.2522,
+          "win_rate": 0.2977,
+          "equity_total_pnl": -10603.14,
+          "equity_max_dd": 18043.69,
+          "equity_calmar": -4.3654,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 881
+        },
+        "periodic_reduce": {
+          "trades": 215,
+          "sharpe": -4.2991,
+          "total_pnl": -10603.1446,
+          "max_dd_pct": 1310.2522,
+          "win_rate": 0.2977,
+          "equity_total_pnl": -9844.67,
+          "equity_max_dd": 18436.82,
+          "equity_calmar": -3.9667,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 188,
+          "sharpe": -5.558,
+          "total_pnl": -12087.1038,
+          "max_dd_pct": 10045.6934,
+          "win_rate": 0.2819,
+          "equity_total_pnl": -12087.1,
+          "equity_max_dd": 16881.13,
+          "equity_calmar": -6.0702,
+          "skipped": 99
+        },
+        "simple_wr": {
+          "trades": 215,
+          "sharpe": -4.2991,
+          "total_pnl": -10603.1446,
+          "max_dd_pct": 1310.2522,
+          "win_rate": 0.2977,
+          "equity_total_pnl": -8744.45,
+          "equity_max_dd": 11235.8,
+          "equity_calmar": -5.7816,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 364,
+      "agents": {
+        "base": {
+          "trades": 186,
+          "sharpe": -4.8512,
+          "total_pnl": -11343.9545,
+          "max_dd_pct": 465.1417,
+          "win_rate": 0.2527,
+          "equity_total_pnl": -11343.95,
+          "equity_max_dd": 18134.79,
+          "equity_calmar": -3.8643,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 186,
+          "sharpe": -4.8512,
+          "total_pnl": -11343.9545,
+          "max_dd_pct": 465.1417,
+          "win_rate": 0.2527,
+          "equity_total_pnl": -11102.25,
+          "equity_max_dd": 19094.07,
+          "equity_calmar": -3.592,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 163,
+          "sharpe": -7.0909,
+          "total_pnl": -15482.3485,
+          "max_dd_pct": 3049.5493,
+          "win_rate": 0.2393,
+          "equity_total_pnl": -15482.35,
+          "equity_max_dd": 18968.64,
+          "equity_calmar": -5.5421,
+          "skipped": 85
+        },
+        "simple_wr": {
+          "trades": 186,
+          "sharpe": -4.8512,
+          "total_pnl": -11343.9545,
+          "max_dd_pct": 465.1417,
+          "win_rate": 0.2527,
+          "equity_total_pnl": -8685.38,
+          "equity_max_dd": 10778.27,
+          "equity_calmar": -4.978,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 336,
+      "agents": {
+        "base": {
+          "trades": 179,
+          "sharpe": -3.8373,
+          "total_pnl": -9153.0039,
+          "max_dd_pct": 362.2876,
+          "win_rate": 0.2458,
+          "equity_total_pnl": -9153.0,
+          "equity_max_dd": 16637.38,
+          "equity_calmar": -3.2762,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 179,
+          "sharpe": -3.8373,
+          "total_pnl": -9153.0039,
+          "max_dd_pct": 362.2876,
+          "win_rate": 0.2458,
+          "equity_total_pnl": -5639.57,
+          "equity_max_dd": 15597.55,
+          "equity_calmar": -2.1532,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 155,
+          "sharpe": -1.9631,
+          "total_pnl": -4099.905,
+          "max_dd_pct": 7668.9331,
+          "win_rate": 0.2581,
+          "equity_total_pnl": -4099.91,
+          "equity_max_dd": 14769.93,
+          "equity_calmar": -1.7684,
+          "skipped": 82
+        },
+        "simple_wr": {
+          "trades": 179,
+          "sharpe": -3.8373,
+          "total_pnl": -9153.0039,
+          "max_dd_pct": 362.2876,
+          "win_rate": 0.2458,
+          "equity_total_pnl": -6543.29,
+          "equity_max_dd": 9014.05,
+          "equity_calmar": -4.3228,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 391,
+      "agents": {
+        "base": {
+          "trades": 180,
+          "sharpe": -7.4988,
+          "total_pnl": -15908.9717,
+          "max_dd_pct": 1731.3518,
+          "win_rate": 0.2722,
+          "equity_total_pnl": -15908.97,
+          "equity_max_dd": 22653.99,
+          "equity_calmar": -5.1558,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 180,
+          "sharpe": -7.4988,
+          "total_pnl": -15908.9717,
+          "max_dd_pct": 1731.3518,
+          "win_rate": 0.2722,
+          "equity_total_pnl": -16098.99,
+          "equity_max_dd": 21957.05,
+          "equity_calmar": -5.383,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 166,
+          "sharpe": -4.5571,
+          "total_pnl": -9498.1253,
+          "max_dd_pct": 653.2289,
+          "win_rate": 0.2831,
+          "equity_total_pnl": -9498.13,
+          "equity_max_dd": 16296.21,
+          "equity_calmar": -4.6745,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 180,
+          "sharpe": -7.4988,
+          "total_pnl": -15908.9717,
+          "max_dd_pct": 1731.3518,
+          "win_rate": 0.2722,
+          "equity_total_pnl": -13597.46,
+          "equity_max_dd": 15830.6,
+          "equity_calmar": -6.3061,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 290,
+      "agents": {
+        "base": {
+          "trades": 132,
+          "sharpe": -7.807,
+          "total_pnl": -15146.1436,
+          "max_dd_pct": 639.0538,
+          "win_rate": 0.1742,
+          "equity_total_pnl": -15146.14,
+          "equity_max_dd": 21038.78,
+          "equity_calmar": -4.3433,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 132,
+          "sharpe": -7.807,
+          "total_pnl": -15146.1436,
+          "max_dd_pct": 639.0538,
+          "win_rate": 0.1742,
+          "equity_total_pnl": -12914.29,
+          "equity_max_dd": 18806.92,
+          "equity_calmar": -4.1427,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 125,
+          "sharpe": -7.8365,
+          "total_pnl": -14166.1674,
+          "max_dd_pct": 684.3333,
+          "win_rate": 0.184,
+          "equity_total_pnl": -14166.17,
+          "equity_max_dd": 21736.16,
+          "equity_calmar": -4.1641,
+          "skipped": 69
+        },
+        "simple_wr": {
+          "trades": 132,
+          "sharpe": -7.807,
+          "total_pnl": -15146.1436,
+          "max_dd_pct": 639.0538,
+          "win_rate": 0.1742,
+          "equity_total_pnl": -7573.07,
+          "equity_max_dd": 10519.39,
+          "equity_calmar": -4.3433,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 246,
+      "agents": {
+        "base": {
+          "trades": 120,
+          "sharpe": -4.6128,
+          "total_pnl": -8974.3332,
+          "max_dd_pct": 251.1665,
+          "win_rate": 0.1667,
+          "equity_total_pnl": -8974.33,
+          "equity_max_dd": 19231.77,
+          "equity_calmar": -2.6806,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -37.94,
+          "equity_max_dd": 37.94,
+          "equity_calmar": -100.0,
+          "skipped": 881
+        },
+        "periodic_reduce": {
+          "trades": 120,
+          "sharpe": -4.6128,
+          "total_pnl": -8974.3332,
+          "max_dd_pct": 251.1665,
+          "win_rate": 0.1667,
+          "equity_total_pnl": -6463.85,
+          "equity_max_dd": 17057.01,
+          "equity_calmar": -2.1769,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 120,
+          "sharpe": -5.0635,
+          "total_pnl": -9863.5654,
+          "max_dd_pct": 232.5213,
+          "win_rate": 0.175,
+          "equity_total_pnl": -9863.57,
+          "equity_max_dd": 21731.7,
+          "equity_calmar": -2.7383,
+          "skipped": 65
+        },
+        "simple_wr": {
+          "trades": 120,
+          "sharpe": -4.6128,
+          "total_pnl": -8974.3332,
+          "max_dd_pct": 251.1665,
+          "win_rate": 0.1667,
+          "equity_total_pnl": -4487.17,
+          "equity_max_dd": 9615.89,
+          "equity_calmar": -2.6806,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 359,
+      "agents": {
+        "base": {
+          "trades": 174,
+          "sharpe": -0.7876,
+          "total_pnl": -1785.7146,
+          "max_dd_pct": 1245.3897,
+          "win_rate": 0.3736,
+          "equity_total_pnl": -1785.71,
+          "equity_max_dd": 13033.22,
+          "equity_calmar": -0.9773,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 174,
+          "sharpe": -0.7876,
+          "total_pnl": -1785.7146,
+          "max_dd_pct": 1245.3897,
+          "win_rate": 0.3736,
+          "equity_total_pnl": 878.52,
+          "equity_max_dd": 11760.57,
+          "equity_calmar": 0.5328,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 160,
+          "sharpe": -1.0227,
+          "total_pnl": -2231.8799,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3688,
+          "equity_total_pnl": -2231.88,
+          "equity_max_dd": 12504.63,
+          "equity_calmar": -1.4134,
+          "skipped": 83
+        },
+        "simple_wr": {
+          "trades": 174,
+          "sharpe": -0.7876,
+          "total_pnl": -1785.7146,
+          "max_dd_pct": 1245.3897,
+          "win_rate": 0.3736,
+          "equity_total_pnl": -126.04,
+          "equity_max_dd": 9456.24,
+          "equity_calmar": -0.0951,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 287,
+      "agents": {
+        "base": {
+          "trades": 138,
+          "sharpe": -2.5325,
+          "total_pnl": -5300.6585,
+          "max_dd_pct": 816.2222,
+          "win_rate": 0.3623,
+          "equity_total_pnl": -5300.66,
+          "equity_max_dd": 20011.54,
+          "equity_calmar": -1.5367,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 138,
+          "sharpe": -2.5325,
+          "total_pnl": -5300.6585,
+          "max_dd_pct": 816.2222,
+          "win_rate": 0.3623,
+          "equity_total_pnl": -8803.68,
+          "equity_max_dd": 20094.83,
+          "equity_calmar": -2.5417,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 123,
+          "sharpe": 1.0784,
+          "total_pnl": 2084.848,
+          "max_dd_pct": 574.5159,
+          "win_rate": 0.3902,
+          "equity_total_pnl": 2084.85,
+          "equity_max_dd": 14689.24,
+          "equity_calmar": 0.878,
+          "skipped": 67
+        },
+        "simple_wr": {
+          "trades": 138,
+          "sharpe": -2.5325,
+          "total_pnl": -5300.6585,
+          "max_dd_pct": 816.2222,
+          "win_rate": 0.3623,
+          "equity_total_pnl": -3715.8,
+          "equity_max_dd": 14531.93,
+          "equity_calmar": -1.4834,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 260,
+      "agents": {
+        "base": {
+          "trades": 132,
+          "sharpe": -0.6539,
+          "total_pnl": -1416.527,
+          "max_dd_pct": 744.6738,
+          "win_rate": 0.3485,
+          "equity_total_pnl": -1416.53,
+          "equity_max_dd": 16494.3,
+          "equity_calmar": -0.4753,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 5,
+          "sharpe": -27.4562,
+          "total_pnl": -2238.3333,
+          "max_dd_pct": 313.884,
+          "win_rate": 0.2,
+          "equity_total_pnl": -933.77,
+          "equity_max_dd": 1642.43,
+          "equity_calmar": -56.8533,
+          "skipped": 856
+        },
+        "periodic_reduce": {
+          "trades": 132,
+          "sharpe": -0.6539,
+          "total_pnl": -1416.527,
+          "max_dd_pct": 744.6738,
+          "win_rate": 0.3485,
+          "equity_total_pnl": -1952.77,
+          "equity_max_dd": 14816.5,
+          "equity_calmar": -0.7294,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 119,
+          "sharpe": 0.4152,
+          "total_pnl": 828.0916,
+          "max_dd_pct": 926.1051,
+          "win_rate": 0.3613,
+          "equity_total_pnl": 828.09,
+          "equity_max_dd": 14817.2,
+          "equity_calmar": 0.3351,
+          "skipped": 64
+        },
+        "simple_wr": {
+          "trades": 132,
+          "sharpe": -0.6539,
+          "total_pnl": -1416.527,
+          "max_dd_pct": 744.6738,
+          "win_rate": 0.3485,
+          "equity_total_pnl": -1102.81,
+          "equity_max_dd": 12427.48,
+          "equity_calmar": -0.4911,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 326,
+      "agents": {
+        "base": {
+          "trades": 151,
+          "sharpe": -3.204,
+          "total_pnl": -6578.8635,
+          "max_dd_pct": 1395.8116,
+          "win_rate": 0.3576,
+          "equity_total_pnl": -6578.86,
+          "equity_max_dd": 14813.27,
+          "equity_calmar": -3.1046,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 151,
+          "sharpe": -3.204,
+          "total_pnl": -6578.8635,
+          "max_dd_pct": 1395.8116,
+          "win_rate": 0.3576,
+          "equity_total_pnl": -3957.96,
+          "equity_max_dd": 11883.0,
+          "equity_calmar": -2.3284,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 144,
+          "sharpe": -2.7216,
+          "total_pnl": -5831.2866,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3472,
+          "equity_total_pnl": -5831.29,
+          "equity_max_dd": 12685.4,
+          "equity_calmar": -3.566,
+          "skipped": 74
+        },
+        "simple_wr": {
+          "trades": 151,
+          "sharpe": -3.204,
+          "total_pnl": -6578.8635,
+          "max_dd_pct": 1395.8116,
+          "win_rate": 0.3576,
+          "equity_total_pnl": -7324.45,
+          "equity_max_dd": 11044.1,
+          "equity_calmar": -4.6361,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 223,
+      "agents": {
+        "base": {
+          "trades": 108,
+          "sharpe": -4.1712,
+          "total_pnl": -8292.1266,
+          "max_dd_pct": 516.6333,
+          "win_rate": 0.2685,
+          "equity_total_pnl": -8292.13,
+          "equity_max_dd": 20582.72,
+          "equity_calmar": -2.2682,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 108,
+          "sharpe": -4.1712,
+          "total_pnl": -8292.1266,
+          "max_dd_pct": 516.6333,
+          "win_rate": 0.2685,
+          "equity_total_pnl": -3084.38,
+          "equity_max_dd": 16133.93,
+          "equity_calmar": -1.0763,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 104,
+          "sharpe": -3.2387,
+          "total_pnl": -6417.5071,
+          "max_dd_pct": 1675.6313,
+          "win_rate": 0.2692,
+          "equity_total_pnl": -6417.51,
+          "equity_max_dd": 16562.16,
+          "equity_calmar": -2.3393,
+          "skipped": 54
+        },
+        "simple_wr": {
+          "trades": 108,
+          "sharpe": -4.1712,
+          "total_pnl": -8292.1266,
+          "max_dd_pct": 516.6333,
+          "win_rate": 0.2685,
+          "equity_total_pnl": -8329.44,
+          "equity_max_dd": 12235.82,
+          "equity_calmar": -3.8326,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 186,
+      "agents": {
+        "base": {
+          "trades": 95,
+          "sharpe": -3.5117,
+          "total_pnl": -6815.4109,
+          "max_dd_pct": 369.7138,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -6815.41,
+          "equity_max_dd": 17199.46,
+          "equity_calmar": -2.0763,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 95,
+          "sharpe": -3.5117,
+          "total_pnl": -6815.4109,
+          "max_dd_pct": 369.7138,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -5335.98,
+          "equity_max_dd": 15720.03,
+          "equity_calmar": -1.7786,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 93,
+          "sharpe": -3.3894,
+          "total_pnl": -6426.7607,
+          "max_dd_pct": 289.0874,
+          "win_rate": 0.2581,
+          "equity_total_pnl": -6426.76,
+          "equity_max_dd": 14918.73,
+          "equity_calmar": -2.3631,
+          "skipped": 49
+        },
+        "simple_wr": {
+          "trades": 95,
+          "sharpe": -3.5117,
+          "total_pnl": -6815.4109,
+          "max_dd_pct": 369.7138,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -4353.61,
+          "equity_max_dd": 8599.73,
+          "equity_calmar": -2.6526,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 311,
+      "agents": {
+        "base": {
+          "trades": 146,
+          "sharpe": -3.1426,
+          "total_pnl": -6834.7197,
+          "max_dd_pct": 3008.6936,
+          "win_rate": 0.4384,
+          "equity_total_pnl": -6834.72,
+          "equity_max_dd": 16612.03,
+          "equity_calmar": -2.8045,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 146,
+          "sharpe": -3.1426,
+          "total_pnl": -6834.7197,
+          "max_dd_pct": 3008.6936,
+          "win_rate": 0.4384,
+          "equity_total_pnl": -5033.25,
+          "equity_max_dd": 13591.19,
+          "equity_calmar": -2.5244,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 133,
+          "sharpe": -4.8109,
+          "total_pnl": -9340.221,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4436,
+          "equity_total_pnl": -9340.22,
+          "equity_max_dd": 18970.99,
+          "equity_calmar": -3.5876,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 146,
+          "sharpe": -3.1426,
+          "total_pnl": -6834.7197,
+          "max_dd_pct": 3008.6936,
+          "win_rate": 0.4384,
+          "equity_total_pnl": -5388.64,
+          "equity_max_dd": 14212.3,
+          "equity_calmar": -2.5845,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 231,
+      "agents": {
+        "base": {
+          "trades": 108,
+          "sharpe": -5.4894,
+          "total_pnl": -11259.6718,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4722,
+          "equity_total_pnl": -11259.67,
+          "equity_max_dd": 24512.03,
+          "equity_calmar": -2.2521,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 108,
+          "sharpe": -5.4894,
+          "total_pnl": -11259.6718,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4722,
+          "equity_total_pnl": -5297.21,
+          "equity_max_dd": 17331.33,
+          "equity_calmar": -1.4985,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 99,
+          "sharpe": -4.1955,
+          "total_pnl": -8061.7338,
+          "max_dd_pct": 1315.5586,
+          "win_rate": 0.4747,
+          "equity_total_pnl": -8061.73,
+          "equity_max_dd": 20512.13,
+          "equity_calmar": -2.0007,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 108,
+          "sharpe": -5.4894,
+          "total_pnl": -11259.6718,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4722,
+          "equity_total_pnl": -6282.53,
+          "equity_max_dd": 17202.65,
+          "equity_calmar": -1.7905,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 202,
+      "agents": {
+        "base": {
+          "trades": 95,
+          "sharpe": -3.4513,
+          "total_pnl": -6957.736,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4526,
+          "equity_total_pnl": -6957.74,
+          "equity_max_dd": 19885.09,
+          "equity_calmar": -1.6152,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 95,
+          "sharpe": -3.4513,
+          "total_pnl": -6957.736,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4526,
+          "equity_total_pnl": -5912.27,
+          "equity_max_dd": 18670.1,
+          "equity_calmar": -1.4618,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 89,
+          "sharpe": -4.7415,
+          "total_pnl": -9040.5909,
+          "max_dd_pct": 740.4943,
+          "win_rate": 0.4382,
+          "equity_total_pnl": -9040.59,
+          "equity_max_dd": 23047.5,
+          "equity_calmar": -1.8852,
+          "skipped": 47
+        },
+        "simple_wr": {
+          "trades": 95,
+          "sharpe": -3.4513,
+          "total_pnl": -6957.736,
+          "max_dd_pct": 600.471,
+          "win_rate": 0.4526,
+          "equity_total_pnl": -3417.06,
+          "equity_max_dd": 13759.06,
+          "equity_calmar": -1.1464,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 286,
+      "agents": {
+        "base": {
+          "trades": 131,
+          "sharpe": -6.0654,
+          "total_pnl": -12608.234,
+          "max_dd_pct": 3736.181,
+          "win_rate": 0.4122,
+          "equity_total_pnl": -12608.23,
+          "equity_max_dd": 21179.76,
+          "equity_calmar": -3.9384,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": 566.8825,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.5,
+          "equity_total_pnl": 283.44,
+          "equity_max_dd": 617.98,
+          "equity_calmar": 45.8659,
+          "skipped": 869
+        },
+        "periodic_reduce": {
+          "trades": 131,
+          "sharpe": -6.0654,
+          "total_pnl": -12608.234,
+          "max_dd_pct": 3736.181,
+          "win_rate": 0.4122,
+          "equity_total_pnl": -13474.3,
+          "equity_max_dd": 20867.6,
+          "equity_calmar": -4.2719,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 122,
+          "sharpe": -5.3545,
+          "total_pnl": -10477.8731,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.418,
+          "equity_total_pnl": -10477.87,
+          "equity_max_dd": 21925.84,
+          "equity_calmar": -3.392,
+          "skipped": 66
+        },
+        "simple_wr": {
+          "trades": 131,
+          "sharpe": -6.0654,
+          "total_pnl": -12608.234,
+          "max_dd_pct": 3736.181,
+          "win_rate": 0.4122,
+          "equity_total_pnl": -11906.67,
+          "equity_max_dd": 15996.71,
+          "equity_calmar": -4.9243,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 185,
+      "agents": {
+        "base": {
+          "trades": 84,
+          "sharpe": -7.8879,
+          "total_pnl": -14408.4337,
+          "max_dd_pct": 1869.778,
+          "win_rate": 0.369,
+          "equity_total_pnl": -14408.43,
+          "equity_max_dd": 27838.25,
+          "equity_calmar": -2.4671,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 84,
+          "sharpe": -7.8879,
+          "total_pnl": -14408.4337,
+          "max_dd_pct": 1869.778,
+          "win_rate": 0.369,
+          "equity_total_pnl": -15337.06,
+          "equity_max_dd": 25072.71,
+          "equity_calmar": -2.9158,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 80,
+          "sharpe": -8.8784,
+          "total_pnl": -16054.1314,
+          "max_dd_pct": 2472.7585,
+          "win_rate": 0.3625,
+          "equity_total_pnl": -16054.13,
+          "equity_max_dd": 26469.06,
+          "equity_calmar": -3.0697,
+          "skipped": 43
+        },
+        "simple_wr": {
+          "trades": 84,
+          "sharpe": -7.8879,
+          "total_pnl": -14408.4337,
+          "max_dd_pct": 1869.778,
+          "win_rate": 0.369,
+          "equity_total_pnl": -10502.59,
+          "equity_max_dd": 17645.01,
+          "equity_calmar": -2.8372,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 147,
+      "agents": {
+        "base": {
+          "trades": 71,
+          "sharpe": -9.2174,
+          "total_pnl": -16403.7548,
+          "max_dd_pct": 2628.7465,
+          "win_rate": 0.3239,
+          "equity_total_pnl": -16403.75,
+          "equity_max_dd": 24236.15,
+          "equity_calmar": -2.8566,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 882
+        },
+        "periodic_reduce": {
+          "trades": 71,
+          "sharpe": -9.2174,
+          "total_pnl": -16403.7548,
+          "max_dd_pct": 2628.7465,
+          "win_rate": 0.3239,
+          "equity_total_pnl": -18224.24,
+          "equity_max_dd": 24236.15,
+          "equity_calmar": -3.1736,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 65,
+          "sharpe": -8.5585,
+          "total_pnl": -14185.8388,
+          "max_dd_pct": 4199.9121,
+          "win_rate": 0.3077,
+          "equity_total_pnl": -14185.84,
+          "equity_max_dd": 21884.2,
+          "equity_calmar": -2.917,
+          "skipped": 37
+        },
+        "simple_wr": {
+          "trades": 71,
+          "sharpe": -9.2174,
+          "total_pnl": -16403.7548,
+          "max_dd_pct": 2628.7465,
+          "win_rate": 0.3239,
+          "equity_total_pnl": -12178.24,
+          "equity_max_dd": 14782.76,
+          "equity_calmar": -3.4769,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 443,
+      "agents": {
+        "base": {
+          "trades": 205,
+          "sharpe": -7.732,
+          "total_pnl": -14508.8209,
+          "max_dd_pct": 1394.2223,
+          "win_rate": 0.361,
+          "equity_total_pnl": -14508.82,
+          "equity_max_dd": 19125.94,
+          "equity_calmar": -7.5139,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 50,
+          "sharpe": -16.0771,
+          "total_pnl": -5805.3156,
+          "max_dd_pct": 555.634,
+          "win_rate": 0.34,
+          "equity_total_pnl": -1574.83,
+          "equity_max_dd": 2029.05,
+          "equity_calmar": -40.7405,
+          "skipped": 465
+        },
+        "periodic_reduce": {
+          "trades": 205,
+          "sharpe": -7.732,
+          "total_pnl": -14508.8209,
+          "max_dd_pct": 1394.2223,
+          "win_rate": 0.361,
+          "equity_total_pnl": -13922.6,
+          "equity_max_dd": 18858.83,
+          "equity_calmar": -7.3125,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 169,
+          "sharpe": -9.6081,
+          "total_pnl": -15512.2614,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3491,
+          "equity_total_pnl": -15512.26,
+          "equity_max_dd": 21540.11,
+          "equity_calmar": -8.2846,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 205,
+          "sharpe": -7.732,
+          "total_pnl": -14508.8209,
+          "max_dd_pct": 1394.2223,
+          "win_rate": 0.361,
+          "equity_total_pnl": -12421.17,
+          "equity_max_dd": 15246.44,
+          "equity_calmar": -8.0696,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 434,
+      "agents": {
+        "base": {
+          "trades": 203,
+          "sharpe": -11.5474,
+          "total_pnl": -22417.9507,
+          "max_dd_pct": 1922.6721,
+          "win_rate": 0.3399,
+          "equity_total_pnl": -22417.95,
+          "equity_max_dd": 26375.22,
+          "equity_calmar": -7.2549,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 586
+        },
+        "periodic_reduce": {
+          "trades": 203,
+          "sharpe": -11.5474,
+          "total_pnl": -22417.9507,
+          "max_dd_pct": 1922.6721,
+          "win_rate": 0.3399,
+          "equity_total_pnl": -19455.97,
+          "equity_max_dd": 23494.42,
+          "equity_calmar": -7.0684,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 168,
+          "sharpe": -12.1214,
+          "total_pnl": -20222.4178,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3393,
+          "equity_total_pnl": -20222.42,
+          "equity_max_dd": 25149.47,
+          "equity_calmar": -7.9109,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 203,
+          "sharpe": -11.5474,
+          "total_pnl": -22417.9507,
+          "max_dd_pct": 1922.6721,
+          "win_rate": 0.3399,
+          "equity_total_pnl": -16799.84,
+          "equity_max_dd": 19167.54,
+          "equity_calmar": -7.4812,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 430,
+      "agents": {
+        "base": {
+          "trades": 203,
+          "sharpe": -11.9596,
+          "total_pnl": -23234.3604,
+          "max_dd_pct": 1982.1859,
+          "win_rate": 0.335,
+          "equity_total_pnl": -23234.36,
+          "equity_max_dd": 27191.63,
+          "equity_calmar": -7.2721,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 203,
+          "sharpe": -11.9596,
+          "total_pnl": -23234.3604,
+          "max_dd_pct": 1982.1859,
+          "win_rate": 0.335,
+          "equity_total_pnl": -20272.38,
+          "equity_max_dd": 24310.83,
+          "equity_calmar": -7.0969,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 168,
+          "sharpe": -12.6019,
+          "total_pnl": -21038.8274,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -21038.83,
+          "equity_max_dd": 25965.88,
+          "equity_calmar": -7.9448,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 203,
+          "sharpe": -11.9596,
+          "total_pnl": -23234.3604,
+          "max_dd_pct": 1982.1859,
+          "win_rate": 0.335,
+          "equity_total_pnl": -16532.54,
+          "equity_max_dd": 18900.24,
+          "equity_calmar": -7.4445,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 324,
+      "agents": {
+        "base": {
+          "trades": 168,
+          "sharpe": -7.8128,
+          "total_pnl": -15239.9458,
+          "max_dd_pct": 1576.2644,
+          "win_rate": 0.2679,
+          "equity_total_pnl": -15239.95,
+          "equity_max_dd": 20392.27,
+          "equity_calmar": -7.3774,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 168,
+          "sharpe": -7.8128,
+          "total_pnl": -15239.9458,
+          "max_dd_pct": 1576.2644,
+          "win_rate": 0.2679,
+          "equity_total_pnl": -13062.6,
+          "equity_max_dd": 17967.0,
+          "equity_calmar": -7.177,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 143,
+          "sharpe": -7.6955,
+          "total_pnl": -12544.4879,
+          "max_dd_pct": 23429.0801,
+          "win_rate": 0.2587,
+          "equity_total_pnl": -12544.49,
+          "equity_max_dd": 17097.92,
+          "equity_calmar": -8.2034,
+          "skipped": 74
+        },
+        "simple_wr": {
+          "trades": 168,
+          "sharpe": -7.8128,
+          "total_pnl": -15239.9458,
+          "max_dd_pct": 1576.2644,
+          "win_rate": 0.2679,
+          "equity_total_pnl": -9880.43,
+          "equity_max_dd": 13196.28,
+          "equity_calmar": -7.3912,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 293,
+      "agents": {
+        "base": {
+          "trades": 157,
+          "sharpe": -11.583,
+          "total_pnl": -22047.4749,
+          "max_dd_pct": 2027.7552,
+          "win_rate": 0.2102,
+          "equity_total_pnl": -22047.47,
+          "equity_max_dd": 26233.25,
+          "equity_calmar": -6.6372,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 15,
+          "sharpe": 3.0485,
+          "total_pnl": 621.9607,
+          "max_dd_pct": 230.9682,
+          "win_rate": 0.2667,
+          "equity_total_pnl": 155.49,
+          "equity_max_dd": 747.01,
+          "equity_calmar": 20.0509,
+          "skipped": 529
+        },
+        "periodic_reduce": {
+          "trades": 157,
+          "sharpe": -11.583,
+          "total_pnl": -22047.4749,
+          "max_dd_pct": 2027.7552,
+          "win_rate": 0.2102,
+          "equity_total_pnl": -21783.13,
+          "equity_max_dd": 24522.88,
+          "equity_calmar": -7.015,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 131,
+          "sharpe": -7.4301,
+          "total_pnl": -13487.6056,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.229,
+          "equity_total_pnl": -13487.61,
+          "equity_max_dd": 18903.84,
+          "equity_calmar": -6.4813,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 157,
+          "sharpe": -11.583,
+          "total_pnl": -22047.4749,
+          "max_dd_pct": 2027.7552,
+          "win_rate": 0.2102,
+          "equity_total_pnl": -11395.43,
+          "equity_max_dd": 13488.31,
+          "equity_calmar": -6.6719,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 275,
+      "agents": {
+        "base": {
+          "trades": 157,
+          "sharpe": -10.0205,
+          "total_pnl": -20146.7996,
+          "max_dd_pct": 1880.8384,
+          "win_rate": 0.2038,
+          "equity_total_pnl": -20146.8,
+          "equity_max_dd": 24332.58,
+          "equity_calmar": -6.3389,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": 1293.709,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.5,
+          "equity_total_pnl": 784.31,
+          "equity_max_dd": 109.73,
+          "equity_calmar": 714.7591,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 157,
+          "sharpe": -10.0205,
+          "total_pnl": -20146.7996,
+          "max_dd_pct": 1880.8384,
+          "win_rate": 0.2038,
+          "equity_total_pnl": -19882.46,
+          "equity_max_dd": 22622.2,
+          "equity_calmar": -6.7287,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 131,
+          "sharpe": -7.461,
+          "total_pnl": -13639.4046,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2214,
+          "equity_total_pnl": -13639.4,
+          "equity_max_dd": 19055.64,
+          "equity_calmar": -6.4685,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 157,
+          "sharpe": -10.0205,
+          "total_pnl": -20146.7996,
+          "max_dd_pct": 1880.8384,
+          "win_rate": 0.2038,
+          "equity_total_pnl": -10844.17,
+          "equity_max_dd": 12937.05,
+          "equity_calmar": -6.4174,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 294,
+      "agents": {
+        "base": {
+          "trades": 143,
+          "sharpe": -9.6798,
+          "total_pnl": -16548.6776,
+          "max_dd_pct": 1177.1227,
+          "win_rate": 0.2517,
+          "equity_total_pnl": -16548.68,
+          "equity_max_dd": 21536.05,
+          "equity_calmar": -7.5346,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 4,
+          "sharpe": 0.0,
+          "total_pnl": 1829.5497,
+          "max_dd_pct": 44.54,
+          "win_rate": 0.5,
+          "equity_total_pnl": 457.39,
+          "equity_max_dd": 145.7,
+          "equity_calmar": 313.9309,
+          "skipped": 555
+        },
+        "periodic_reduce": {
+          "trades": 143,
+          "sharpe": -9.6798,
+          "total_pnl": -16548.6776,
+          "max_dd_pct": 1177.1227,
+          "win_rate": 0.2517,
+          "equity_total_pnl": -14376.33,
+          "equity_max_dd": 19363.69,
+          "equity_calmar": -7.2799,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 124,
+          "sharpe": -9.2879,
+          "total_pnl": -13717.4002,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.25,
+          "equity_total_pnl": -13717.4,
+          "equity_max_dd": 19704.95,
+          "equity_calmar": -7.6856,
+          "skipped": 68
+        },
+        "simple_wr": {
+          "trades": 143,
+          "sharpe": -9.6798,
+          "total_pnl": -16548.6776,
+          "max_dd_pct": 1177.1227,
+          "win_rate": 0.2517,
+          "equity_total_pnl": -10877.08,
+          "equity_max_dd": 13091.66,
+          "equity_calmar": -8.1467,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 236,
+      "agents": {
+        "base": {
+          "trades": 119,
+          "sharpe": -11.7284,
+          "total_pnl": -19562.0804,
+          "max_dd_pct": 1232.9288,
+          "win_rate": 0.1597,
+          "equity_total_pnl": -19562.08,
+          "equity_max_dd": 24118.76,
+          "equity_calmar": -6.1345,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 119,
+          "sharpe": -11.7284,
+          "total_pnl": -19562.0804,
+          "max_dd_pct": 1232.9288,
+          "win_rate": 0.1597,
+          "equity_total_pnl": -16213.86,
+          "equity_max_dd": 20770.54,
+          "equity_calmar": -5.9041,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 105,
+          "sharpe": -12.5204,
+          "total_pnl": -19028.9876,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1524,
+          "equity_total_pnl": -19028.99,
+          "equity_max_dd": 19995.65,
+          "equity_calmar": -7.8552,
+          "skipped": 57
+        },
+        "simple_wr": {
+          "trades": 119,
+          "sharpe": -11.7284,
+          "total_pnl": -19562.0804,
+          "max_dd_pct": 1232.9288,
+          "win_rate": 0.1597,
+          "equity_total_pnl": -9781.04,
+          "equity_max_dd": 12059.38,
+          "equity_calmar": -6.1345,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 203,
+      "agents": {
+        "base": {
+          "trades": 113,
+          "sharpe": -10.4624,
+          "total_pnl": -17907.5422,
+          "max_dd_pct": 1148.3503,
+          "win_rate": 0.1327,
+          "equity_total_pnl": -17907.54,
+          "equity_max_dd": 22464.22,
+          "equity_calmar": -5.6674,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 586
+        },
+        "periodic_reduce": {
+          "trades": 113,
+          "sharpe": -10.4624,
+          "total_pnl": -17907.5422,
+          "max_dd_pct": 1148.3503,
+          "win_rate": 0.1327,
+          "equity_total_pnl": -13371.94,
+          "equity_max_dd": 18563.1,
+          "equity_calmar": -5.1213,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -9.0773,
+          "total_pnl": -14192.7929,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.134,
+          "equity_total_pnl": -14192.79,
+          "equity_max_dd": 16799.22,
+          "equity_calmar": -6.6421,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 113,
+          "sharpe": -10.4624,
+          "total_pnl": -17907.5422,
+          "max_dd_pct": 1148.3503,
+          "win_rate": 0.1327,
+          "equity_total_pnl": -8953.77,
+          "equity_max_dd": 11232.11,
+          "equity_calmar": -5.6674,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 267,
+      "agents": {
+        "base": {
+          "trades": 132,
+          "sharpe": -4.2506,
+          "total_pnl": -7559.9097,
+          "max_dd_pct": 1392.5956,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -7559.91,
+          "equity_max_dd": 14573.76,
+          "equity_calmar": -4.879,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 132,
+          "sharpe": -4.2506,
+          "total_pnl": -7559.9097,
+          "max_dd_pct": 1392.5956,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -4880.94,
+          "equity_max_dd": 11704.59,
+          "equity_calmar": -3.9222,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 112,
+          "sharpe": -1.6106,
+          "total_pnl": -2458.1005,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3482,
+          "equity_total_pnl": -2458.1,
+          "equity_max_dd": 12128.04,
+          "equity_calmar": -2.1641,
+          "skipped": 62
+        },
+        "simple_wr": {
+          "trades": 132,
+          "sharpe": -4.2506,
+          "total_pnl": -7559.9097,
+          "max_dd_pct": 1392.5956,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -6436.09,
+          "equity_max_dd": 10237.63,
+          "equity_calmar": -5.913,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 230,
+      "agents": {
+        "base": {
+          "trades": 116,
+          "sharpe": -10.6262,
+          "total_pnl": -18534.7981,
+          "max_dd_pct": 2472.8445,
+          "win_rate": 0.319,
+          "equity_total_pnl": -18534.8,
+          "equity_max_dd": 25878.75,
+          "equity_calmar": -5.121,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 116,
+          "sharpe": -10.6262,
+          "total_pnl": -18534.7981,
+          "max_dd_pct": 2472.8445,
+          "win_rate": 0.319,
+          "equity_total_pnl": -12181.36,
+          "equity_max_dd": 22031.39,
+          "equity_calmar": -3.9533,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 101,
+          "sharpe": -4.8582,
+          "total_pnl": -8237.0752,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3465,
+          "equity_total_pnl": -8237.08,
+          "equity_max_dd": 16105.91,
+          "equity_calmar": -4.0353,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 116,
+          "sharpe": -10.6262,
+          "total_pnl": -18534.7981,
+          "max_dd_pct": 2472.8445,
+          "win_rate": 0.319,
+          "equity_total_pnl": -11670.78,
+          "equity_max_dd": 15137.24,
+          "equity_calmar": -5.5127,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 215,
+      "agents": {
+        "base": {
+          "trades": 114,
+          "sharpe": -6.6098,
+          "total_pnl": -12344.9745,
+          "max_dd_pct": 2078.7729,
+          "win_rate": 0.307,
+          "equity_total_pnl": -12344.97,
+          "equity_max_dd": 21754.72,
+          "equity_calmar": -3.7039,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 28,
+          "sharpe": -18.5378,
+          "total_pnl": -6464.4263,
+          "max_dd_pct": 717.7084,
+          "win_rate": 0.25,
+          "equity_total_pnl": -1616.11,
+          "equity_max_dd": 1877.74,
+          "equity_calmar": -43.1121,
+          "skipped": 481
+        },
+        "periodic_reduce": {
+          "trades": 114,
+          "sharpe": -6.6098,
+          "total_pnl": -12344.9745,
+          "max_dd_pct": 2078.7729,
+          "win_rate": 0.307,
+          "equity_total_pnl": -7723.16,
+          "equity_max_dd": 18808.09,
+          "equity_calmar": -2.6803,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 101,
+          "sharpe": -2.5511,
+          "total_pnl": -4482.5396,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3366,
+          "equity_total_pnl": -4482.54,
+          "equity_max_dd": 14963.75,
+          "equity_calmar": -2.2387,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 114,
+          "sharpe": -6.6098,
+          "total_pnl": -12344.9745,
+          "max_dd_pct": 2078.7729,
+          "win_rate": 0.307,
+          "equity_total_pnl": -9153.52,
+          "equity_max_dd": 12634.17,
+          "equity_calmar": -4.729,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 246,
+      "agents": {
+        "base": {
+          "trades": 117,
+          "sharpe": -8.049,
+          "total_pnl": -12864.379,
+          "max_dd_pct": 1454.9853,
+          "win_rate": 0.3162,
+          "equity_total_pnl": -12864.38,
+          "equity_max_dd": 18783.34,
+          "equity_calmar": -6.3598,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 117,
+          "sharpe": -8.049,
+          "total_pnl": -12864.379,
+          "max_dd_pct": 1454.9853,
+          "win_rate": 0.3162,
+          "equity_total_pnl": -14312.24,
+          "equity_max_dd": 20077.83,
+          "equity_calmar": -6.6194,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 104,
+          "sharpe": -5.1023,
+          "total_pnl": -7617.9064,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3269,
+          "equity_total_pnl": -7617.91,
+          "equity_max_dd": 13304.26,
+          "equity_calmar": -5.9051,
+          "skipped": 55
+        },
+        "simple_wr": {
+          "trades": 117,
+          "sharpe": -8.049,
+          "total_pnl": -12864.379,
+          "max_dd_pct": 1454.9853,
+          "win_rate": 0.3162,
+          "equity_total_pnl": -10936.23,
+          "equity_max_dd": 14265.26,
+          "equity_calmar": -7.119,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 189,
+      "agents": {
+        "base": {
+          "trades": 96,
+          "sharpe": -8.6555,
+          "total_pnl": -14808.8453,
+          "max_dd_pct": 2060.5663,
+          "win_rate": 0.2604,
+          "equity_total_pnl": -14808.85,
+          "equity_max_dd": 23070.43,
+          "equity_calmar": -4.3552,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 96,
+          "sharpe": -8.6555,
+          "total_pnl": -14808.8453,
+          "max_dd_pct": 2060.5663,
+          "win_rate": 0.2604,
+          "equity_total_pnl": -11374.67,
+          "equity_max_dd": 19636.25,
+          "equity_calmar": -3.9302,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 81,
+          "sharpe": -7.0856,
+          "total_pnl": -10490.9014,
+          "max_dd_pct": 12083.035,
+          "win_rate": 0.2716,
+          "equity_total_pnl": -10490.9,
+          "equity_max_dd": 18184.05,
+          "equity_calmar": -4.142,
+          "skipped": 43
+        },
+        "simple_wr": {
+          "trades": 96,
+          "sharpe": -8.6555,
+          "total_pnl": -14808.8453,
+          "max_dd_pct": 2060.5663,
+          "win_rate": 0.2604,
+          "equity_total_pnl": -10997.28,
+          "equity_max_dd": 13002.53,
+          "equity_calmar": -5.7385,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 165,
+      "agents": {
+        "base": {
+          "trades": 89,
+          "sharpe": -7.8173,
+          "total_pnl": -13891.9186,
+          "max_dd_pct": 2030.9352,
+          "win_rate": 0.2135,
+          "equity_total_pnl": -13891.92,
+          "equity_max_dd": 22738.67,
+          "equity_calmar": -3.6909,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 89,
+          "sharpe": -7.8173,
+          "total_pnl": -13891.9186,
+          "max_dd_pct": 2030.9352,
+          "win_rate": 0.2135,
+          "equity_total_pnl": -11795.12,
+          "equity_max_dd": 20641.87,
+          "equity_calmar": -3.4521,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 81,
+          "sharpe": -10.3245,
+          "total_pnl": -16676.5746,
+          "max_dd_pct": 15950.5835,
+          "win_rate": 0.2099,
+          "equity_total_pnl": -16676.57,
+          "equity_max_dd": 24004.42,
+          "equity_calmar": -4.238,
+          "skipped": 43
+        },
+        "simple_wr": {
+          "trades": 89,
+          "sharpe": -7.8173,
+          "total_pnl": -13891.9186,
+          "max_dd_pct": 2030.9352,
+          "win_rate": 0.2135,
+          "equity_total_pnl": -6945.96,
+          "equity_max_dd": 11369.34,
+          "equity_calmar": -3.6909,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 232,
+      "agents": {
+        "base": {
+          "trades": 112,
+          "sharpe": -9.2942,
+          "total_pnl": -16220.8378,
+          "max_dd_pct": 3879.844,
+          "win_rate": 0.4018,
+          "equity_total_pnl": -16220.84,
+          "equity_max_dd": 21421.96,
+          "equity_calmar": -6.7388,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 112,
+          "sharpe": -9.2942,
+          "total_pnl": -16220.8378,
+          "max_dd_pct": 3879.844,
+          "win_rate": 0.4018,
+          "equity_total_pnl": -13695.43,
+          "equity_max_dd": 19166.92,
+          "equity_calmar": -6.359,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -4.6254,
+          "total_pnl": -6828.4673,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4227,
+          "equity_total_pnl": -6828.47,
+          "equity_max_dd": 17389.07,
+          "equity_calmar": -3.7994,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 112,
+          "sharpe": -9.2942,
+          "total_pnl": -16220.8378,
+          "max_dd_pct": 3879.844,
+          "win_rate": 0.4018,
+          "equity_total_pnl": -11505.94,
+          "equity_max_dd": 14814.86,
+          "equity_calmar": -6.9118,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 188,
+      "agents": {
+        "base": {
+          "trades": 94,
+          "sharpe": -12.8879,
+          "total_pnl": -23285.3646,
+          "max_dd_pct": 3241.2249,
+          "win_rate": 0.4468,
+          "equity_total_pnl": -23285.36,
+          "equity_max_dd": 29155.15,
+          "equity_calmar": -4.6893,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 13,
+          "sharpe": -22.9919,
+          "total_pnl": -5735.1514,
+          "max_dd_pct": 1138.7237,
+          "win_rate": 0.3077,
+          "equity_total_pnl": -1433.79,
+          "equity_max_dd": 1571.82,
+          "equity_calmar": -59.231,
+          "skipped": 509
+        },
+        "periodic_reduce": {
+          "trades": 94,
+          "sharpe": -12.8879,
+          "total_pnl": -23285.3646,
+          "max_dd_pct": 3241.2249,
+          "win_rate": 0.4468,
+          "equity_total_pnl": -17963.32,
+          "equity_max_dd": 23833.11,
+          "equity_calmar": -4.4253,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 83,
+          "sharpe": -7.0649,
+          "total_pnl": -12534.8386,
+          "max_dd_pct": 1331.1385,
+          "win_rate": 0.4699,
+          "equity_total_pnl": -12534.84,
+          "equity_max_dd": 24539.24,
+          "equity_calmar": -3.3168,
+          "skipped": 45
+        },
+        "simple_wr": {
+          "trades": 94,
+          "sharpe": -12.8879,
+          "total_pnl": -23285.3646,
+          "max_dd_pct": 3241.2249,
+          "win_rate": 0.4468,
+          "equity_total_pnl": -16541.68,
+          "equity_max_dd": 20313.0,
+          "equity_calmar": -4.7813,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 173,
+      "agents": {
+        "base": {
+          "trades": 86,
+          "sharpe": -7.7185,
+          "total_pnl": -14249.4284,
+          "max_dd_pct": 3500.998,
+          "win_rate": 0.4186,
+          "equity_total_pnl": -14249.43,
+          "equity_max_dd": 21660.11,
+          "equity_calmar": -3.4698,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 86,
+          "sharpe": -7.7185,
+          "total_pnl": -14249.4284,
+          "max_dd_pct": 3500.998,
+          "win_rate": 0.4186,
+          "equity_total_pnl": -13996.66,
+          "equity_max_dd": 18794.87,
+          "equity_calmar": -3.9279,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 77,
+          "sharpe": -8.039,
+          "total_pnl": -13848.4372,
+          "max_dd_pct": 808.8586,
+          "win_rate": 0.4286,
+          "equity_total_pnl": -13848.44,
+          "equity_max_dd": 24812.2,
+          "equity_calmar": -3.4,
+          "skipped": 42
+        },
+        "simple_wr": {
+          "trades": 86,
+          "sharpe": -7.7185,
+          "total_pnl": -14249.4284,
+          "max_dd_pct": 3500.998,
+          "win_rate": 0.4186,
+          "equity_total_pnl": -11055.64,
+          "equity_max_dd": 15852.3,
+          "equity_calmar": -3.6784,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 216,
+      "agents": {
+        "base": {
+          "trades": 102,
+          "sharpe": -11.1794,
+          "total_pnl": -17943.6518,
+          "max_dd_pct": 4252.561,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -17943.65,
+          "equity_max_dd": 24107.02,
+          "equity_calmar": -6.3906,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 3,
+          "sharpe": 0.0,
+          "total_pnl": -890.0858,
+          "max_dd_pct": 257.0142,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -222.52,
+          "equity_max_dd": 364.24,
+          "equity_calmar": -61.0916,
+          "skipped": 565
+        },
+        "periodic_reduce": {
+          "trades": 102,
+          "sharpe": -11.1794,
+          "total_pnl": -17943.6518,
+          "max_dd_pct": 4252.561,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -15171.47,
+          "equity_max_dd": 20830.36,
+          "equity_calmar": -6.2533,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 91,
+          "sharpe": -11.3139,
+          "total_pnl": -16820.1282,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3736,
+          "equity_total_pnl": -16820.13,
+          "equity_max_dd": 23470.63,
+          "equity_calmar": -6.9263,
+          "skipped": 48
+        },
+        "simple_wr": {
+          "trades": 102,
+          "sharpe": -11.1794,
+          "total_pnl": -17943.6518,
+          "max_dd_pct": 4252.561,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -15603.97,
+          "equity_max_dd": 18355.24,
+          "equity_calmar": -7.2988,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 149,
+      "agents": {
+        "base": {
+          "trades": 75,
+          "sharpe": -14.0971,
+          "total_pnl": -22387.4991,
+          "max_dd_pct": 5194.2906,
+          "win_rate": 0.3733,
+          "equity_total_pnl": -22387.5,
+          "equity_max_dd": 29993.99,
+          "equity_calmar": -4.1942,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 75,
+          "sharpe": -14.0971,
+          "total_pnl": -22387.4991,
+          "max_dd_pct": 5194.2906,
+          "win_rate": 0.3733,
+          "equity_total_pnl": -5261.09,
+          "equity_max_dd": 7498.5,
+          "equity_calmar": -3.9426,
+          "skipped": 0
+        },
+        "periodic_reduce": {
+          "trades": 75,
+          "sharpe": -14.0971,
+          "total_pnl": -22387.4991,
+          "max_dd_pct": 5194.2906,
+          "win_rate": 0.3733,
+          "equity_total_pnl": -26642.14,
+          "equity_max_dd": 29993.99,
+          "equity_calmar": -4.9913,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 71,
+          "sharpe": -10.5254,
+          "total_pnl": -16810.2106,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3803,
+          "equity_total_pnl": -16810.21,
+          "equity_max_dd": 22270.78,
+          "equity_calmar": -4.5601,
+          "skipped": 39
+        },
+        "simple_wr": {
+          "trades": 75,
+          "sharpe": -14.0971,
+          "total_pnl": -22387.4991,
+          "max_dd_pct": 5194.2906,
+          "win_rate": 0.3733,
+          "equity_total_pnl": -18542.64,
+          "equity_max_dd": 22330.4,
+          "equity_calmar": -4.6661,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 125,
+      "agents": {
+        "base": {
+          "trades": 66,
+          "sharpe": -10.0836,
+          "total_pnl": -16908.8883,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.303,
+          "equity_total_pnl": -16908.89,
+          "equity_max_dd": 25076.23,
+          "equity_calmar": -3.2802,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 587
+        },
+        "periodic_reduce": {
+          "trades": 66,
+          "sharpe": -10.0836,
+          "total_pnl": -16908.8883,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.303,
+          "equity_total_pnl": -18312.41,
+          "equity_max_dd": 25076.23,
+          "equity_calmar": -3.5525,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 60,
+          "sharpe": -8.6348,
+          "total_pnl": -12669.1748,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3167,
+          "equity_total_pnl": -12669.17,
+          "equity_max_dd": 20364.1,
+          "equity_calmar": -3.3012,
+          "skipped": 36
+        },
+        "simple_wr": {
+          "trades": 66,
+          "sharpe": -10.0836,
+          "total_pnl": -16908.8883,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.303,
+          "equity_total_pnl": -13689.13,
+          "equity_max_dd": 16052.56,
+          "equity_calmar": -4.1484,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 266,
+      "agents": {
+        "base": {
+          "trades": 123,
+          "sharpe": -12.066,
+          "total_pnl": -13855.0765,
+          "max_dd_pct": 1202.784,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -13855.08,
+          "equity_max_dd": 20370.14,
+          "equity_calmar": -11.1864,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 13,
+          "sharpe": 14.0299,
+          "total_pnl": 1693.5825,
+          "max_dd_pct": 91.0185,
+          "win_rate": 0.5385,
+          "equity_total_pnl": 423.4,
+          "equity_max_dd": 508.98,
+          "equity_calmar": 83.1854,
+          "skipped": 306
+        },
+        "periodic_reduce": {
+          "trades": 123,
+          "sharpe": -12.066,
+          "total_pnl": -13855.0765,
+          "max_dd_pct": 1202.784,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -13299.64,
+          "equity_max_dd": 18942.45,
+          "equity_calmar": -11.5472,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -9.3245,
+          "total_pnl": -8743.8472,
+          "max_dd_pct": 1090.4653,
+          "win_rate": 0.3505,
+          "equity_total_pnl": -8743.85,
+          "equity_max_dd": 14186.99,
+          "equity_calmar": -11.953,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 123,
+          "sharpe": -12.066,
+          "total_pnl": -13855.0765,
+          "max_dd_pct": 1202.784,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -7431.25,
+          "equity_max_dd": 12007.23,
+          "equity_calmar": -10.1787,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 266,
+      "agents": {
+        "base": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -21648.37,
+          "equity_max_dd": 24691.7,
+          "equity_calmar": -12.3961,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -5412.09,
+          "equity_max_dd": 6172.93,
+          "equity_calmar": -12.3961,
+          "skipped": 0
+        },
+        "periodic_reduce": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -20111.01,
+          "equity_max_dd": 23043.8,
+          "equity_calmar": -12.3393,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -13.9359,
+          "total_pnl": -13575.4475,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3093,
+          "equity_total_pnl": -13575.45,
+          "equity_max_dd": 16495.86,
+          "equity_calmar": -13.9268,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -11013.44,
+          "equity_max_dd": 13227.65,
+          "equity_calmar": -11.772,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 266,
+      "agents": {
+        "base": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -21648.37,
+          "equity_max_dd": 24691.7,
+          "equity_calmar": -12.3961,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 336
+        },
+        "periodic_reduce": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -20111.01,
+          "equity_max_dd": 23043.8,
+          "equity_calmar": -12.3393,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -13.9359,
+          "total_pnl": -13575.4475,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3093,
+          "equity_total_pnl": -13575.45,
+          "equity_max_dd": 16495.86,
+          "equity_calmar": -13.9268,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 123,
+          "sharpe": -18.2624,
+          "total_pnl": -21648.3744,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -11013.44,
+          "equity_max_dd": 13227.65,
+          "equity_calmar": -11.772,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 200,
+      "agents": {
+        "base": {
+          "trades": 104,
+          "sharpe": -7.8974,
+          "total_pnl": -9566.6195,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2692,
+          "equity_total_pnl": -9566.62,
+          "equity_max_dd": 16462.98,
+          "equity_calmar": -9.0478,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 40,
+          "sharpe": -20.9268,
+          "total_pnl": -7457.9363,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.225,
+          "equity_total_pnl": -1864.48,
+          "equity_max_dd": 1876.05,
+          "equity_calmar": -53.4475,
+          "skipped": 228
+        },
+        "periodic_reduce": {
+          "trades": 104,
+          "sharpe": -7.8974,
+          "total_pnl": -9566.6195,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2692,
+          "equity_total_pnl": -7555.25,
+          "equity_max_dd": 14032.47,
+          "equity_calmar": -8.3832,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 83,
+          "sharpe": -6.0018,
+          "total_pnl": -6079.8124,
+          "max_dd_pct": 3942.4431,
+          "win_rate": 0.2771,
+          "equity_total_pnl": -6079.81,
+          "equity_max_dd": 13120.71,
+          "equity_calmar": -8.8112,
+          "skipped": 45
+        },
+        "simple_wr": {
+          "trades": 104,
+          "sharpe": -7.8974,
+          "total_pnl": -9566.6195,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2692,
+          "equity_total_pnl": -3666.4,
+          "equity_max_dd": 8742.28,
+          "equity_calmar": -6.5299,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 194,
+      "agents": {
+        "base": {
+          "trades": 102,
+          "sharpe": -14.8246,
+          "total_pnl": -18086.6065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -18086.61,
+          "equity_max_dd": 21390.66,
+          "equity_calmar": -10.1118,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 335
+        },
+        "periodic_reduce": {
+          "trades": 102,
+          "sharpe": -14.8246,
+          "total_pnl": -18086.6065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -14744.47,
+          "equity_max_dd": 17860.53,
+          "equity_calmar": -9.8726,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 83,
+          "sharpe": -8.1247,
+          "total_pnl": -8923.2671,
+          "max_dd_pct": 1137.373,
+          "win_rate": 0.2169,
+          "equity_total_pnl": -8923.27,
+          "equity_max_dd": 14133.47,
+          "equity_calmar": -8.4239,
+          "skipped": 45
+        },
+        "simple_wr": {
+          "trades": 102,
+          "sharpe": -14.8246,
+          "total_pnl": -18086.6065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -9043.3,
+          "equity_max_dd": 10695.33,
+          "equity_calmar": -10.1118,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 190,
+      "agents": {
+        "base": {
+          "trades": 102,
+          "sharpe": -12.3275,
+          "total_pnl": -16230.9065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -16230.91,
+          "equity_max_dd": 19534.96,
+          "equity_calmar": -9.4712,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 335
+        },
+        "periodic_reduce": {
+          "trades": 102,
+          "sharpe": -12.3275,
+          "total_pnl": -16230.9065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -12888.77,
+          "equity_max_dd": 16004.83,
+          "equity_calmar": -9.1798,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 83,
+          "sharpe": -5.9681,
+          "total_pnl": -7067.5671,
+          "max_dd_pct": 988.0379,
+          "win_rate": 0.2169,
+          "equity_total_pnl": -7067.57,
+          "equity_max_dd": 12277.77,
+          "equity_calmar": -7.2815,
+          "skipped": 45
+        },
+        "simple_wr": {
+          "trades": 102,
+          "sharpe": -12.3275,
+          "total_pnl": -16230.9065,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1961,
+          "equity_total_pnl": -8981.34,
+          "equity_max_dd": 10633.37,
+          "equity_calmar": -9.6282,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp5.0_h12",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 182,
+      "agents": {
+        "base": {
+          "trades": 95,
+          "sharpe": -6.7055,
+          "total_pnl": -8152.5066,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -8152.51,
+          "equity_max_dd": 16305.32,
+          "equity_calmar": -7.7437,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 336
+        },
+        "periodic_reduce": {
+          "trades": 95,
+          "sharpe": -6.7055,
+          "total_pnl": -8152.5066,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -8097.67,
+          "equity_max_dd": 16250.48,
+          "equity_calmar": -7.7175,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 78,
+          "sharpe": -1.3341,
+          "total_pnl": -1377.0524,
+          "max_dd_pct": 6808.3569,
+          "win_rate": 0.2821,
+          "equity_total_pnl": -1377.05,
+          "equity_max_dd": 10859.31,
+          "equity_calmar": -2.2321,
+          "skipped": 43
+        },
+        "simple_wr": {
+          "trades": 95,
+          "sharpe": -6.7055,
+          "total_pnl": -8152.5066,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2421,
+          "equity_total_pnl": -3707.17,
+          "equity_max_dd": 9004.59,
+          "equity_calmar": -6.3762,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "is_trades": 167,
+      "agents": {
+        "base": {
+          "trades": 82,
+          "sharpe": -10.7558,
+          "total_pnl": -12862.5423,
+          "max_dd_pct": 12024.8965,
+          "win_rate": 0.1585,
+          "equity_total_pnl": -12862.54,
+          "equity_max_dd": 17674.0,
+          "equity_calmar": -8.1685,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -494.383,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -123.6,
+          "equity_max_dd": 123.6,
+          "equity_calmar": -100.0,
+          "skipped": 335
+        },
+        "periodic_reduce": {
+          "trades": 82,
+          "sharpe": -10.7558,
+          "total_pnl": -12862.5423,
+          "max_dd_pct": 12024.8965,
+          "win_rate": 0.1585,
+          "equity_total_pnl": -9508.71,
+          "equity_max_dd": 14320.17,
+          "equity_calmar": -7.4529,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 64,
+          "sharpe": -4.0606,
+          "total_pnl": -4164.0077,
+          "max_dd_pct": 495.9033,
+          "win_rate": 0.1875,
+          "equity_total_pnl": -4164.01,
+          "equity_max_dd": 14272.12,
+          "equity_calmar": -3.8059,
+          "skipped": 36
+        },
+        "simple_wr": {
+          "trades": 82,
+          "sharpe": -10.7558,
+          "total_pnl": -12862.5423,
+          "max_dd_pct": 12024.8965,
+          "win_rate": 0.1585,
+          "equity_total_pnl": -6431.27,
+          "equity_max_dd": 8837.0,
+          "equity_calmar": -8.1685,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 611,
+      "agents": {
+        "base": {
+          "trades": 296,
+          "sharpe": -6.9586,
+          "total_pnl": -759.8748,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3682,
+          "equity_total_pnl": -759.87,
+          "equity_max_dd": 1002.03,
+          "equity_calmar": -5.3053,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -77.1498,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -29.62,
+          "equity_max_dd": 29.62,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 296,
+          "sharpe": -6.9586,
+          "total_pnl": -759.8748,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3682,
+          "equity_total_pnl": -665.62,
+          "equity_max_dd": 936.29,
+          "equity_calmar": -4.9736,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 244,
+          "sharpe": -4.7911,
+          "total_pnl": -435.6424,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3852,
+          "equity_total_pnl": -435.64,
+          "equity_max_dd": 620.5,
+          "equity_calmar": -5.9636,
+          "skipped": 124
+        },
+        "simple_wr": {
+          "trades": 296,
+          "sharpe": -6.9586,
+          "total_pnl": -759.8748,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3682,
+          "equity_total_pnl": -664.54,
+          "equity_max_dd": 845.37,
+          "equity_calmar": -5.4995,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 584,
+      "agents": {
+        "base": {
+          "trades": 285,
+          "sharpe": -8.8942,
+          "total_pnl": -979.7037,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3579,
+          "equity_total_pnl": -979.7,
+          "equity_max_dd": 1197.96,
+          "equity_calmar": -5.1097,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -35.8226,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -8.96,
+          "equity_max_dd": 8.96,
+          "equity_calmar": -100.0,
+          "skipped": 910
+        },
+        "periodic_reduce": {
+          "trades": 285,
+          "sharpe": -8.8942,
+          "total_pnl": -979.7037,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3579,
+          "equity_total_pnl": -989.37,
+          "equity_max_dd": 1208.69,
+          "equity_calmar": -5.1143,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 227,
+          "sharpe": -9.9944,
+          "total_pnl": -877.4968,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.348,
+          "equity_total_pnl": -877.5,
+          "equity_max_dd": 1001.25,
+          "equity_calmar": -6.3597,
+          "skipped": 118
+        },
+        "simple_wr": {
+          "trades": 285,
+          "sharpe": -8.8942,
+          "total_pnl": -979.7037,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3579,
+          "equity_total_pnl": -709.07,
+          "equity_max_dd": 868.56,
+          "equity_calmar": -5.1007,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp1.5_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 575,
+      "agents": {
+        "base": {
+          "trades": 282,
+          "sharpe": -8.9841,
+          "total_pnl": -991.1054,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -991.11,
+          "equity_max_dd": 1233.16,
+          "equity_calmar": -4.965,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -35.8226,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -8.96,
+          "equity_max_dd": 8.96,
+          "equity_calmar": -100.0,
+          "skipped": 910
+        },
+        "periodic_reduce": {
+          "trades": 282,
+          "sharpe": -8.9841,
+          "total_pnl": -991.1054,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -970.08,
+          "equity_max_dd": 1275.78,
+          "equity_calmar": -4.6973,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 221,
+          "sharpe": -5.5306,
+          "total_pnl": -490.3223,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3801,
+          "equity_total_pnl": -490.32,
+          "equity_max_dd": 871.57,
+          "equity_calmar": -3.9867,
+          "skipped": 114
+        },
+        "simple_wr": {
+          "trades": 282,
+          "sharpe": -8.9841,
+          "total_pnl": -991.1054,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -710.42,
+          "equity_max_dd": 893.71,
+          "equity_calmar": -4.9107,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 437,
+      "agents": {
+        "base": {
+          "trades": 231,
+          "sharpe": -9.4186,
+          "total_pnl": -944.7715,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2771,
+          "equity_total_pnl": -944.77,
+          "equity_max_dd": 1221.83,
+          "equity_calmar": -5.401,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 231,
+          "sharpe": -9.4186,
+          "total_pnl": -944.7715,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2771,
+          "equity_total_pnl": -878.89,
+          "equity_max_dd": 1187.08,
+          "equity_calmar": -5.1714,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 196,
+          "sharpe": -8.7824,
+          "total_pnl": -754.1619,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2806,
+          "equity_total_pnl": -754.16,
+          "equity_max_dd": 970.83,
+          "equity_calmar": -6.2936,
+          "skipped": 105
+        },
+        "simple_wr": {
+          "trades": 231,
+          "sharpe": -9.4186,
+          "total_pnl": -944.7715,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2771,
+          "equity_total_pnl": -605.97,
+          "equity_max_dd": 670.05,
+          "equity_calmar": -6.3168,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 371,
+      "agents": {
+        "base": {
+          "trades": 193,
+          "sharpe": -8.1143,
+          "total_pnl": -801.8968,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2435,
+          "equity_total_pnl": -801.9,
+          "equity_max_dd": 1147.5,
+          "equity_calmar": -4.1987,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 193,
+          "sharpe": -8.1143,
+          "total_pnl": -801.8968,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2435,
+          "equity_total_pnl": -666.73,
+          "equity_max_dd": 1046.52,
+          "equity_calmar": -3.8278,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 167,
+          "sharpe": -8.748,
+          "total_pnl": -746.873,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2455,
+          "equity_total_pnl": -746.87,
+          "equity_max_dd": 1083.58,
+          "equity_calmar": -4.4856,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 193,
+          "sharpe": -8.1143,
+          "total_pnl": -801.8968,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2435,
+          "equity_total_pnl": -387.75,
+          "equity_max_dd": 573.75,
+          "equity_calmar": -4.0605,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 342,
+      "agents": {
+        "base": {
+          "trades": 180,
+          "sharpe": -7.6488,
+          "total_pnl": -741.4872,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2333,
+          "equity_total_pnl": -741.49,
+          "equity_max_dd": 1017.77,
+          "equity_calmar": -4.1416,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -77.1498,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -19.29,
+          "equity_max_dd": 19.29,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 180,
+          "sharpe": -7.6488,
+          "total_pnl": -741.4872,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2333,
+          "equity_total_pnl": -757.32,
+          "equity_max_dd": 970.9,
+          "equity_calmar": -4.4342,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 155,
+          "sharpe": -6.1934,
+          "total_pnl": -523.038,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2387,
+          "equity_total_pnl": -523.04,
+          "equity_max_dd": 768.73,
+          "equity_calmar": -4.236,
+          "skipped": 82
+        },
+        "simple_wr": {
+          "trades": 180,
+          "sharpe": -7.6488,
+          "total_pnl": -741.4872,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2333,
+          "equity_total_pnl": -358.24,
+          "equity_max_dd": 508.89,
+          "equity_calmar": -4.0019,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 403,
+      "agents": {
+        "base": {
+          "trades": 204,
+          "sharpe": -6.4171,
+          "total_pnl": -643.1942,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2696,
+          "equity_total_pnl": -643.19,
+          "equity_max_dd": 1042.46,
+          "equity_calmar": -4.279,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -35.8226,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -8.96,
+          "equity_max_dd": 8.96,
+          "equity_calmar": -100.0,
+          "skipped": 910
+        },
+        "periodic_reduce": {
+          "trades": 204,
+          "sharpe": -6.4171,
+          "total_pnl": -643.1942,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2696,
+          "equity_total_pnl": -564.22,
+          "equity_max_dd": 965.53,
+          "equity_calmar": -4.0527,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 169,
+          "sharpe": -2.8755,
+          "total_pnl": -241.1588,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3077,
+          "equity_total_pnl": -241.16,
+          "equity_max_dd": 814.19,
+          "equity_calmar": -2.3307,
+          "skipped": 87
+        },
+        "simple_wr": {
+          "trades": 204,
+          "sharpe": -6.4171,
+          "total_pnl": -643.1942,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2696,
+          "equity_total_pnl": -469.11,
+          "equity_max_dd": 611.74,
+          "equity_calmar": -5.3182,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 294,
+      "agents": {
+        "base": {
+          "trades": 154,
+          "sharpe": -7.9419,
+          "total_pnl": -703.2795,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2013,
+          "equity_total_pnl": -703.28,
+          "equity_max_dd": 1117.04,
+          "equity_calmar": -3.7417,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -77.1498,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -19.29,
+          "equity_max_dd": 19.29,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 154,
+          "sharpe": -7.9419,
+          "total_pnl": -703.2795,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2013,
+          "equity_total_pnl": -781.84,
+          "equity_max_dd": 1081.4,
+          "equity_calmar": -4.2967,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 131,
+          "sharpe": -6.2472,
+          "total_pnl": -486.7631,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2061,
+          "equity_total_pnl": -486.76,
+          "equity_max_dd": 968.62,
+          "equity_calmar": -3.2535,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 154,
+          "sharpe": -7.9419,
+          "total_pnl": -703.2795,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2013,
+          "equity_total_pnl": -351.64,
+          "equity_max_dd": 558.52,
+          "equity_calmar": -3.7417,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.0_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 256,
+      "agents": {
+        "base": {
+          "trades": 139,
+          "sharpe": -8.7083,
+          "total_pnl": -746.7775,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1727,
+          "equity_total_pnl": -746.78,
+          "equity_max_dd": 1070.66,
+          "equity_calmar": -3.7626,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -77.1498,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -19.29,
+          "equity_max_dd": 19.29,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 139,
+          "sharpe": -8.7083,
+          "total_pnl": -746.7775,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1727,
+          "equity_total_pnl": -577.51,
+          "equity_max_dd": 949.59,
+          "equity_calmar": -3.2807,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 125,
+          "sharpe": -7.0297,
+          "total_pnl": -547.9751,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.176,
+          "equity_total_pnl": -547.98,
+          "equity_max_dd": 937.42,
+          "equity_calmar": -3.4048,
+          "skipped": 69
+        },
+        "simple_wr": {
+          "trades": 139,
+          "sharpe": -8.7083,
+          "total_pnl": -746.7775,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1727,
+          "equity_total_pnl": -373.39,
+          "equity_max_dd": 535.33,
+          "equity_calmar": -3.7626,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 373,
+      "agents": {
+        "base": {
+          "trades": 183,
+          "sharpe": -7.0641,
+          "total_pnl": -677.8011,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.377,
+          "equity_total_pnl": -677.8,
+          "equity_max_dd": 1133.99,
+          "equity_calmar": -3.9814,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -53.7339,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -13.43,
+          "equity_max_dd": 13.43,
+          "equity_calmar": -100.0,
+          "skipped": 909
+        },
+        "periodic_reduce": {
+          "trades": 183,
+          "sharpe": -7.0641,
+          "total_pnl": -677.8011,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.377,
+          "equity_total_pnl": -728.27,
+          "equity_max_dd": 1119.88,
+          "equity_calmar": -4.3318,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 160,
+          "sharpe": -6.8378,
+          "total_pnl": -567.625,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3688,
+          "equity_total_pnl": -567.62,
+          "equity_max_dd": 951.31,
+          "equity_calmar": -4.4401,
+          "skipped": 83
+        },
+        "simple_wr": {
+          "trades": 183,
+          "sharpe": -7.0641,
+          "total_pnl": -677.8011,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.377,
+          "equity_total_pnl": -548.99,
+          "equity_max_dd": 807.3,
+          "equity_calmar": -4.5298,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 298,
+      "agents": {
+        "base": {
+          "trades": 152,
+          "sharpe": -6.8274,
+          "total_pnl": -649.5093,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3421,
+          "equity_total_pnl": -649.51,
+          "equity_max_dd": 1152.75,
+          "equity_calmar": -3.0283,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 152,
+          "sharpe": -6.8274,
+          "total_pnl": -649.5093,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3421,
+          "equity_total_pnl": -536.18,
+          "equity_max_dd": 1139.1,
+          "equity_calmar": -2.5299,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 132,
+          "sharpe": -4.825,
+          "total_pnl": -411.6926,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3561,
+          "equity_total_pnl": -411.69,
+          "equity_max_dd": 896.94,
+          "equity_calmar": -2.6195,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 152,
+          "sharpe": -6.8274,
+          "total_pnl": -649.5093,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3421,
+          "equity_total_pnl": -409.35,
+          "equity_max_dd": 683.1,
+          "equity_calmar": -3.2208,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 258,
+      "agents": {
+        "base": {
+          "trades": 139,
+          "sharpe": -7.75,
+          "total_pnl": -730.0053,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3165,
+          "equity_total_pnl": -730.01,
+          "equity_max_dd": 1094.2,
+          "equity_calmar": -3.3004,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -53.7339,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -13.43,
+          "equity_max_dd": 13.43,
+          "equity_calmar": -100.0,
+          "skipped": 909
+        },
+        "periodic_reduce": {
+          "trades": 139,
+          "sharpe": -7.75,
+          "total_pnl": -730.0053,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3165,
+          "equity_total_pnl": -629.93,
+          "equity_max_dd": 960.73,
+          "equity_calmar": -3.2436,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 129,
+          "sharpe": -10.2717,
+          "total_pnl": -894.5919,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3023,
+          "equity_total_pnl": -894.59,
+          "equity_max_dd": 1200.89,
+          "equity_calmar": -3.9481,
+          "skipped": 70
+        },
+        "simple_wr": {
+          "trades": 139,
+          "sharpe": -7.75,
+          "total_pnl": -730.0053,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3165,
+          "equity_total_pnl": -724.38,
+          "equity_max_dd": 793.66,
+          "equity_calmar": -4.5151,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 346,
+      "agents": {
+        "base": {
+          "trades": 168,
+          "sharpe": -3.6235,
+          "total_pnl": -355.3122,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.369,
+          "equity_total_pnl": -355.31,
+          "equity_max_dd": 1010.58,
+          "equity_calmar": -2.3208,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -53.7339,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -13.43,
+          "equity_max_dd": 13.43,
+          "equity_calmar": -100.0,
+          "skipped": 909
+        },
+        "periodic_reduce": {
+          "trades": 168,
+          "sharpe": -3.6235,
+          "total_pnl": -355.3122,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.369,
+          "equity_total_pnl": -430.31,
+          "equity_max_dd": 986.32,
+          "equity_calmar": -2.8798,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 146,
+          "sharpe": -1.7773,
+          "total_pnl": -148.5325,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4041,
+          "equity_total_pnl": -148.53,
+          "equity_max_dd": 790.74,
+          "equity_calmar": -1.3954,
+          "skipped": 76
+        },
+        "simple_wr": {
+          "trades": 168,
+          "sharpe": -3.6235,
+          "total_pnl": -355.3122,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.369,
+          "equity_total_pnl": -200.67,
+          "equity_max_dd": 674.86,
+          "equity_calmar": -1.9628,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 240,
+      "agents": {
+        "base": {
+          "trades": 123,
+          "sharpe": -7.6451,
+          "total_pnl": -668.5969,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2846,
+          "equity_total_pnl": -668.6,
+          "equity_max_dd": 1136.7,
+          "equity_calmar": -3.1613,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 123,
+          "sharpe": -7.6451,
+          "total_pnl": -668.5969,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2846,
+          "equity_total_pnl": -625.96,
+          "equity_max_dd": 941.34,
+          "equity_calmar": -3.5739,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 112,
+          "sharpe": -6.3607,
+          "total_pnl": -515.4883,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3036,
+          "equity_total_pnl": -515.49,
+          "equity_max_dd": 999.85,
+          "equity_calmar": -2.9083,
+          "skipped": 62
+        },
+        "simple_wr": {
+          "trades": 123,
+          "sharpe": -7.6451,
+          "total_pnl": -668.5969,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2846,
+          "equity_total_pnl": -205.94,
+          "equity_max_dd": 576.77,
+          "equity_calmar": -1.919,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl1.5_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 192,
+      "agents": {
+        "base": {
+          "trades": 106,
+          "sharpe": -10.7833,
+          "total_pnl": -890.2541,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2264,
+          "equity_total_pnl": -890.25,
+          "equity_max_dd": 1138.25,
+          "equity_calmar": -3.7754,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -53.7339,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -13.43,
+          "equity_max_dd": 13.43,
+          "equity_calmar": -100.0,
+          "skipped": 909
+        },
+        "periodic_reduce": {
+          "trades": 106,
+          "sharpe": -10.7833,
+          "total_pnl": -890.2541,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2264,
+          "equity_total_pnl": -794.68,
+          "equity_max_dd": 982.65,
+          "equity_calmar": -3.9037,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 102,
+          "sharpe": -9.7372,
+          "total_pnl": -781.9261,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2353,
+          "equity_total_pnl": -781.93,
+          "equity_max_dd": 1141.53,
+          "equity_calmar": -3.6635,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 106,
+          "sharpe": -10.7833,
+          "total_pnl": -890.2541,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2264,
+          "equity_total_pnl": -445.13,
+          "equity_max_dd": 569.12,
+          "equity_calmar": -3.7754,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 329,
+      "agents": {
+        "base": {
+          "trades": 154,
+          "sharpe": -5.3038,
+          "total_pnl": -521.6782,
+          "max_dd_pct": 12580.4301,
+          "win_rate": 0.461,
+          "equity_total_pnl": -521.68,
+          "equity_max_dd": 1073.98,
+          "equity_calmar": -3.0611,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -89.5565,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -22.39,
+          "equity_max_dd": 22.39,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 154,
+          "sharpe": -5.3038,
+          "total_pnl": -521.6782,
+          "max_dd_pct": 12580.4301,
+          "win_rate": 0.461,
+          "equity_total_pnl": -591.1,
+          "equity_max_dd": 1059.47,
+          "equity_calmar": -3.516,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 140,
+          "sharpe": -8.8838,
+          "total_pnl": -785.2603,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4357,
+          "equity_total_pnl": -785.26,
+          "equity_max_dd": 1168.5,
+          "equity_calmar": -4.6606,
+          "skipped": 74
+        },
+        "simple_wr": {
+          "trades": 154,
+          "sharpe": -5.3038,
+          "total_pnl": -521.6782,
+          "max_dd_pct": 12580.4301,
+          "win_rate": 0.461,
+          "equity_total_pnl": -225.32,
+          "equity_max_dd": 687.42,
+          "equity_calmar": -2.0656,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 240,
+      "agents": {
+        "base": {
+          "trades": 113,
+          "sharpe": -4.3718,
+          "total_pnl": -410.8243,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4867,
+          "equity_total_pnl": -410.82,
+          "equity_max_dd": 897.25,
+          "equity_calmar": -2.2511,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -89.5565,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -22.39,
+          "equity_max_dd": 22.39,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 113,
+          "sharpe": -4.3718,
+          "total_pnl": -410.8243,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4867,
+          "equity_total_pnl": -214.38,
+          "equity_max_dd": 707.12,
+          "equity_calmar": -1.4905,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 107,
+          "sharpe": -5.093,
+          "total_pnl": -450.4333,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4953,
+          "equity_total_pnl": -450.43,
+          "equity_max_dd": 988.5,
+          "equity_calmar": -2.3636,
+          "skipped": 58
+        },
+        "simple_wr": {
+          "trades": 113,
+          "sharpe": -4.3718,
+          "total_pnl": -410.8243,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4867,
+          "equity_total_pnl": -428.11,
+          "equity_max_dd": 838.41,
+          "equity_calmar": -2.5104,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 202,
+      "agents": {
+        "base": {
+          "trades": 99,
+          "sharpe": -7.337,
+          "total_pnl": -658.4268,
+          "max_dd_pct": 7125.2782,
+          "win_rate": 0.4444,
+          "equity_total_pnl": -658.43,
+          "equity_max_dd": 942.46,
+          "equity_calmar": -3.0651,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -89.5565,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -22.39,
+          "equity_max_dd": 22.39,
+          "equity_calmar": -100.0,
+          "skipped": 908
+        },
+        "periodic_reduce": {
+          "trades": 99,
+          "sharpe": -7.337,
+          "total_pnl": -658.4268,
+          "max_dd_pct": 7125.2782,
+          "win_rate": 0.4444,
+          "equity_total_pnl": -558.5,
+          "equity_max_dd": 885.21,
+          "equity_calmar": -2.7681,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 92,
+          "sharpe": -10.891,
+          "total_pnl": -922.0246,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4348,
+          "equity_total_pnl": -922.02,
+          "equity_max_dd": 1284.46,
+          "equity_calmar": -3.3294,
+          "skipped": 49
+        },
+        "simple_wr": {
+          "trades": 99,
+          "sharpe": -7.337,
+          "total_pnl": -658.4268,
+          "max_dd_pct": 7125.2782,
+          "win_rate": 0.4444,
+          "equity_total_pnl": -643.78,
+          "equity_max_dd": 831.26,
+          "equity_calmar": -3.3979,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 305,
+      "agents": {
+        "base": {
+          "trades": 142,
+          "sharpe": -5.0937,
+          "total_pnl": -490.8187,
+          "max_dd_pct": 1344.0769,
+          "win_rate": 0.4366,
+          "equity_total_pnl": -490.82,
+          "equity_max_dd": 1051.69,
+          "equity_calmar": -2.9015,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 142,
+          "sharpe": -5.0937,
+          "total_pnl": -490.8187,
+          "max_dd_pct": 1344.0769,
+          "win_rate": 0.4366,
+          "equity_total_pnl": -301.94,
+          "equity_max_dd": 933.9,
+          "equity_calmar": -2.01,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 126,
+          "sharpe": -4.7923,
+          "total_pnl": -409.9617,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4524,
+          "equity_total_pnl": -409.96,
+          "equity_max_dd": 1051.75,
+          "equity_calmar": -2.7205,
+          "skipped": 69
+        },
+        "simple_wr": {
+          "trades": 142,
+          "sharpe": -5.0937,
+          "total_pnl": -490.8187,
+          "max_dd_pct": 1344.0769,
+          "win_rate": 0.4366,
+          "equity_total_pnl": -317.86,
+          "equity_max_dd": 674.62,
+          "equity_calmar": -2.9293,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 191,
+      "agents": {
+        "base": {
+          "trades": 96,
+          "sharpe": -6.3664,
+          "total_pnl": -561.9317,
+          "max_dd_pct": 4487.247,
+          "win_rate": 0.4375,
+          "equity_total_pnl": -561.93,
+          "equity_max_dd": 1022.87,
+          "equity_calmar": -2.5933,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 96,
+          "sharpe": -6.3664,
+          "total_pnl": -561.9317,
+          "max_dd_pct": 4487.247,
+          "win_rate": 0.4375,
+          "equity_total_pnl": -410.18,
+          "equity_max_dd": 871.12,
+          "equity_calmar": -2.2227,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 90,
+          "sharpe": -13.001,
+          "total_pnl": -1032.5261,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4222,
+          "equity_total_pnl": -1032.53,
+          "equity_max_dd": 1223.32,
+          "equity_calmar": -4.2063,
+          "skipped": 48
+        },
+        "simple_wr": {
+          "trades": 96,
+          "sharpe": -6.3664,
+          "total_pnl": -561.9317,
+          "max_dd_pct": 4487.247,
+          "win_rate": 0.4375,
+          "equity_total_pnl": -338.07,
+          "equity_max_dd": 781.21,
+          "equity_calmar": -2.0428,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 150,
+      "agents": {
+        "base": {
+          "trades": 75,
+          "sharpe": -7.5894,
+          "total_pnl": -605.0067,
+          "max_dd_pct": 1343.4602,
+          "win_rate": 0.36,
+          "equity_total_pnl": -605.01,
+          "equity_max_dd": 991.87,
+          "equity_calmar": -2.6032,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 911
+        },
+        "periodic_reduce": {
+          "trades": 75,
+          "sharpe": -7.5894,
+          "total_pnl": -605.0067,
+          "max_dd_pct": 1343.4602,
+          "win_rate": 0.36,
+          "equity_total_pnl": -679.89,
+          "equity_max_dd": 991.87,
+          "equity_calmar": -2.9254,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 69,
+          "sharpe": -9.6049,
+          "total_pnl": -683.905,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3768,
+          "equity_total_pnl": -683.91,
+          "equity_max_dd": 1005.81,
+          "equity_calmar": -3.0134,
+          "skipped": 39
+        },
+        "simple_wr": {
+          "trades": 75,
+          "sharpe": -7.5894,
+          "total_pnl": -605.0067,
+          "max_dd_pct": 1343.4602,
+          "win_rate": 0.36,
+          "equity_total_pnl": -656.46,
+          "equity_max_dd": 864.33,
+          "equity_calmar": -3.2413,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 446,
+      "agents": {
+        "base": {
+          "trades": 204,
+          "sharpe": -8.0461,
+          "total_pnl": -616.0563,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -616.06,
+          "equity_max_dd": 903.33,
+          "equity_calmar": -6.7323,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 204,
+          "sharpe": -8.0461,
+          "total_pnl": -616.0563,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -518.58,
+          "equity_max_dd": 769.76,
+          "equity_calmar": -6.6505,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 159,
+          "sharpe": -8.1931,
+          "total_pnl": -488.6088,
+          "max_dd_pct": 4770.2514,
+          "win_rate": 0.3711,
+          "equity_total_pnl": -488.61,
+          "equity_max_dd": 678.63,
+          "equity_calmar": -8.5754,
+          "skipped": 83
+        },
+        "simple_wr": {
+          "trades": 204,
+          "sharpe": -8.0461,
+          "total_pnl": -616.0563,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3725,
+          "equity_total_pnl": -491.23,
+          "equity_max_dd": 754.69,
+          "equity_calmar": -6.4254,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 442,
+      "agents": {
+        "base": {
+          "trades": 201,
+          "sharpe": -10.7319,
+          "total_pnl": -849.6917,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -849.69,
+          "equity_max_dd": 1126.21,
+          "equity_calmar": -6.2749,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 201,
+          "sharpe": -10.7319,
+          "total_pnl": -849.6917,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -713.59,
+          "equity_max_dd": 991.85,
+          "equity_calmar": -5.9836,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 156,
+          "sharpe": -9.6552,
+          "total_pnl": -598.759,
+          "max_dd_pct": 10474.1534,
+          "win_rate": 0.3654,
+          "equity_total_pnl": -598.76,
+          "equity_max_dd": 800.59,
+          "equity_calmar": -7.4331,
+          "skipped": 83
+        },
+        "simple_wr": {
+          "trades": 201,
+          "sharpe": -10.7319,
+          "total_pnl": -849.6917,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3582,
+          "equity_total_pnl": -659.87,
+          "equity_max_dd": 916.94,
+          "equity_calmar": -5.9852,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 442,
+      "agents": {
+        "base": {
+          "trades": 198,
+          "sharpe": -10.8576,
+          "total_pnl": -861.0934,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3586,
+          "equity_total_pnl": -861.09,
+          "equity_max_dd": 1161.4,
+          "equity_calmar": -6.0742,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -75.7685,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -18.94,
+          "equity_max_dd": 18.94,
+          "equity_calmar": -100.0,
+          "skipped": 581
+        },
+        "periodic_reduce": {
+          "trades": 198,
+          "sharpe": -10.8576,
+          "total_pnl": -861.0934,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3586,
+          "equity_total_pnl": -712.33,
+          "equity_max_dd": 1054.54,
+          "equity_calmar": -5.534,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 156,
+          "sharpe": -15.3256,
+          "total_pnl": -938.5462,
+          "max_dd_pct": 14919.5814,
+          "win_rate": 0.3269,
+          "equity_total_pnl": -938.55,
+          "equity_max_dd": 1140.38,
+          "equity_calmar": -7.8933,
+          "skipped": 83
+        },
+        "simple_wr": {
+          "trades": 198,
+          "sharpe": -10.8576,
+          "total_pnl": -861.0934,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3586,
+          "equity_total_pnl": -642.16,
+          "equity_max_dd": 923.02,
+          "equity_calmar": -5.6997,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 331,
+      "agents": {
+        "base": {
+          "trades": 162,
+          "sharpe": -8.8081,
+          "total_pnl": -643.3237,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2963,
+          "equity_total_pnl": -643.32,
+          "equity_max_dd": 1039.49,
+          "equity_calmar": -5.9682,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 162,
+          "sharpe": -8.8081,
+          "total_pnl": -643.3237,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2963,
+          "equity_total_pnl": -757.83,
+          "equity_max_dd": 1038.81,
+          "equity_calmar": -7.0351,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 140,
+          "sharpe": -6.6328,
+          "total_pnl": -433.8623,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3071,
+          "equity_total_pnl": -433.86,
+          "equity_max_dd": 853.63,
+          "equity_calmar": -5.5073,
+          "skipped": 74
+        },
+        "simple_wr": {
+          "trades": 162,
+          "sharpe": -8.8081,
+          "total_pnl": -643.3237,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2963,
+          "equity_total_pnl": -267.57,
+          "equity_max_dd": 545.68,
+          "equity_calmar": -4.7287,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 298,
+      "agents": {
+        "base": {
+          "trades": 143,
+          "sharpe": -6.7552,
+          "total_pnl": -521.0396,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2587,
+          "equity_total_pnl": -521.04,
+          "equity_max_dd": 961.92,
+          "equity_calmar": -4.1909,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 143,
+          "sharpe": -6.7552,
+          "total_pnl": -521.0396,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2587,
+          "equity_total_pnl": -435.34,
+          "equity_max_dd": 906.74,
+          "equity_calmar": -3.7146,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 123,
+          "sharpe": -5.8337,
+          "total_pnl": -400.9999,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.252,
+          "equity_total_pnl": -401.0,
+          "equity_max_dd": 670.94,
+          "equity_calmar": -5.3516,
+          "skipped": 67
+        },
+        "simple_wr": {
+          "trades": 143,
+          "sharpe": -6.7552,
+          "total_pnl": -521.0396,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2587,
+          "equity_total_pnl": -193.66,
+          "equity_max_dd": 480.96,
+          "equity_calmar": -3.1154,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 277,
+      "agents": {
+        "base": {
+          "trades": 137,
+          "sharpe": -7.2336,
+          "total_pnl": -556.7774,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2409,
+          "equity_total_pnl": -556.78,
+          "equity_max_dd": 925.28,
+          "equity_calmar": -4.474,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -75.7685,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -18.94,
+          "equity_max_dd": 18.94,
+          "equity_calmar": -100.0,
+          "skipped": 581
+        },
+        "periodic_reduce": {
+          "trades": 137,
+          "sharpe": -7.2336,
+          "total_pnl": -556.7774,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2409,
+          "equity_total_pnl": -397.1,
+          "equity_max_dd": 790.7,
+          "equity_calmar": -3.734,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 123,
+          "sharpe": -6.9039,
+          "total_pnl": -479.0174,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2439,
+          "equity_total_pnl": -479.02,
+          "equity_max_dd": 748.95,
+          "equity_calmar": -5.6122,
+          "skipped": 67
+        },
+        "simple_wr": {
+          "trades": 137,
+          "sharpe": -7.2336,
+          "total_pnl": -556.7774,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2409,
+          "equity_total_pnl": -301.29,
+          "equity_max_dd": 462.64,
+          "equity_calmar": -4.842,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 304,
+      "agents": {
+        "base": {
+          "trades": 139,
+          "sharpe": -4.5864,
+          "total_pnl": -326.8403,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.295,
+          "equity_total_pnl": -326.84,
+          "equity_max_dd": 898.32,
+          "equity_calmar": -3.5203,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -41.3272,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -10.33,
+          "equity_max_dd": 10.33,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 139,
+          "sharpe": -4.5864,
+          "total_pnl": -326.8403,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.295,
+          "equity_total_pnl": -138.92,
+          "equity_max_dd": 763.16,
+          "equity_calmar": -1.7612,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 123,
+          "sharpe": -5.7371,
+          "total_pnl": -364.5636,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2927,
+          "equity_total_pnl": -364.56,
+          "equity_max_dd": 755.26,
+          "equity_calmar": -5.4598,
+          "skipped": 67
+        },
+        "simple_wr": {
+          "trades": 139,
+          "sharpe": -4.5864,
+          "total_pnl": -326.8403,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.295,
+          "equity_total_pnl": -113.82,
+          "equity_max_dd": 454.77,
+          "equity_calmar": -2.4216,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 242,
+      "agents": {
+        "base": {
+          "trades": 114,
+          "sharpe": -7.7328,
+          "total_pnl": -531.9429,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2105,
+          "equity_total_pnl": -531.94,
+          "equity_max_dd": 987.62,
+          "equity_calmar": -4.1164,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -41.3272,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -10.33,
+          "equity_max_dd": 10.33,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 114,
+          "sharpe": -7.7328,
+          "total_pnl": -531.9429,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2105,
+          "equity_total_pnl": -458.19,
+          "equity_max_dd": 839.66,
+          "equity_calmar": -4.1704,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -2.1738,
+          "total_pnl": -139.049,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2268,
+          "equity_total_pnl": -139.05,
+          "equity_max_dd": 682.61,
+          "equity_calmar": -1.7286,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 114,
+          "sharpe": -7.7328,
+          "total_pnl": -531.9429,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2105,
+          "equity_total_pnl": -265.97,
+          "equity_max_dd": 493.81,
+          "equity_calmar": -4.1164,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 215,
+      "agents": {
+        "base": {
+          "trades": 108,
+          "sharpe": -8.2156,
+          "total_pnl": -565.407,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1759,
+          "equity_total_pnl": -565.41,
+          "equity_max_dd": 1020.84,
+          "equity_calmar": -3.6865,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -75.7685,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -18.94,
+          "equity_max_dd": 18.94,
+          "equity_calmar": -100.0,
+          "skipped": 581
+        },
+        "periodic_reduce": {
+          "trades": 108,
+          "sharpe": -8.2156,
+          "total_pnl": -565.407,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1759,
+          "equity_total_pnl": -579.31,
+          "equity_max_dd": 961.72,
+          "equity_calmar": -4.0094,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 88,
+          "sharpe": -6.7473,
+          "total_pnl": -376.0409,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1932,
+          "equity_total_pnl": -376.04,
+          "equity_max_dd": 788.03,
+          "equity_calmar": -3.2808,
+          "skipped": 46
+        },
+        "simple_wr": {
+          "trades": 108,
+          "sharpe": -8.2156,
+          "total_pnl": -565.407,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1759,
+          "equity_total_pnl": -282.7,
+          "equity_max_dd": 510.42,
+          "equity_calmar": -3.6865,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 282,
+      "agents": {
+        "base": {
+          "trades": 128,
+          "sharpe": -4.2632,
+          "total_pnl": -298.3326,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4297,
+          "equity_total_pnl": -298.33,
+          "equity_max_dd": 809.72,
+          "equity_calmar": -3.3784,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 128,
+          "sharpe": -4.2632,
+          "total_pnl": -298.3326,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4297,
+          "equity_total_pnl": -329.54,
+          "equity_max_dd": 722.88,
+          "equity_calmar": -4.1801,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 113,
+          "sharpe": -5.4938,
+          "total_pnl": -336.4973,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4248,
+          "equity_total_pnl": -336.5,
+          "equity_max_dd": 713.38,
+          "equity_calmar": -4.9818,
+          "skipped": 62
+        },
+        "simple_wr": {
+          "trades": 128,
+          "sharpe": -4.2632,
+          "total_pnl": -298.3326,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4297,
+          "equity_total_pnl": -189.27,
+          "equity_max_dd": 588.8,
+          "equity_calmar": -2.9476,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 246,
+      "agents": {
+        "base": {
+          "trades": 114,
+          "sharpe": -5.6864,
+          "total_pnl": -424.48,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3509,
+          "equity_total_pnl": -424.48,
+          "equity_max_dd": 981.39,
+          "equity_calmar": -2.8987,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 114,
+          "sharpe": -5.6864,
+          "total_pnl": -424.48,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3509,
+          "equity_total_pnl": -279.58,
+          "equity_max_dd": 802.39,
+          "equity_calmar": -2.3352,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 99,
+          "sharpe": -1.8169,
+          "total_pnl": -121.9891,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3838,
+          "equity_total_pnl": -121.99,
+          "equity_max_dd": 644.38,
+          "equity_calmar": -1.4393,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 114,
+          "sharpe": -5.6864,
+          "total_pnl": -424.48,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3509,
+          "equity_total_pnl": -112.41,
+          "equity_max_dd": 593.19,
+          "equity_calmar": -1.2699,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 218,
+      "agents": {
+        "base": {
+          "trades": 109,
+          "sharpe": -8.0251,
+          "total_pnl": -608.7134,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3303,
+          "equity_total_pnl": -608.71,
+          "equity_max_dd": 1070.64,
+          "equity_calmar": -3.4683,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 109,
+          "sharpe": -8.0251,
+          "total_pnl": -608.7134,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3303,
+          "equity_total_pnl": -581.69,
+          "equity_max_dd": 986.0,
+          "equity_calmar": -3.5988,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 91,
+          "sharpe": -4.4127,
+          "total_pnl": -293.0369,
+          "max_dd_pct": 3419.1371,
+          "win_rate": 0.3626,
+          "equity_total_pnl": -293.04,
+          "equity_max_dd": 830.45,
+          "equity_calmar": -2.151,
+          "skipped": 48
+        },
+        "simple_wr": {
+          "trades": 109,
+          "sharpe": -8.0251,
+          "total_pnl": -608.7134,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3303,
+          "equity_total_pnl": -222.3,
+          "equity_max_dd": 606.28,
+          "equity_calmar": -2.2367,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 258,
+      "agents": {
+        "base": {
+          "trades": 114,
+          "sharpe": -0.9161,
+          "total_pnl": -62.3747,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4386,
+          "equity_total_pnl": -62.37,
+          "equity_max_dd": 742.55,
+          "equity_calmar": -0.7654,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 114,
+          "sharpe": -0.9161,
+          "total_pnl": -62.3747,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4386,
+          "equity_total_pnl": -91.35,
+          "equity_max_dd": 717.11,
+          "equity_calmar": -1.1608,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 100,
+          "sharpe": -1.0313,
+          "total_pnl": -62.7701,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.42,
+          "equity_total_pnl": -62.77,
+          "equity_max_dd": 633.76,
+          "equity_calmar": -1.0096,
+          "skipped": 52
+        },
+        "simple_wr": {
+          "trades": 114,
+          "sharpe": -0.9161,
+          "total_pnl": -62.3747,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4386,
+          "equity_total_pnl": 63.43,
+          "equity_max_dd": 458.21,
+          "equity_calmar": 1.2614,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 202,
+      "agents": {
+        "base": {
+          "trades": 91,
+          "sharpe": -8.2651,
+          "total_pnl": -549.1124,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2857,
+          "equity_total_pnl": -549.11,
+          "equity_max_dd": 1014.55,
+          "equity_calmar": -3.597,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -61.9908,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -15.5,
+          "equity_max_dd": 15.5,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 91,
+          "sharpe": -8.2651,
+          "total_pnl": -549.1124,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2857,
+          "equity_total_pnl": -473.82,
+          "equity_max_dd": 939.26,
+          "equity_calmar": -3.3526,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 84,
+          "sharpe": -6.6917,
+          "total_pnl": -413.1191,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2976,
+          "equity_total_pnl": -413.12,
+          "equity_max_dd": 813.7,
+          "equity_calmar": -3.7621,
+          "skipped": 45
+        },
+        "simple_wr": {
+          "trades": 91,
+          "sharpe": -8.2651,
+          "total_pnl": -549.1124,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2857,
+          "equity_total_pnl": -159.72,
+          "equity_max_dd": 507.28,
+          "equity_calmar": -2.0926,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 169,
+      "agents": {
+        "base": {
+          "trades": 86,
+          "sharpe": -10.116,
+          "total_pnl": -687.4101,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2442,
+          "equity_total_pnl": -687.41,
+          "equity_max_dd": 1082.99,
+          "equity_calmar": -3.5944,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -61.9908,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -15.5,
+          "equity_max_dd": 15.5,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 86,
+          "sharpe": -10.116,
+          "total_pnl": -687.4101,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2442,
+          "equity_total_pnl": -668.85,
+          "equity_max_dd": 971.71,
+          "equity_calmar": -3.8978,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 75,
+          "sharpe": -9.6582,
+          "total_pnl": -567.257,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2533,
+          "equity_total_pnl": -567.26,
+          "equity_max_dd": 987.72,
+          "equity_calmar": -3.5909,
+          "skipped": 41
+        },
+        "simple_wr": {
+          "trades": 86,
+          "sharpe": -10.116,
+          "total_pnl": -687.4101,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2442,
+          "equity_total_pnl": -390.24,
+          "equity_max_dd": 541.49,
+          "equity_calmar": -4.081,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 248,
+      "agents": {
+        "base": {
+          "trades": 111,
+          "sharpe": -4.7279,
+          "total_pnl": -348.9621,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4865,
+          "equity_total_pnl": -348.96,
+          "equity_max_dd": 766.05,
+          "equity_calmar": -3.9932,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -103.318,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -25.83,
+          "equity_max_dd": 25.83,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 111,
+          "sharpe": -4.7279,
+          "total_pnl": -348.9621,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4865,
+          "equity_total_pnl": -218.39,
+          "equity_max_dd": 573.94,
+          "equity_calmar": -3.3355,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 97,
+          "sharpe": -8.7889,
+          "total_pnl": -569.8361,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4433,
+          "equity_total_pnl": -569.84,
+          "equity_max_dd": 963.13,
+          "equity_calmar": -5.8471,
+          "skipped": 51
+        },
+        "simple_wr": {
+          "trades": 111,
+          "sharpe": -4.7279,
+          "total_pnl": -348.9621,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4865,
+          "equity_total_pnl": -198.21,
+          "equity_max_dd": 582.37,
+          "equity_calmar": -2.9835,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 199,
+      "agents": {
+        "base": {
+          "trades": 89,
+          "sharpe": -5.5153,
+          "total_pnl": -423.7275,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4831,
+          "equity_total_pnl": -423.73,
+          "equity_max_dd": 898.38,
+          "equity_calmar": -2.9575,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -103.318,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -25.83,
+          "equity_max_dd": 25.83,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 89,
+          "sharpe": -5.5153,
+          "total_pnl": -423.7275,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4831,
+          "equity_total_pnl": -448.23,
+          "equity_max_dd": 922.89,
+          "equity_calmar": -3.0454,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 82,
+          "sharpe": -11.2142,
+          "total_pnl": -752.664,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4756,
+          "equity_total_pnl": -752.66,
+          "equity_max_dd": 1171.06,
+          "equity_calmar": -4.4398,
+          "skipped": 44
+        },
+        "simple_wr": {
+          "trades": 89,
+          "sharpe": -5.5153,
+          "total_pnl": -423.7275,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4831,
+          "equity_total_pnl": -149.32,
+          "equity_max_dd": 759.81,
+          "equity_calmar": -1.2322,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 176,
+      "agents": {
+        "base": {
+          "trades": 82,
+          "sharpe": -8.0898,
+          "total_pnl": -619.8703,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4634,
+          "equity_total_pnl": -619.87,
+          "equity_max_dd": 950.17,
+          "equity_calmar": -3.5697,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -103.318,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -25.83,
+          "equity_max_dd": 25.83,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 82,
+          "sharpe": -8.0898,
+          "total_pnl": -619.8703,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4634,
+          "equity_total_pnl": -627.89,
+          "equity_max_dd": 958.19,
+          "equity_calmar": -3.5857,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 69,
+          "sharpe": -2.8473,
+          "total_pnl": -182.4463,
+          "max_dd_pct": 6822.7657,
+          "win_rate": 0.4928,
+          "equity_total_pnl": -182.45,
+          "equity_max_dd": 534.42,
+          "equity_calmar": -2.0221,
+          "skipped": 39
+        },
+        "simple_wr": {
+          "trades": 82,
+          "sharpe": -8.0898,
+          "total_pnl": -619.8703,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4634,
+          "equity_total_pnl": -656.75,
+          "equity_max_dd": 987.06,
+          "equity_calmar": -3.6408,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 233,
+      "agents": {
+        "base": {
+          "trades": 100,
+          "sharpe": -3.9601,
+          "total_pnl": -279.1663,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.48,
+          "equity_total_pnl": -279.17,
+          "equity_max_dd": 786.13,
+          "equity_calmar": -3.0975,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 583
+        },
+        "periodic_reduce": {
+          "trades": 100,
+          "sharpe": -3.9601,
+          "total_pnl": -279.1663,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.48,
+          "equity_total_pnl": -148.79,
+          "equity_max_dd": 713.15,
+          "equity_calmar": -1.8199,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 92,
+          "sharpe": -13.2165,
+          "total_pnl": -812.2848,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4457,
+          "equity_total_pnl": -812.28,
+          "equity_max_dd": 1128.92,
+          "equity_calmar": -7.016,
+          "skipped": 49
+        },
+        "simple_wr": {
+          "trades": 100,
+          "sharpe": -3.9601,
+          "total_pnl": -279.1663,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.48,
+          "equity_total_pnl": -124.16,
+          "equity_max_dd": 601.84,
+          "equity_calmar": -1.7994,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 163,
+      "agents": {
+        "base": {
+          "trades": 71,
+          "sharpe": -8.4459,
+          "total_pnl": -570.6862,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4085,
+          "equity_total_pnl": -570.69,
+          "equity_max_dd": 983.24,
+          "equity_calmar": -3.6499,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -189.4212,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -47.36,
+          "equity_max_dd": 47.36,
+          "equity_calmar": -100.0,
+          "skipped": 579
+        },
+        "periodic_reduce": {
+          "trades": 71,
+          "sharpe": -8.4459,
+          "total_pnl": -570.6862,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4085,
+          "equity_total_pnl": -579.63,
+          "equity_max_dd": 983.24,
+          "equity_calmar": -3.7071,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 68,
+          "sharpe": -12.2962,
+          "total_pnl": -783.7646,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3971,
+          "equity_total_pnl": -783.76,
+          "equity_max_dd": 1127.52,
+          "equity_calmar": -4.5237,
+          "skipped": 38
+        },
+        "simple_wr": {
+          "trades": 71,
+          "sharpe": -8.4459,
+          "total_pnl": -570.6862,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.4085,
+          "equity_total_pnl": -564.89,
+          "equity_max_dd": 921.85,
+          "equity_calmar": -3.8534,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp5.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 136,
+      "agents": {
+        "base": {
+          "trades": 67,
+          "sharpe": -12.8677,
+          "total_pnl": -898.3562,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3433,
+          "equity_total_pnl": -898.36,
+          "equity_max_dd": 1202.16,
+          "equity_calmar": -3.7669,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 1,
+          "sharpe": 0.0,
+          "total_pnl": -103.318,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -25.83,
+          "equity_max_dd": 25.83,
+          "equity_calmar": -100.0,
+          "skipped": 582
+        },
+        "periodic_reduce": {
+          "trades": 67,
+          "sharpe": -12.8677,
+          "total_pnl": -898.3562,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3433,
+          "equity_total_pnl": -894.94,
+          "equity_max_dd": 1202.16,
+          "equity_calmar": -3.7526,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 57,
+          "sharpe": -12.6704,
+          "total_pnl": -768.8784,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3684,
+          "equity_total_pnl": -768.88,
+          "equity_max_dd": 1033.63,
+          "equity_calmar": -3.921,
+          "skipped": 35
+        },
+        "simple_wr": {
+          "trades": 67,
+          "sharpe": -12.8677,
+          "total_pnl": -898.3562,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3433,
+          "equity_total_pnl": -658.13,
+          "equity_max_dd": 774.19,
+          "equity_calmar": -4.2852,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 285,
+      "agents": {
+        "base": {
+          "trades": 124,
+          "sharpe": -5.6531,
+          "total_pnl": -275.2366,
+          "max_dd_pct": 1412.6925,
+          "win_rate": 0.3871,
+          "equity_total_pnl": -275.24,
+          "equity_max_dd": 691.81,
+          "equity_calmar": -6.239,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 3,
+          "sharpe": 0.0,
+          "total_pnl": -17.0481,
+          "max_dd_pct": 134.8129,
+          "win_rate": 0.3333,
+          "equity_total_pnl": -21.63,
+          "equity_max_dd": 23.23,
+          "equity_calmar": -93.0757,
+          "skipped": 338
+        },
+        "periodic_reduce": {
+          "trades": 124,
+          "sharpe": -5.6531,
+          "total_pnl": -275.2366,
+          "max_dd_pct": 1412.6925,
+          "win_rate": 0.3871,
+          "equity_total_pnl": -339.13,
+          "equity_max_dd": 670.44,
+          "equity_calmar": -7.9323,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 95,
+          "sharpe": -2.8497,
+          "total_pnl": -108.1275,
+          "max_dd_pct": 1006.9877,
+          "win_rate": 0.4211,
+          "equity_total_pnl": -108.13,
+          "equity_max_dd": 516.69,
+          "equity_calmar": -3.9966,
+          "skipped": 50
+        },
+        "simple_wr": {
+          "trades": 124,
+          "sharpe": -5.6531,
+          "total_pnl": -275.2366,
+          "max_dd_pct": 1412.6925,
+          "win_rate": 0.3871,
+          "equity_total_pnl": -175.77,
+          "equity_max_dd": 544.76,
+          "equity_calmar": -5.0596,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 285,
+      "agents": {
+        "base": {
+          "trades": 124,
+          "sharpe": -8.7767,
+          "total_pnl": -447.3386,
+          "max_dd_pct": 1761.0361,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -447.34,
+          "equity_max_dd": 862.39,
+          "equity_calmar": -7.0827,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 348
+        },
+        "periodic_reduce": {
+          "trades": 124,
+          "sharpe": -8.7767,
+          "total_pnl": -447.3386,
+          "max_dd_pct": 1761.0361,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -473.43,
+          "equity_max_dd": 803.22,
+          "equity_calmar": -8.0479,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 95,
+          "sharpe": -7.986,
+          "total_pnl": -320.4346,
+          "max_dd_pct": 1382.2357,
+          "win_rate": 0.3789,
+          "equity_total_pnl": -320.43,
+          "equity_max_dd": 676.89,
+          "equity_calmar": -7.815,
+          "skipped": 50
+        },
+        "simple_wr": {
+          "trades": 124,
+          "sharpe": -8.7767,
+          "total_pnl": -447.3386,
+          "max_dd_pct": 1761.0361,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -189.17,
+          "equity_max_dd": 556.65,
+          "equity_calmar": -4.6402,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp1.5_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 285,
+      "agents": {
+        "base": {
+          "trades": 124,
+          "sharpe": -8.4424,
+          "total_pnl": -434.8536,
+          "max_dd_pct": 1784.1254,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -434.85,
+          "equity_max_dd": 873.7,
+          "equity_calmar": -6.733,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 348
+        },
+        "periodic_reduce": {
+          "trades": 124,
+          "sharpe": -8.4424,
+          "total_pnl": -434.8536,
+          "max_dd_pct": 1784.1254,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -455.29,
+          "equity_max_dd": 808.87,
+          "equity_calmar": -7.6143,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 95,
+          "sharpe": -8.2472,
+          "total_pnl": -331.7416,
+          "max_dd_pct": 1405.325,
+          "win_rate": 0.3789,
+          "equity_total_pnl": -331.74,
+          "equity_max_dd": 688.2,
+          "equity_calmar": -7.9429,
+          "skipped": 50
+        },
+        "simple_wr": {
+          "trades": 124,
+          "sharpe": -8.4424,
+          "total_pnl": -434.8536,
+          "max_dd_pct": 1784.1254,
+          "win_rate": 0.3629,
+          "equity_total_pnl": -171.03,
+          "equity_max_dd": 562.3,
+          "equity_calmar": -4.1147,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 201,
+      "agents": {
+        "base": {
+          "trades": 96,
+          "sharpe": -8.1956,
+          "total_pnl": -365.2858,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3021,
+          "equity_total_pnl": -365.29,
+          "equity_max_dd": 777.43,
+          "equity_calmar": -7.2133,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 348
+        },
+        "periodic_reduce": {
+          "trades": 96,
+          "sharpe": -8.1956,
+          "total_pnl": -365.2858,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3021,
+          "equity_total_pnl": -300.66,
+          "equity_max_dd": 712.8,
+          "equity_calmar": -6.4754,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 74,
+          "sharpe": -1.4981,
+          "total_pnl": -53.6683,
+          "max_dd_pct": 2615.0722,
+          "win_rate": 0.3514,
+          "equity_total_pnl": -53.67,
+          "equity_max_dd": 403.32,
+          "equity_calmar": -2.4871,
+          "skipped": 41
+        },
+        "simple_wr": {
+          "trades": 96,
+          "sharpe": -8.1956,
+          "total_pnl": -365.2858,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.3021,
+          "equity_total_pnl": -116.24,
+          "equity_max_dd": 405.04,
+          "equity_calmar": -4.4056,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 194,
+      "agents": {
+        "base": {
+          "trades": 91,
+          "sharpe": -9.1425,
+          "total_pnl": -468.2019,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2198,
+          "equity_total_pnl": -468.2,
+          "equity_max_dd": 789.19,
+          "equity_calmar": -7.1241,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 0,
+          "sharpe": 0.0,
+          "total_pnl": 0.0,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": 0.0,
+          "equity_max_dd": 0.0,
+          "equity_calmar": 0.0,
+          "skipped": 348
+        },
+        "periodic_reduce": {
+          "trades": 91,
+          "sharpe": -9.1425,
+          "total_pnl": -468.2019,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2198,
+          "equity_total_pnl": -443.29,
+          "equity_max_dd": 764.27,
+          "equity_calmar": -6.9649,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 73,
+          "sharpe": -1.159,
+          "total_pnl": -51.0879,
+          "max_dd_pct": 827.6523,
+          "win_rate": 0.2603,
+          "equity_total_pnl": -51.09,
+          "equity_max_dd": 385.64,
+          "equity_calmar": -1.8944,
+          "skipped": 40
+        },
+        "simple_wr": {
+          "trades": 91,
+          "sharpe": -9.1425,
+          "total_pnl": -468.2019,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2198,
+          "equity_total_pnl": -227.42,
+          "equity_max_dd": 410.92,
+          "equity_calmar": -6.6458,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp3.0_h72",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 188,
+      "agents": {
+        "base": {
+          "trades": 91,
+          "sharpe": -10.4031,
+          "total_pnl": -533.477,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2088,
+          "equity_total_pnl": -533.48,
+          "equity_max_dd": 800.49,
+          "equity_calmar": -7.6366,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -69.1054,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -17.28,
+          "equity_max_dd": 17.28,
+          "equity_calmar": -100.0,
+          "skipped": 338
+        },
+        "periodic_reduce": {
+          "trades": 91,
+          "sharpe": -10.4031,
+          "total_pnl": -533.477,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2088,
+          "equity_total_pnl": -508.56,
+          "equity_max_dd": 775.58,
+          "equity_calmar": -7.5138,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 73,
+          "sharpe": -1.413,
+          "total_pnl": -62.3949,
+          "max_dd_pct": 851.9194,
+          "win_rate": 0.2603,
+          "equity_total_pnl": -62.39,
+          "equity_max_dd": 396.94,
+          "equity_calmar": -2.2442,
+          "skipped": 40
+        },
+        "simple_wr": {
+          "trades": 91,
+          "sharpe": -10.4031,
+          "total_pnl": -533.477,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2088,
+          "equity_total_pnl": -266.74,
+          "equity_max_dd": 400.25,
+          "equity_calmar": -7.6366,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp5.0_h12",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 177,
+      "agents": {
+        "base": {
+          "trades": 86,
+          "sharpe": -3.5565,
+          "total_pnl": -163.7567,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2907,
+          "equity_total_pnl": -163.76,
+          "equity_max_dd": 605.7,
+          "equity_calmar": -4.1433,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 4,
+          "sharpe": 0.0,
+          "total_pnl": -114.3304,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -46.97,
+          "equity_max_dd": 46.97,
+          "equity_calmar": -100.0,
+          "skipped": 335
+        },
+        "periodic_reduce": {
+          "trades": 86,
+          "sharpe": -3.5565,
+          "total_pnl": -163.7567,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2907,
+          "equity_total_pnl": -228.35,
+          "equity_max_dd": 668.69,
+          "equity_calmar": -5.2333,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 72,
+          "sharpe": -7.3831,
+          "total_pnl": -269.8535,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2917,
+          "equity_total_pnl": -269.85,
+          "equity_max_dd": 676.14,
+          "equity_calmar": -7.3192,
+          "skipped": 39
+        },
+        "simple_wr": {
+          "trades": 86,
+          "sharpe": -3.5565,
+          "total_pnl": -163.7567,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2907,
+          "equity_total_pnl": -3.46,
+          "equity_max_dd": 302.85,
+          "equity_calmar": -0.1749,
+          "skipped": 0
+        }
+      }
+    },
+    {
+      "strategy": "Grid_t0.3_a70_sl1.0_tp5.0_h36",
+      "symbol": "ETHUSDT",
+      "timeframe": "1h",
+      "is_trades": 159,
+      "agents": {
+        "base": {
+          "trades": 79,
+          "sharpe": -8.6861,
+          "total_pnl": -424.927,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1899,
+          "equity_total_pnl": -424.93,
+          "equity_max_dd": 788.94,
+          "equity_calmar": -5.8289,
+          "skipped": 0
+        },
+        "calibrated": {
+          "trades": 2,
+          "sharpe": 0.0,
+          "total_pnl": -69.1054,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.0,
+          "equity_total_pnl": -17.28,
+          "equity_max_dd": 17.28,
+          "equity_calmar": -100.0,
+          "skipped": 338
+        },
+        "periodic_reduce": {
+          "trades": 79,
+          "sharpe": -8.6861,
+          "total_pnl": -424.927,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1899,
+          "equity_total_pnl": -510.08,
+          "equity_max_dd": 874.1,
+          "equity_calmar": -6.3153,
+          "skipped": 0
+        },
+        "random_skip": {
+          "trades": 65,
+          "sharpe": -4.7602,
+          "total_pnl": -205.3355,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.2,
+          "equity_total_pnl": -205.34,
+          "equity_max_dd": 675.37,
+          "equity_calmar": -3.9078,
+          "skipped": 37
+        },
+        "simple_wr": {
+          "trades": 79,
+          "sharpe": -8.6861,
+          "total_pnl": -424.927,
+          "max_dd_pct": 0.0,
+          "win_rate": 0.1899,
+          "equity_total_pnl": -225.78,
+          "equity_max_dd": 394.47,
+          "equity_calmar": -6.1942,
+          "skipped": 0
+        }
+      }
+    }
+  ],
+  "comparisons": {
+    "vs_base": {
+      "mean_reduction": 0.981938,
+      "ci_lower": 0.974302,
+      "ci_upper": 0.988797,
+      "p_value": 0.0,
+      "n_strategies": 100,
+      "label": "Calibrated vs No calibration",
+      "win_rate": 1.0
+    },
+    "vs_periodic": {
+      "label": "Calibrated vs Periodic reduce",
+      "win_rate": 1.0,
+      "mean_dd_delta": 9831.259,
+      "ci_lower": 8016.471,
+      "ci_upper": 11636.314,
+      "p_value": 0.0,
+      "n": 100
+    },
+    "vs_random_skip": {
+      "label": "Calibrated vs Random skip",
+      "win_rate": 1.0,
+      "mean_dd_delta": 9225.4884,
+      "ci_lower": 7525.5322,
+      "ci_upper": 10962.384,
+      "p_value": 0.0,
+      "n": 100
+    },
+    "vs_simple_wr": {
+      "label": "Calibrated vs Simple WR",
+      "win_rate": 1.0,
+      "mean_dd_delta": 6892.9322,
+      "ci_lower": 5613.0634,
+      "ci_upper": 8285.2119,
+      "p_value": 0.0,
+      "n": 100
+    }
+  },
+  "dsr": [
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 6.6232
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": -27.4562
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "sharpe_raw": -16.0771,
+      "dsr": -9.861416,
+      "p_value": 1.0,
+      "verdict": "FAIL",
+      "num_trials": 1,
+      "num_observations": 50,
+      "min_observations": 0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 3.0485
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": -18.5378
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": -22.9919
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "sharpe_raw": -14.0971,
+      "dsr": -12.104766,
+      "p_value": 1.0,
+      "verdict": "FAIL",
+      "num_trials": 1,
+      "num_observations": 75,
+      "min_observations": 0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 14.0299
+    },
+    {
+      "sharpe_raw": -18.2624,
+      "dsr": -15.573873,
+      "p_value": 1.0,
+      "verdict": "FAIL",
+      "num_trials": 1,
+      "num_observations": 123,
+      "min_observations": 0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "sharpe_raw": -20.9268,
+      "dsr": -8.811663,
+      "p_value": 1.0,
+      "verdict": "FAIL",
+      "num_trials": 1,
+      "num_observations": 40,
+      "min_observations": 0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    },
+    {
+      "verdict": "INSUFFICIENT_DATA",
+      "sharpe_raw": 0.0
+    }
+  ],
+  "sensitivity": [
+    {
+      "strategy": "Grid_t0.3_a30_sl2.5_tp5.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "sweep": [
+        {
+          "hazard_rate": 20,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 30,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 40,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 50,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 75,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 100,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 150,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 200,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 300,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 500,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        }
+      ]
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl2.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "sweep": [
+        {
+          "hazard_rate": 20,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 30,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 40,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 50,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 75,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 100,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 150,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 200,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 300,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        },
+        {
+          "hazard_rate": 500,
+          "equity_max_dd": 1571.82,
+          "dd_reduction": 0.9461,
+          "trades": 13,
+          "sharpe": -22.9919
+        }
+      ]
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h72",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "sweep": [
+        {
+          "hazard_rate": 20,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 30,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 40,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 50,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 75,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 100,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 150,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 200,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 300,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 500,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        }
+      ]
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.0_tp1.5_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "sweep": [
+        {
+          "hazard_rate": 20,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 30,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 40,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 50,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 75,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 100,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 150,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 200,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 300,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 500,
+          "equity_max_dd": 123.6,
+          "dd_reduction": 0.9953,
+          "trades": 1,
+          "sharpe": 0.0
+        }
+      ]
+    },
+    {
+      "strategy": "Grid_t0.3_a50_sl1.5_tp3.0_h36",
+      "symbol": "BTCUSDT",
+      "timeframe": "1h",
+      "sweep": [
+        {
+          "hazard_rate": 20,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 30,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 40,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 50,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 75,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 100,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 150,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 200,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 300,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        },
+        {
+          "hazard_rate": 500,
+          "equity_max_dd": 0.0,
+          "dd_reduction": 1.0,
+          "trades": 0,
+          "sharpe": 0.0
+        }
+      ]
+    }
+  ]
+}
