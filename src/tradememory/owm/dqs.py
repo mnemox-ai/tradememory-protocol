@@ -43,6 +43,33 @@ class DQSEngine:
         self.db = db
         # 5 weights, default equal (each factor already 0-2)
         self.weights = weights or [1.0, 1.0, 1.0, 1.0, 1.0]
+        # Default absolute thresholds (before calibration)
+        self._skip_threshold = 3.0  # below this → skip
+        self._caution_threshold = 5.0  # below this → caution (0.5x); above → go (1.0x)
+        self._dqs_history: List[float] = []  # for adaptive threshold computation
+
+    def set_adaptive_thresholds(self, dqs_scores: List[float]) -> None:
+        """Set tier thresholds based on DQS score distribution.
+
+        After warm-start, call this with IS DQS scores to calibrate:
+        - skip = mean - 2*std (bottom ~2.5% → truly bad decisions)
+        - caution = mean - 1*std (bottom ~16% → below-average decisions)
+        - Everything above → go (1.0) — normal trading
+
+        This ensures the default action is "trade normally" and only
+        statistically anomalous trades get reduced. Like GTO: deviate
+        only when there's strong evidence.
+        """
+        if len(dqs_scores) < 10:
+            return  # not enough data to calibrate
+
+        mean = sum(dqs_scores) / len(dqs_scores)
+        variance = sum((s - mean) ** 2 for s in dqs_scores) / len(dqs_scores)
+        std = variance ** 0.5
+
+        self._skip_threshold = max(0.0, mean - 2.0 * std)
+        self._caution_threshold = max(self._skip_threshold + 0.1, mean - 1.0 * std)
+        self._dqs_history = list(dqs_scores)
 
     # ------------------------------------------------------------------
     # Factor 1: Regime Match (0-2)
@@ -337,16 +364,18 @@ class DQSEngine:
 
         score = max(0.0, min(10.0, score))
 
-        # Tier (4-level)
-        if score >= 7.0:
+        # Tier: relative thresholds based on DQS distribution
+        # Default: use absolute thresholds (before calibration)
+        # After calibration with set_adaptive_thresholds(): use distribution-based
+        skip_th = self._skip_threshold
+        caution_th = self._caution_threshold
+
+        if score >= caution_th:
             tier = "go"
             multiplier = 1.0
-        elif score >= 5.0:
-            tier = "proceed"
-            multiplier = 0.7
-        elif score >= 3.0:
+        elif score >= skip_th:
             tier = "caution"
-            multiplier = 0.3
+            multiplier = 0.5
         else:
             tier = "skip"
             multiplier = 0.0

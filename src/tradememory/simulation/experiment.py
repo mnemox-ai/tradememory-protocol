@@ -105,13 +105,42 @@ class ABExperiment:
         return self._build_report(result_a, result_b)
 
     def _warm_start(self, agent: CalibratedAgent, is_trades: list):
-        """Pre-seed Agent B's DB with Agent A's IS trades.
+        """Pre-seed Agent B's DB with Agent A's IS trades + calibrate DQS thresholds.
 
         This simulates: "I've been trading for a while, now I turn on calibration."
-        Without warm-start, DQS has no history → all scores neutral → no effect.
+        After seeding, computes DQS for each IS trade to build score distribution,
+        then sets adaptive thresholds so only anomalous trades get reduced.
         """
+        # Step 1: Seed DB with IS trade history
         for trade in is_trades:
             agent.on_trade_complete(trade)
+
+        # Step 2: Retroactively compute DQS scores on IS trades
+        # to build the score distribution for adaptive thresholds
+        is_dqs_scores = []
+        for trade in is_trades:
+            try:
+                symbol = getattr(agent, '_current_symbol', 'UNKNOWN')
+                dqs = agent.dqs_engine.compute(
+                    symbol=symbol,
+                    strategy_name=agent.strategy.name,
+                    direction=trade.direction,
+                    proposed_lot_size=agent.fixed_lot,
+                    context_regime=None,
+                )
+                is_dqs_scores.append(dqs.score)
+            except Exception:
+                pass
+
+        # Step 3: Set adaptive thresholds from IS distribution
+        if is_dqs_scores:
+            agent.dqs_engine.set_adaptive_thresholds(is_dqs_scores)
+
+        # Reset logs for OOS counting
+        agent.trades = []
+        agent.dqs_log = []
+        agent.changepoint_log = []
+        agent.skipped_signals = 0
 
     def ablation(self) -> List[AblationResult]:
         """Run 4 ablation variants — each removes one component.

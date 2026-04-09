@@ -85,8 +85,9 @@ def test_dqs_no_history():
     )
 
     assert 4.0 <= result.score <= 6.0, f"Expected neutral ~5, got {result.score}"
-    assert result.tier in ("proceed", "caution"), f"Expected proceed/caution, got {result.tier}"
-    assert result.position_multiplier in (0.3, 0.7)
+    # With default absolute thresholds (caution=5.0), neutral score=5.0 → "go"
+    assert result.tier in ("go", "caution"), f"Expected go/caution, got {result.tier}"
+    assert result.position_multiplier in (0.5, 1.0)
     # All factors should be neutral (1.0/2.0)
     for name, info in result.factors.items():
         assert info["score"] >= 0.5, f"Factor {name} too low: {info['score']}"
