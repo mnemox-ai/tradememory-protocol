@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-09] feat: [Phase 5] Rigorous changepoint validation — 189 grid strategies, 3 naive baselines (PeriodicReduce/RandomSkip/SimpleWR), bootstrap 95% CI, hazard_rate sensitivity sweep, 100 experiments on BTCUSDT+ETHUSDT 1h. Verdict: INVALID — CalibratedAgent skips 97% trades, DD reduction from NOT TRADING, BOCPD effect unmeasurable
 - [2026-04-09] feat: [Phase 4] Full experiment — 3yr × 2tf × 2sym, 8-section research report, DSR validation, DQS distribution, ablation importance, NO-GO verdict (honest)
 - [2026-04-09] feat: [Phase 3] Agent Simulation Framework — BaseAgent/CalibratedAgent A/B, ABExperiment IS/OOS, 4-variant ablation, 3 preset strategies, ExperimentRunner, 10 tests
 - [2026-04-09] fix: DQS continuous scoring (was discrete), CUSUM complementary detector, 4-tier system (go/proceed/caution/skip)
@@ -78,22 +79,19 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - [2026-04-05] docs: README 商業化重寫 — hook + pricing + enterprise section + use cases + getting started 雙軌
 - [2026-04-04] feat: Decision Legitimacy Gate — 5-factor pre-trade confidence check
 - [2026-04-04] feat: ΔS Context Drift Monitor — Jaccard-based drift scoring on recall tools
-- [2026-04-03] feat: Strategy Validator Claude Code skill — Layer 2 product
-- [2026-04-02] feat: validate_strategy MCP tool — DSR + Walk-Forward + Regime + CPCV
-- [2026-03-30] fix: P0 trust sprint — tool names 對齊, tutorial imports, demo CLI
-- [2026-03-27] release: v0.5.1 bump + GitHub Release
-- [2026-03-27] fix: pipeline P0-P2 — strategy_map, TDR JSONL path
-- [2026-03-25] feat: Phase 0+2 complete — enriched sync pipeline + TDR audit schema
 
 ## Current Status
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
 - **1370 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation - 9 removed), 1 skipped
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
-- **Phase 4 Experiment Complete**: 12 A/B + 48 ablation runs on real Binance data (BTCUSDT/ETHUSDT × 1h/4h × 3 strategies)
-  - Result: **NO-GO** — DQS on cold-start DB is neutral (no skip), 0/12 significant
-  - 6/12 DSR PASS, skip precision 10.5%, DQS-PnL r = -0.02
-  - Report: `scripts/research/phase4_results.md` (8-section research-grade)
-- **Agent Simulation Framework**: BaseAgent vs CalibratedAgent A/B, IS/OOS walk-forward, 4-variant ablation, 3 preset strategies, full experiment runner
+- **Phase 5 Rigorous Validation Complete**: 100 experiments (2 symbols × 1h × 50 grid strategies × 5 agents)
+  - Result: **INVALID** — CalibratedAgent skips 97% trades (48/100 zero-trade), DD "reduction" from NOT TRADING
+  - DQS skip tier too aggressive on cold-start DB, BOCPD changepoint effect unmeasurable
+  - 0/100 DSR PASS, sensitivity sweep: all 10 hazard_rates identical (0.9883 reduction)
+  - New: `strategy_generator.py` (189 grid strategies), `baselines.py` (3 naive agents)
+  - Report: `scripts/research/phase5_results.md`
+- **Phase 4**: 12 A/B + 48 ablation, NO-GO, 6/12 DSR PASS. Report: `scripts/research/phase4_results.md`
+- **Agent Simulation Framework**: BaseAgent vs CalibratedAgent A/B + 3 naive baselines, IS/OOS walk-forward, 4-variant ablation, grid + preset strategies
 - **Bayesian Changepoint Detection**: BOCPD + CUSUM complementary detector, 4 behavioral signals, DB-persisted, cusum_alert in ChangePointResult
 - **DQS Engine**: 5 continuous factors + 4-tier system (go/proceed/caution/skip) + calibrate() + integrated into remember_trade
 - **5 層記憶真正互通**：Semantic↔Episodic（drift detection → BOCPD），Procedural（hold time/Kelly/disposition），Affective←Procedural（behavioral risk）
