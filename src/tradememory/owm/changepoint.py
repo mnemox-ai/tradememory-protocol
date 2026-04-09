@@ -223,8 +223,10 @@ class BayesianChangepoint:
 
         # CUSUM complementary detector for gradual shifts
         self._cusum_s: float = 0.0  # CUSUM statistic (downward drift)
-        self._cusum_target_wr: float = 0.5  # expected win rate
+        self._cusum_target_wr: float = 0.5  # adaptive: updated from observed WR
         self._cusum_threshold: float = 4.0
+        self._cusum_wins: int = 0  # running count for adaptive target
+        self._cusum_total: int = 0
 
     def update(self, observation: Dict[str, Any]) -> ChangePointResult:
         """Process one observation and update run length posterior.
@@ -334,9 +336,13 @@ class BayesianChangepoint:
                 max_idx = i
 
         # CUSUM complementary detector (detects gradual downward drift)
-        # Tracks negative deviation: loss = 0, win = 1
+        # Adaptive target: use observed win rate after 20+ trades, not hardcoded 0.5
         cusum_x = 1.0 if won_val > 0.5 else 0.0
-        # Detect degradation: accumulate negative deviations
+        self._cusum_total += 1
+        self._cusum_wins += int(cusum_x)
+        if self._cusum_total >= 20:
+            self._cusum_target_wr = self._cusum_wins / self._cusum_total
+        # Detect degradation: accumulate when current outcome is worse than expected
         self._cusum_s = max(0.0, self._cusum_s + (self._cusum_target_wr - cusum_x))
         cusum_alert = self._cusum_s > self._cusum_threshold
 
@@ -376,6 +382,8 @@ class BayesianChangepoint:
             "cusum_s": self._cusum_s,
             "cusum_target_wr": self._cusum_target_wr,
             "cusum_threshold": self._cusum_threshold,
+            "cusum_wins": self._cusum_wins,
+            "cusum_total": self._cusum_total,
         }
 
     @classmethod
@@ -390,6 +398,8 @@ class BayesianChangepoint:
         detector._cusum_s = state.get("cusum_s", 0.0)
         detector._cusum_target_wr = state.get("cusum_target_wr", 0.5)
         detector._cusum_threshold = state.get("cusum_threshold", 4.0)
+        detector._cusum_wins = state.get("cusum_wins", 0)
+        detector._cusum_total = state.get("cusum_total", 0)
 
         for name, sig_state in state["signals"].items():
             if sig_state["type"] == "beta_bernoulli":

@@ -41,6 +41,10 @@ class SimulationResult:
     changepoint_log: List[dict] = field(default_factory=list)
     skipped_signals: int = 0
     total_signals: int = 0
+    # Equity-based metrics (lot-adjusted)
+    equity_total_pnl: float = 0.0  # sum(pnl * lot_size)
+    equity_max_dd: float = 0.0  # max drawdown in $ (lot-adjusted)
+    equity_calmar: float = 0.0  # annual return / max DD
 
 
 class Simulator:
@@ -143,6 +147,11 @@ class Simulator:
         cp_log = getattr(self.agent, 'changepoint_log', [])
         skipped = getattr(self.agent, 'skipped_signals', 0)
 
+        # Compute equity-based metrics (lot_size-adjusted)
+        equity_pnl, equity_dd, equity_calmar = _compute_equity_metrics(
+            sim_trades, self.timeframe_str
+        )
+
         return SimulationResult(
             agent_name=self.agent.name,
             strategy_name=self.agent.strategy.name,
@@ -154,6 +163,9 @@ class Simulator:
             changepoint_log=cp_log,
             skipped_signals=skipped,
             total_signals=total_signals + skipped,
+            equity_total_pnl=equity_pnl,
+            equity_max_dd=equity_dd,
+            equity_calmar=equity_calmar,
         )
 
     def _bt_trade_to_sim(
@@ -185,6 +197,46 @@ class Simulator:
             hold_bars=bt_trade.holding_bars,
             exit_reason=bt_trade.exit_reason,
         )
+
+
+def _compute_equity_metrics(
+    trades: List[SimulatedTrade], timeframe: str
+) -> tuple:
+    """Compute lot-adjusted equity metrics.
+
+    Unlike Sharpe (a ratio), these metrics capture position sizing differences:
+    - Total PnL: sum(pnl * lot_size / base_lot) — normalized to base_lot=0.01
+    - Max DD: maximum peak-to-trough in dollar equity
+    - Calmar: annualized return / max DD
+    """
+    if not trades:
+        return 0.0, 0.0, 0.0
+
+    base_lot = 0.01  # normalize relative to BaseAgent's fixed lot
+    equity = 0.0
+    peak = 0.0
+    max_dd = 0.0
+
+    for t in trades:
+        lot_multiplier = t.lot_size / base_lot if base_lot > 0 else 1.0
+        equity += t.pnl * lot_multiplier
+        if equity > peak:
+            peak = equity
+        dd = peak - equity
+        if dd > max_dd:
+            max_dd = dd
+
+    # Annualization factor
+    _ann = {"1m": 525960, "5m": 105192, "15m": 35064, "30m": 17532,
+            "1h": 8766, "4h": 2191, "1d": 365, "1w": 52}
+    bars_per_year = _ann.get(timeframe, 8766)
+    total_bars = sum(t.hold_bars for t in trades) if trades else 1
+    years = max(total_bars / bars_per_year, 0.01)
+
+    annual_return = equity / years if years > 0 else 0.0
+    calmar = annual_return / max_dd if max_dd > 0 else 0.0
+
+    return round(equity, 2), round(max_dd, 2), round(calmar, 4)
 
 
 def check_entry_would_trigger(agent: BaseAgent, ctx) -> bool:

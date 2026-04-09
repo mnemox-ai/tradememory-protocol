@@ -182,6 +182,12 @@ async def run_full_experiment(
                             "skipped_pnl": report.pnl_of_skipped_trades,
                             "dqs_pnl_correlation": report.dqs_pnl_correlation,
                             "significance": report.statistical_significance,
+                            "equity_pnl_a": report.equity_pnl_a,
+                            "equity_pnl_b": report.equity_pnl_b,
+                            "equity_pnl_improvement": report.equity_pnl_improvement,
+                            "equity_dd_a": report.equity_dd_a,
+                            "equity_dd_b": report.equity_dd_b,
+                            "equity_dd_reduction": report.equity_dd_reduction,
                         },
                         "ablation": [
                             {

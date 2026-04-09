@@ -35,6 +35,13 @@ class ComparisonReport:
     changepoint_stats: Dict[str, Any] = field(default_factory=dict)
     skip_precision: float = 0.0  # fraction of skipped trades that were losers
     skip_precision_count: int = 0  # count of skipped losing trades
+    # Equity-based metrics (lot-adjusted — captures sizing changes)
+    equity_pnl_a: float = 0.0
+    equity_pnl_b: float = 0.0
+    equity_pnl_improvement: float = 0.0
+    equity_dd_a: float = 0.0
+    equity_dd_b: float = 0.0
+    equity_dd_reduction: float = 0.0
 
 
 @dataclass
@@ -66,37 +73,45 @@ class ABExperiment:
         self.is_ratio = is_ratio
 
     def run(self) -> ComparisonReport:
-        """Run A/B experiment with IS/OOS split.
+        """Run A/B experiment with IS/OOS split + warm-start.
 
         1. Split data into IS (first is_ratio) and OOS (rest)
-        2. Agent A: run on full OOS data (no learning)
-        3. Agent B: learn on IS, then evaluate on OOS
-        4. Compare OOS results
+        2. Run Agent A on IS to generate baseline trades
+        3. Warm-start Agent B: seed its DB with Agent A's IS trades
+        4. Run Agent A on OOS (baseline evaluation)
+        5. Run Agent B on OOS (calibrated evaluation — DB already has IS history)
+        6. Compare OOS results
         """
         is_series, oos_series = self.series.split(self.is_ratio)
 
-        # Agent A: baseline on OOS only
+        # Phase 1: Run Agent A on IS to generate trade history
+        agent_a_is = BaseAgent(self.strategy, fixed_lot=0.01)
+        sim_a_is = Simulator(agent_a_is, is_series, self.timeframe_str)
+        result_a_is = sim_a_is.run()
+
+        # Phase 2: Agent A on OOS (baseline evaluation)
         agent_a = BaseAgent(self.strategy, fixed_lot=0.01)
         sim_a = Simulator(agent_a, oos_series, self.timeframe_str)
         result_a = sim_a.run()
 
-        # Agent B: train on IS, evaluate on OOS
+        # Phase 3: Warm-start Agent B — seed DB with Agent A's IS trades
         agent_b = CalibratedAgent(self.strategy, fixed_lot=0.01)
+        self._warm_start(agent_b, result_a_is.trades)
 
-        # Phase 1: IS learning
-        sim_b_is = Simulator(agent_b, is_series, self.timeframe_str)
-        sim_b_is.run()  # results discarded — we only care about learning
-
-        # Phase 2: OOS evaluation (agent_b retains learned state)
-        # Reset trade list for OOS counting, but keep memory/changepoint state
-        agent_b.trades = []
-        agent_b.dqs_log = []
-        agent_b.changepoint_log = []
-        agent_b.skipped_signals = 0
+        # Phase 4: Agent B on OOS (calibrated, with IS history in DB)
         sim_b_oos = Simulator(agent_b, oos_series, self.timeframe_str)
         result_b = sim_b_oos.run()
 
         return self._build_report(result_a, result_b)
+
+    def _warm_start(self, agent: CalibratedAgent, is_trades: list):
+        """Pre-seed Agent B's DB with Agent A's IS trades.
+
+        This simulates: "I've been trading for a while, now I turn on calibration."
+        Without warm-start, DQS has no history → all scores neutral → no effect.
+        """
+        for trade in is_trades:
+            agent.on_trade_complete(trade)
 
     def ablation(self) -> List[AblationResult]:
         """Run 4 ablation variants — each removes one component.
@@ -160,13 +175,11 @@ class ABExperiment:
     def _run_calibrated(
         self, is_series: OHLCVSeries, oos_series: OHLCVSeries
     ) -> SimulationResult:
-        """Run standard CalibratedAgent: IS learn -> OOS evaluate."""
+        """Run standard CalibratedAgent: warm-start from IS -> OOS evaluate."""
+        baseline = BaseAgent(self.strategy, fixed_lot=0.01)
+        is_result = Simulator(baseline, is_series, self.timeframe_str).run()
         agent = CalibratedAgent(self.strategy, fixed_lot=0.01)
-        Simulator(agent, is_series, self.timeframe_str).run()
-        agent.trades = []
-        agent.dqs_log = []
-        agent.changepoint_log = []
-        agent.skipped_signals = 0
+        self._warm_start(agent, is_result.trades)
         return Simulator(agent, oos_series, self.timeframe_str).run()
 
     def _run_calibrated_variant(
@@ -179,6 +192,8 @@ class ABExperiment:
         disable_regime: bool = False,
     ) -> SimulationResult:
         """Run CalibratedAgent variant with one component disabled."""
+        baseline = BaseAgent(self.strategy, fixed_lot=0.01)
+        is_result = Simulator(baseline, is_series, self.timeframe_str).run()
         agent = _AblationAgent(
             self.strategy,
             fixed_lot=0.01,
@@ -187,11 +202,7 @@ class ABExperiment:
             disable_kelly=disable_kelly,
             disable_regime=disable_regime,
         )
-        Simulator(agent, is_series, self.timeframe_str).run()
-        agent.trades = []
-        agent.dqs_log = []
-        agent.changepoint_log = []
-        agent.skipped_signals = 0
+        self._warm_start(agent, is_result.trades)
         return Simulator(agent, oos_series, self.timeframe_str).run()
 
     def _build_report(
@@ -210,9 +221,9 @@ class ABExperiment:
         a_entries = {t.entry_bar_index for t in result_a.trades}
         b_entries = {t.entry_bar_index for t in result_b.trades}
         skipped_entries = a_entries - b_entries
-        skipped_pnl = sum(
+        skipped_pnl = float(sum(
             t.pnl for t in result_a.trades if t.entry_bar_index in skipped_entries
-        )
+        ))
 
         # Skip precision: what fraction of skipped trades were losers?
         skipped_losing = sum(
@@ -290,6 +301,18 @@ class ABExperiment:
             changepoint_stats=cp_stats,
             skip_precision=round(skip_precision, 4),
             skip_precision_count=skipped_losing,
+            equity_pnl_a=result_a.equity_total_pnl,
+            equity_pnl_b=result_b.equity_total_pnl,
+            equity_pnl_improvement=round(
+                (result_b.equity_total_pnl - result_a.equity_total_pnl)
+                / max(abs(result_a.equity_total_pnl), 0.01), 4
+            ) if result_a.equity_total_pnl != 0 else 0.0,
+            equity_dd_a=result_a.equity_max_dd,
+            equity_dd_b=result_b.equity_max_dd,
+            equity_dd_reduction=round(
+                (result_a.equity_max_dd - result_b.equity_max_dd)
+                / max(result_a.equity_max_dd, 0.01), 4
+            ) if result_a.equity_max_dd > 0 else 0.0,
         )
 
 
