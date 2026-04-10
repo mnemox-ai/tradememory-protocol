@@ -1,0 +1,42 @@
+{
+  "2.0": {
+    "n": 200,
+    "win_rate": 0.865,
+    "mean_dd_reduction": 5412.38,
+    "cohens_d": 0.881,
+    "p_one_sided": 0.0,
+    "avg_alert_rate": 0.515
+  },
+  "3.0": {
+    "n": 200,
+    "win_rate": 0.815,
+    "mean_dd_reduction": 4474.1,
+    "cohens_d": 0.8116,
+    "p_one_sided": 0.0,
+    "avg_alert_rate": 0.3902
+  },
+  "4.0": {
+    "n": 200,
+    "win_rate": 0.73,
+    "mean_dd_reduction": 3754.08,
+    "cohens_d": 0.7807,
+    "p_one_sided": 0.0,
+    "avg_alert_rate": 0.3052
+  },
+  "5.0": {
+    "n": 200,
+    "win_rate": 0.64,
+    "mean_dd_reduction": 2789.88,
+    "cohens_d": 0.6383,
+    "p_one_sided": 0.0,
+    "avg_alert_rate": 0.2441
+  },
+  "6.0": {
+    "n": 200,
+    "win_rate": 0.58,
+    "mean_dd_reduction": 2157.39,
+    "cohens_d": 0.5724,
+    "p_one_sided": 0.0,
+    "avg_alert_rate": 0.1907
+  }
+}

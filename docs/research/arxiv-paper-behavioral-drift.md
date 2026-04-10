@@ -204,17 +204,17 @@ The CUSUM threshold $h$ controls the tradeoff between detection speed and false 
 
 **Table 4.** CUSUM performance by threshold $h$ (vs. BaseAgent, all 200 strategies).
 
-<!-- PLACEHOLDER: Replace with actual numbers from h_sensitivity.json after running Task 2 -->
-
 | $h$ | Win Rate | Mean DD $\Delta$ | Cohen's $d$ | Alert Rate |
 |:---:|:--------:|:----------------:|:-----------:|:----------:|
-| 2.0 | TBD | TBD | TBD | TBD |
-| 3.0 | TBD | TBD | TBD | TBD |
-| 4.0 | 73.5% | +3,840.02 | 0.76 | ~41% |
-| 5.0 | TBD | TBD | TBD | TBD |
-| 6.0 | TBD | TBD | TBD | TBD |
+| 2.0 | 86.5% | +5,412.38 | 0.88 (large) | 51.5% |
+| 3.0 | 81.5% | +4,474.10 | 0.81 (large) | 39.0% |
+| 4.0 | 73.0% | +3,754.08 | 0.78 (medium) | 30.5% |
+| 5.0 | 64.0% | +2,789.88 | 0.64 (medium) | 24.4% |
+| 6.0 | 58.0% | +2,157.39 | 0.57 (medium) | 19.1% |
 
-Lower $h$ values detect drift faster but produce more false alarms (higher alert rate). Higher $h$ values are more conservative, requiring stronger evidence before triggering. If multiple adjacent $h$ values produce similar results, this indicates robustness to the threshold choice; if only $h = 4.0$ works, the result is fragile and specific to our parameter choice.
+All five threshold values achieve statistical significance ($p < 10^{-6}$ for all). The relationship between $h$ and performance is monotonic: lower thresholds detect drift faster, producing higher win rates and larger DD reductions, but at the cost of higher alert rates (more frequent lot reductions). At $h = 2.0$, CUSUM fires on 51.5% of OOS trades -- essentially trading at half lot most of the time -- while achieving the highest win rate (86.5%) and effect size ($d = 0.88$). At $h = 6.0$, CUSUM fires on only 19.1% of trades but still achieves a 58% win rate ($d = 0.57$).
+
+The robustness of these results across all five threshold values is encouraging: the choice of $h = 4.0$ is not a lucky parameter pick. Any practitioner can choose $h$ based on their preferred tradeoff between detection sensitivity and intervention frequency. We note, however, that the strong performance of low-$h$ values (which fire very frequently) reinforces the concern raised in Section 5.1: much of CUSUM's drawdown reduction may come from the lot reduction itself rather than from the precision of drift detection timing.
 
 ### 5.5 Negative Results
 
