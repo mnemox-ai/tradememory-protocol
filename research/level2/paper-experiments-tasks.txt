@@ -1,0 +1,7 @@
+# Paper Phase 2 Experiments — Sean 手動跑
+# 每個 task 獨立，可以並行。結果寫到 research/level2/*.json
+# 跑完後把 JSON 結果貼給 Claude 更新 paper
+
+Task 1: cd C:/Users/johns/projects/tradememory-protocol && python research/level2/robustness_without_btc1h.py
+Task 2: cd C:/Users/johns/projects/tradememory-protocol && python research/level2/h_sensitivity.py
+Task 3: cd C:/Users/johns/projects/tradememory-protocol && python research/level2/compare_maxdd.py

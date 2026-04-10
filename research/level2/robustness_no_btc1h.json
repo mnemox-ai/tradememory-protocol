@@ -1,0 +1,20 @@
+{
+  "description": "Robustness check: aggregate stats WITHOUT BTCUSDT 1h",
+  "n": 150,
+  "vs_base": {
+    "win_rate": 0.6467,
+    "mean_dd_reduction": 1795.82,
+    "cohens_d": 0.5045,
+    "p_one_sided": 0.0
+  },
+  "vs_simple_wr": {
+    "win_rate": 0.5733,
+    "mean_dd_reduction": 151.13,
+    "cohens_d": 0.0752,
+    "p_one_sided": 0.17932
+  },
+  "bootstrap_ci": {
+    "lower": 1255.96,
+    "upper": 2401.86
+  }
+}

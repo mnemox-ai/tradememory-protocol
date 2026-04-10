@@ -1,0 +1,17 @@
+{
+  "n": 200,
+  "cusum_vs_base": {
+    "win_rate": 0.735,
+    "mean_dd_reduction": 3840.02
+  },
+  "maxdd_vs_base": {
+    "win_rate": 0.995,
+    "mean_dd_reduction": 7363.01
+  },
+  "cusum_vs_maxdd": {
+    "win_rate": 0.065,
+    "mean_dd_reduction": -3522.99,
+    "cohens_d": -0.7646,
+    "p_one_sided": 1.0
+  }
+}
