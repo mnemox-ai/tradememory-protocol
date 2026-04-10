@@ -1,7 +1,9 @@
-"""SSRT Phase 1 — Monte Carlo experiments comparing mSPRT vs baselines.
+"""SSRT Phase 2 — Monte Carlo experiments comparing mSPRT vs baselines.
 
 Run: python scripts/research/ssrt_experiments.py
 Output: validation/ssrt/experiment_results.json + console summary table
+
+Phase 2 additions: shift_null (Option B), tau sweep (1.0, 0.5, 0.3).
 """
 
 from __future__ import annotations
@@ -117,6 +119,35 @@ def run_msprt(
     return False, None, cum_pnl
 
 
+def run_msprt_shift(
+    trades: list[TradeResult],
+    null_mean: float = 0.0,
+    sigma: float = 1.5,
+    tau: float = 1.0,
+) -> tuple[bool, int | None, float]:
+    """Run regime-aware mSPRT with shift_null (Option B)."""
+    msprt = MixtureSPRT(alpha=0.05, tau=tau, sigma=sigma, null_mean=null_mean, burn_in=20)
+    regime_null = RegimeAwareNull(min_trades_per_regime=10)
+
+    cum_pnl = 0.0
+    prev_regime = None
+
+    for i, trade in enumerate(trades):
+        cum_pnl += trade.pnl_r
+        regime_null.update(trade)
+        rn_mean, rn_sigma = regime_null.get_null(trade.regime)
+
+        if trade.regime != prev_regime and prev_regime is not None:
+            msprt.shift_null(new_null_mean=rn_mean, new_sigma=rn_sigma)
+        prev_regime = trade.regime
+
+        verdict = msprt.update(trade.pnl_r)
+        if verdict.decision == "RETIRE":
+            return True, i + 1, cum_pnl
+
+    return False, None, cum_pnl
+
+
 def run_baseline(trades: list[TradeResult], baseline) -> tuple[bool, int | None, float]:
     """Run a baseline method. Returns (detected, detection_trade, final_pnl)."""
     baseline.reset()
@@ -137,7 +168,7 @@ def compute_full_pnl(trades: list[TradeResult]) -> float:
 def run_experiments() -> list[ExperimentResult]:
     """Run all Monte Carlo experiments."""
     results: list[ExperimentResult] = []
-    total_cells = len(SCENARIOS) * 6  # 6 methods
+    total_cells = len(SCENARIOS) * 9  # 9 methods
     cell_count = 0
 
     for scenario_name, scenario_cfg in SCENARIOS.items():
@@ -148,12 +179,15 @@ def run_experiments() -> list[ExperimentResult]:
         std = scenario_cfg["params"].get("std", 1.5)
 
         methods = {
-            "mSPRT":        lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=False, null_mean=pm, sigma=s),
-            "mSPRT_regime": lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=True, null_mean=pm, sigma=s),
-            "MaxDD_5R":     lambda trades: run_baseline(trades, MaxDDBaseline(threshold_r=5.0)),
-            "MaxDD_8R":     lambda trades: run_baseline(trades, MaxDDBaseline(threshold_r=8.0)),
-            "RollingSharpe": lambda trades: run_baseline(trades, RollingSharpeBaseline(window=30, consecutive=3)),
-            "CUSUM":        lambda trades: run_baseline(trades, CUSUMBaseline(threshold=4.0, target_wr=0.5)),
+            "mSPRT":              lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=False, null_mean=pm, sigma=s, tau=1.0),
+            "mSPRT_t05":          lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=False, null_mean=pm, sigma=s, tau=0.5),
+            "mSPRT_t03":          lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=False, null_mean=pm, sigma=s, tau=0.3),
+            "mSPRT_regime_reset": lambda trades, pm=pre_mean, s=std: run_msprt(trades, use_regime=True, null_mean=pm, sigma=s, tau=1.0),
+            "mSPRT_regime_shift": lambda trades, pm=pre_mean, s=std: run_msprt_shift(trades, null_mean=pm, sigma=s, tau=1.0),
+            "MaxDD_5R":           lambda trades: run_baseline(trades, MaxDDBaseline(threshold_r=5.0)),
+            "MaxDD_8R":           lambda trades: run_baseline(trades, MaxDDBaseline(threshold_r=8.0)),
+            "RollingSharpe":      lambda trades: run_baseline(trades, RollingSharpeBaseline(window=30, consecutive=3)),
+            "CUSUM":              lambda trades: run_baseline(trades, CUSUMBaseline(threshold=4.0, target_wr=0.5)),
         }
 
         for method_name, method_fn in methods.items():
@@ -231,14 +265,14 @@ def aggregate_results(results: list[ExperimentResult]) -> dict:
 
 def print_summary(aggregates: dict):
     """Print formatted summary table."""
-    print("\n" + "=" * 100)
-    print(f"{'Scenario':<20} | {'Method':<15} | {'Type I':>7} | {'Type II':>7} | {'Med Delay':>10} | {'Mean PnL Saved':>14} | {'Det Rate':>8}")
-    print("-" * 100)
+    print("\n" + "=" * 110)
+    print(f"{'Scenario':<20} | {'Method':<20} | {'Type I':>7} | {'Type II':>7} | {'Med Delay':>10} | {'Mean PnL Saved':>14} | {'Det Rate':>8}")
+    print("-" * 110)
 
     prev_scenario = None
     for (scenario, method), agg in sorted(aggregates.items()):
         if scenario != prev_scenario and prev_scenario is not None:
-            print("-" * 100)
+            print("-" * 110)
         prev_scenario = scenario
 
         type_i_str = f"{agg['type_i']:.3f}" if agg['type_i'] is not None else "---"
@@ -247,14 +281,14 @@ def print_summary(aggregates: dict):
         pnl_str = f"{agg['mean_pnl_saved']:+.2f}"
         det_str = f"{agg['detection_rate']:.3f}"
 
-        print(f"{scenario:<20} | {method:<15} | {type_i_str:>7} | {type_ii_str:>7} | {delay_str:>10} | {pnl_str:>14} | {det_str:>8}")
+        print(f"{scenario:<20} | {method:<20} | {type_i_str:>7} | {type_ii_str:>7} | {delay_str:>10} | {pnl_str:>14} | {det_str:>8}")
 
-    print("=" * 100)
+    print("=" * 110)
 
 
 def main():
-    print(f"SSRT Phase 1 Experiments — {len(SCENARIOS)} scenarios x 6 methods x {N_SIMULATIONS} simulations")
-    print(f"Total runs: {len(SCENARIOS) * 6 * N_SIMULATIONS}")
+    print(f"SSRT Phase 2 Experiments — {len(SCENARIOS)} scenarios x 9 methods x {N_SIMULATIONS} simulations")
+    print(f"Total runs: {len(SCENARIOS) * 9 * N_SIMULATIONS}")
     print()
 
     t0 = time.time()

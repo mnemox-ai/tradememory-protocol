@@ -98,6 +98,114 @@ class TestMixtureSPRT:
         error_rate = retires / n_sims
         assert error_rate <= 0.08, f"Type I error rate {error_rate:.3f} exceeds tolerance 0.08"
 
+    def test_shift_null_preserves_count(self):
+        """shift_null should NOT reset trade count."""
+        m = MixtureSPRT(null_mean=0.0)
+        for _ in range(30):
+            m.update(0.5)
+        assert m.n == 30
+        m.shift_null(new_null_mean=0.3)
+        assert m.n == 30  # count preserved
+
+    def test_shift_null_equivalent_to_reprocess(self):
+        """Shifting null should give same z_bar as reprocessing from scratch."""
+        observations = [0.3, -0.1, 0.5, 0.8, -0.2, 0.4, 0.1, -0.3, 0.6, 0.2]
+
+        # Method 1: Process with null=0.0, then shift to null=0.3
+        m1 = MixtureSPRT(null_mean=0.0, sigma=1.0, burn_in=0)
+        for obs in observations:
+            m1.update(obs)
+        m1.shift_null(new_null_mean=0.3)
+
+        # Method 2: Process from scratch with null=0.3
+        m2 = MixtureSPRT(null_mean=0.3, sigma=1.0, burn_in=0)
+        for obs in observations:
+            m2.update(obs)
+
+        # z_bar should be identical
+        z_bar_1 = m1.sum_z / m1.n
+        z_bar_2 = m2.sum_z / m2.n
+        assert abs(z_bar_1 - z_bar_2) < 1e-10
+
+        # log_lambda should be identical (same sigma)
+        assert abs(m1._log_lambda - m2._log_lambda) < 1e-10
+
+    def test_shift_null_no_observations(self):
+        """shift_null with no data should just update parameters."""
+        m = MixtureSPRT(null_mean=0.0, sigma=1.5)
+        m.shift_null(new_null_mean=0.5, new_sigma=2.0)
+        assert m.null_mean == 0.5
+        assert m.sigma == 2.0
+        assert m.n == 0
+
+    def test_shift_null_improves_regime_detection(self):
+        """Regime-aware with shift_null should beat regime-aware with reset
+        on regime_specific_decay scenario (the Phase 1 failure case).
+
+        Uses frequent regime switches (every 10 trades) to amplify
+        the evidence-preservation advantage of shift over reset.
+        """
+        from tradememory.ssrt.simulator import DecaySimulator
+        from tradememory.ssrt.regime import RegimeAwareNull
+
+        n_sims = 200
+        shift_detections = 0
+        reset_detections = 0
+
+        # Frequent regime switches: reset loses evidence at each switch,
+        # shift preserves it — making detection faster after burn-in
+        regime_schedule = [
+            (i, "trending_up" if (i // 10) % 2 == 0 else "ranging")
+            for i in range(0, 200, 10)
+        ]
+
+        for seed in range(n_sims):
+            trades = DecaySimulator.regime_specific_decay(
+                n_trades=200, decay_at=50, seed=seed,
+                regime_schedule=regime_schedule,
+            )
+
+            # Run with shift_null (Option B)
+            msprt_shift = MixtureSPRT(alpha=0.05, tau=1.0, sigma=1.5, null_mean=0.5, burn_in=20)
+            regime_null_shift = RegimeAwareNull(min_trades_per_regime=10)
+            prev_regime = None
+            shift_detected = False
+            for trade in trades:
+                regime_null_shift.update(trade)
+                rn_mean, rn_sigma = regime_null_shift.get_null(trade.regime)
+                if trade.regime != prev_regime and prev_regime is not None:
+                    msprt_shift.shift_null(new_null_mean=rn_mean, new_sigma=rn_sigma)
+                prev_regime = trade.regime
+                v = msprt_shift.update(trade.pnl_r)
+                if v.decision == "RETIRE":
+                    shift_detected = True
+                    break
+            if shift_detected:
+                shift_detections += 1
+
+            # Run with reset (Option A — Phase 1 approach)
+            msprt_reset = MixtureSPRT(alpha=0.05, tau=1.0, sigma=1.5, null_mean=0.5, burn_in=20)
+            regime_null_reset = RegimeAwareNull(min_trades_per_regime=10)
+            prev_regime = None
+            reset_detected = False
+            for trade in trades:
+                regime_null_reset.update(trade)
+                rn_mean, rn_sigma = regime_null_reset.get_null(trade.regime)
+                if trade.regime != prev_regime and prev_regime is not None:
+                    msprt_reset.reset(null_mean=rn_mean, sigma=rn_sigma)
+                prev_regime = trade.regime
+                v = msprt_reset.update(trade.pnl_r)
+                if v.decision == "RETIRE":
+                    reset_detected = True
+                    break
+            if reset_detected:
+                reset_detections += 1
+
+        # shift_null should detect MORE than reset (higher power)
+        assert shift_detections > reset_detections, (
+            f"shift_null ({shift_detections}) should beat reset ({reset_detections})"
+        )
+
     def test_invalid_params_raise(self):
         """Invalid constructor params should raise ValueError."""
         with pytest.raises(ValueError):

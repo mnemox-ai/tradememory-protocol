@@ -115,6 +115,53 @@ class MixtureSPRT:
             null_mean=self.null_mean,
         )
 
+    def shift_null(self, new_null_mean: float, new_sigma: float | None = None) -> None:
+        """Adjust null hypothesis without resetting accumulated evidence.
+
+        Shifts the running statistics to account for a new baseline mean.
+        This preserves accumulated evidence (n, sum_z, log_lambda) while
+        adjusting for the regime-dependent null.
+
+        Option B approach: when regime changes, we don't lose evidence.
+
+        Args:
+            new_null_mean: New baseline mean for null hypothesis.
+            new_sigma: New observation std (if None, keep current).
+        """
+        if self.n == 0:
+            # No evidence to preserve — just update parameters
+            self.null_mean = new_null_mean
+            if new_sigma is not None:
+                if new_sigma <= 0:
+                    raise ValueError("sigma must be positive")
+                self.sigma = new_sigma
+            return
+
+        delta = self.null_mean - new_null_mean  # old - new
+
+        # Adjust running statistics
+        self.sum_z_sq += 2.0 * delta * self.sum_z + self.n * delta * delta
+        self.sum_z += self.n * delta
+
+        # Update null
+        self.null_mean = new_null_mean
+        if new_sigma is not None:
+            if new_sigma <= 0:
+                raise ValueError("sigma must be positive")
+            self.sigma = new_sigma
+
+        # Recalculate log_lambda from adjusted statistics
+        z_bar = self.sum_z / self.n
+        sigma_sq = self.sigma ** 2
+        tau_sq = self.tau ** 2
+        n = self.n
+        ratio = n * tau_sq / sigma_sq
+        self._log_lambda = (
+            -0.5 * math.log(1.0 + ratio)
+            + (n * n * tau_sq * z_bar * z_bar)
+            / (2.0 * sigma_sq * (sigma_sq + n * tau_sq))
+        )
+
     def reset(self, null_mean: float = 0.0, sigma: float | None = None):
         """Reset state (e.g. when regime changes).
 

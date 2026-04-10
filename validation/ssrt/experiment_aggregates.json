@@ -39,12 +39,36 @@
     "detection_rate": 0.676,
     "n_simulations": 500
   },
-  "linear_decay|mSPRT_regime": {
+  "linear_decay|mSPRT_regime_reset": {
     "type_i": null,
     "type_ii": 0.32399999999999995,
     "median_delay": 119.0,
     "mean_pnl_saved": -5.83,
     "detection_rate": 0.676,
+    "n_simulations": 500
+  },
+  "linear_decay|mSPRT_regime_shift": {
+    "type_i": null,
+    "type_ii": 0.32399999999999995,
+    "median_delay": 119.0,
+    "mean_pnl_saved": -5.83,
+    "detection_rate": 0.676,
+    "n_simulations": 500
+  },
+  "linear_decay|mSPRT_t03": {
+    "type_i": null,
+    "type_ii": 0.276,
+    "median_delay": 115.0,
+    "mean_pnl_saved": -7.08,
+    "detection_rate": 0.724,
+    "n_simulations": 500
+  },
+  "linear_decay|mSPRT_t05": {
+    "type_i": null,
+    "type_ii": 0.29200000000000004,
+    "median_delay": 116.0,
+    "mean_pnl_saved": -6.79,
+    "detection_rate": 0.708,
     "n_simulations": 500
   },
   "no_decay|CUSUM": {
@@ -87,12 +111,36 @@
     "detection_rate": 0.012,
     "n_simulations": 500
   },
-  "no_decay|mSPRT_regime": {
+  "no_decay|mSPRT_regime_reset": {
     "type_i": 0.012,
     "type_ii": null,
     "median_delay": null,
     "mean_pnl_saved": 0.67,
     "detection_rate": 0.012,
+    "n_simulations": 500
+  },
+  "no_decay|mSPRT_regime_shift": {
+    "type_i": 0.012,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 0.67,
+    "detection_rate": 0.012,
+    "n_simulations": 500
+  },
+  "no_decay|mSPRT_t03": {
+    "type_i": 0.008,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 0.34,
+    "detection_rate": 0.008,
+    "n_simulations": 500
+  },
+  "no_decay|mSPRT_t05": {
+    "type_i": 0.01,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 0.52,
+    "detection_rate": 0.01,
     "n_simulations": 500
   },
   "regime_specific|CUSUM": {
@@ -135,12 +183,36 @@
     "detection_rate": 0.752,
     "n_simulations": 500
   },
-  "regime_specific|mSPRT_regime": {
+  "regime_specific|mSPRT_regime_reset": {
     "type_i": null,
     "type_ii": 0.43000000000000005,
     "median_delay": 20.0,
     "mean_pnl_saved": 4.09,
     "detection_rate": 0.57,
+    "n_simulations": 500
+  },
+  "regime_specific|mSPRT_regime_shift": {
+    "type_i": null,
+    "type_ii": 0.498,
+    "median_delay": 26.0,
+    "mean_pnl_saved": 3.17,
+    "detection_rate": 0.502,
+    "n_simulations": 500
+  },
+  "regime_specific|mSPRT_t03": {
+    "type_i": null,
+    "type_ii": 0.18600000000000005,
+    "median_delay": 70.0,
+    "mean_pnl_saved": 4.22,
+    "detection_rate": 0.814,
+    "n_simulations": 500
+  },
+  "regime_specific|mSPRT_t05": {
+    "type_i": null,
+    "type_ii": 0.19999999999999996,
+    "median_delay": 69.0,
+    "mean_pnl_saved": 4.02,
+    "detection_rate": 0.8,
     "n_simulations": 500
   },
   "sudden_death_100|CUSUM": {
@@ -183,12 +255,36 @@
     "detection_rate": 0.678,
     "n_simulations": 500
   },
-  "sudden_death_100|mSPRT_regime": {
+  "sudden_death_100|mSPRT_regime_reset": {
     "type_i": null,
     "type_ii": 0.32199999999999995,
     "median_delay": 69.0,
     "mean_pnl_saved": -6.14,
     "detection_rate": 0.678,
+    "n_simulations": 500
+  },
+  "sudden_death_100|mSPRT_regime_shift": {
+    "type_i": null,
+    "type_ii": 0.32199999999999995,
+    "median_delay": 69.0,
+    "mean_pnl_saved": -6.14,
+    "detection_rate": 0.678,
+    "n_simulations": 500
+  },
+  "sudden_death_100|mSPRT_t03": {
+    "type_i": null,
+    "type_ii": 0.27,
+    "median_delay": 65.0,
+    "mean_pnl_saved": -7.46,
+    "detection_rate": 0.73,
+    "n_simulations": 500
+  },
+  "sudden_death_100|mSPRT_t05": {
+    "type_i": null,
+    "type_ii": 0.28400000000000003,
+    "median_delay": 65.0,
+    "mean_pnl_saved": -7.18,
+    "detection_rate": 0.716,
     "n_simulations": 500
   },
   "sudden_death_50|CUSUM": {
@@ -231,11 +327,35 @@
     "detection_rate": 0.99,
     "n_simulations": 500
   },
-  "sudden_death_50|mSPRT_regime": {
+  "sudden_death_50|mSPRT_regime_reset": {
     "type_i": null,
     "type_ii": 0.010000000000000009,
     "median_delay": 64.0,
     "mean_pnl_saved": -24.08,
+    "detection_rate": 0.99,
+    "n_simulations": 500
+  },
+  "sudden_death_50|mSPRT_regime_shift": {
+    "type_i": null,
+    "type_ii": 0.010000000000000009,
+    "median_delay": 64.0,
+    "mean_pnl_saved": -24.08,
+    "detection_rate": 0.99,
+    "n_simulations": 500
+  },
+  "sudden_death_50|mSPRT_t03": {
+    "type_i": null,
+    "type_ii": 0.010000000000000009,
+    "median_delay": 60.0,
+    "mean_pnl_saved": -24.96,
+    "detection_rate": 0.99,
+    "n_simulations": 500
+  },
+  "sudden_death_50|mSPRT_t05": {
+    "type_i": null,
+    "type_ii": 0.010000000000000009,
+    "median_delay": 60.0,
+    "mean_pnl_saved": -25.18,
     "detection_rate": 0.99,
     "n_simulations": 500
   }
