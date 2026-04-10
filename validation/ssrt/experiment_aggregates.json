@@ -1,0 +1,242 @@
+{
+  "linear_decay|CUSUM": {
+    "type_i": null,
+    "type_ii": 0.04400000000000004,
+    "median_delay": 79.0,
+    "mean_pnl_saved": -13.84,
+    "detection_rate": 0.956,
+    "n_simulations": 500
+  },
+  "linear_decay|MaxDD_5R": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 1.0,
+    "mean_pnl_saved": -2.83,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "linear_decay|MaxDD_8R": {
+    "type_i": null,
+    "type_ii": 0.0040000000000000036,
+    "median_delay": 58.0,
+    "mean_pnl_saved": -13.25,
+    "detection_rate": 0.996,
+    "n_simulations": 500
+  },
+  "linear_decay|RollingSharpe": {
+    "type_i": null,
+    "type_ii": 0.0020000000000000018,
+    "median_delay": 61.0,
+    "mean_pnl_saved": -16.01,
+    "detection_rate": 0.998,
+    "n_simulations": 500
+  },
+  "linear_decay|mSPRT": {
+    "type_i": null,
+    "type_ii": 0.32399999999999995,
+    "median_delay": 119.0,
+    "mean_pnl_saved": -5.83,
+    "detection_rate": 0.676,
+    "n_simulations": 500
+  },
+  "linear_decay|mSPRT_regime": {
+    "type_i": null,
+    "type_ii": 0.32399999999999995,
+    "median_delay": 119.0,
+    "mean_pnl_saved": -5.83,
+    "detection_rate": 0.676,
+    "n_simulations": 500
+  },
+  "no_decay|CUSUM": {
+    "type_i": 0.236,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 10.54,
+    "detection_rate": 0.236,
+    "n_simulations": 500
+  },
+  "no_decay|MaxDD_5R": {
+    "type_i": 0.936,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 65.84,
+    "detection_rate": 0.936,
+    "n_simulations": 500
+  },
+  "no_decay|MaxDD_8R": {
+    "type_i": 0.478,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 25.44,
+    "detection_rate": 0.478,
+    "n_simulations": 500
+  },
+  "no_decay|RollingSharpe": {
+    "type_i": 0.342,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 15.31,
+    "detection_rate": 0.342,
+    "n_simulations": 500
+  },
+  "no_decay|mSPRT": {
+    "type_i": 0.012,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 0.67,
+    "detection_rate": 0.012,
+    "n_simulations": 500
+  },
+  "no_decay|mSPRT_regime": {
+    "type_i": 0.012,
+    "type_ii": null,
+    "median_delay": null,
+    "mean_pnl_saved": 0.67,
+    "detection_rate": 0.012,
+    "n_simulations": 500
+  },
+  "regime_specific|CUSUM": {
+    "type_i": null,
+    "type_ii": 0.04800000000000004,
+    "median_delay": 22.0,
+    "mean_pnl_saved": 4.96,
+    "detection_rate": 0.952,
+    "n_simulations": 500
+  },
+  "regime_specific|MaxDD_5R": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": -9.0,
+    "mean_pnl_saved": 6.95,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "regime_specific|MaxDD_8R": {
+    "type_i": null,
+    "type_ii": 0.0020000000000000018,
+    "median_delay": 11.0,
+    "mean_pnl_saved": 5.05,
+    "detection_rate": 0.998,
+    "n_simulations": 500
+  },
+  "regime_specific|RollingSharpe": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 17.0,
+    "mean_pnl_saved": 5.0,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "regime_specific|mSPRT": {
+    "type_i": null,
+    "type_ii": 0.248,
+    "median_delay": 71.0,
+    "mean_pnl_saved": 3.9,
+    "detection_rate": 0.752,
+    "n_simulations": 500
+  },
+  "regime_specific|mSPRT_regime": {
+    "type_i": null,
+    "type_ii": 0.43000000000000005,
+    "median_delay": 20.0,
+    "mean_pnl_saved": 4.09,
+    "detection_rate": 0.57,
+    "n_simulations": 500
+  },
+  "sudden_death_100|CUSUM": {
+    "type_i": null,
+    "type_ii": 0.02400000000000002,
+    "median_delay": 23.0,
+    "mean_pnl_saved": -18.75,
+    "detection_rate": 0.976,
+    "n_simulations": 500
+  },
+  "sudden_death_100|MaxDD_5R": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": -49.0,
+    "mean_pnl_saved": -6.11,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "sudden_death_100|MaxDD_8R": {
+    "type_i": null,
+    "type_ii": 0.0020000000000000018,
+    "median_delay": 10.0,
+    "mean_pnl_saved": -18.55,
+    "detection_rate": 0.998,
+    "n_simulations": 500
+  },
+  "sudden_death_100|RollingSharpe": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 19.0,
+    "mean_pnl_saved": -20.6,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "sudden_death_100|mSPRT": {
+    "type_i": null,
+    "type_ii": 0.32199999999999995,
+    "median_delay": 69.0,
+    "mean_pnl_saved": -6.14,
+    "detection_rate": 0.678,
+    "n_simulations": 500
+  },
+  "sudden_death_100|mSPRT_regime": {
+    "type_i": null,
+    "type_ii": 0.32199999999999995,
+    "median_delay": 69.0,
+    "mean_pnl_saved": -6.14,
+    "detection_rate": 0.678,
+    "n_simulations": 500
+  },
+  "sudden_death_50|CUSUM": {
+    "type_i": null,
+    "type_ii": 0.0040000000000000036,
+    "median_delay": 26.0,
+    "mean_pnl_saved": -34.1,
+    "detection_rate": 0.996,
+    "n_simulations": 500
+  },
+  "sudden_death_50|MaxDD_5R": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 1.0,
+    "mean_pnl_saved": -35.82,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "sudden_death_50|MaxDD_8R": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 14.0,
+    "mean_pnl_saved": -37.42,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "sudden_death_50|RollingSharpe": {
+    "type_i": null,
+    "type_ii": 0.0,
+    "median_delay": 21.0,
+    "mean_pnl_saved": -37.44,
+    "detection_rate": 1.0,
+    "n_simulations": 500
+  },
+  "sudden_death_50|mSPRT": {
+    "type_i": null,
+    "type_ii": 0.010000000000000009,
+    "median_delay": 64.0,
+    "mean_pnl_saved": -24.08,
+    "detection_rate": 0.99,
+    "n_simulations": 500
+  },
+  "sudden_death_50|mSPRT_regime": {
+    "type_i": null,
+    "type_ii": 0.010000000000000009,
+    "median_delay": 64.0,
+    "mean_pnl_saved": -24.08,
+    "detection_rate": 0.99,
+    "n_simulations": 500
+  }
+}
