@@ -64,8 +64,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
-- [2026-04-10] **arXiv paper draft** — "Behavioral Drift Detection for AI Trading Agents: A Statistical Process Control Approach", 3100 words, ready for submission
-- [2026-04-10] **Level 2 PASS** — CUSUM validated: 200 strategies × 5 agents, 73.5% win rate vs baseline, d=0.76, p≈0, bootstrap CI [+3180, +4560], 4/4 gates pass
+- [2026-04-10] **arXiv paper major revision** — 6300 words, 17 refs. MaxDDStop (equity DD threshold) outperforms CUSUM 93.5%. Reframed CUSUM as diagnostic tool. Added k=0 justification, robustness check (without BTCUSDT 1h: vs SimpleWR p=0.179), strategy dependence caveat. h sensitivity pending.
+- [2026-04-10] **Level 2 PASS** — CUSUM validated: 200 strategies × 6 agents, 73.5% win rate vs baseline, d=0.76, p≈0, bootstrap CI [+3180, +4560], 4/4 gates pass. BUT MaxDDStop beats CUSUM 93.5% on DD reduction.
 - [2026-04-10] **Level 0+1** — BOCPD: DEAD（sparse binary 不適合）, CUSUM: ALIVE, DQS: DEAD
 - [2026-04-10] **Research framework** — 4-level validation protocol (L0 component → L1 controlled → L2 multi-strategy → L3 multi-market)
 - [2026-04-09] Phase 4b fixes — warm-start, equity metrics, adaptive DQS thresholds, CUSUM adaptive target_wr
