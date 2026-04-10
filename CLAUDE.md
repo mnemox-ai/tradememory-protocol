@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-10] **SSRT Phase 2** — shift_null (preserve evidence on regime change) + tau sweep (0.3/0.5/1.0). 22,500 MC runs. Key findings: shift_null WORSE than reset (50.2% vs 57.0% det rate on regime_specific); tau=0.3 is best (+5pp power, Type I=0.008); mSPRT_t03 = best statistically-valid method (81.4% power, only method with Type I < 0.05). Regime-aware approaches both fail — fixed null dominates.
 - [2026-04-10] **SSRT Phase 1** — mSPRT engine (Johari et al.) + regime-aware null + 15k Monte Carlo experiments. mSPRT Type I=0.012 (only method < 0.05). Regime-aware null worse than fixed null (evidence loss on reset). 14 new tests, 12 files.
 - [2026-04-10] **arXiv paper major revision** — 6300 words, 17 refs. MaxDDStop (equity DD threshold) outperforms CUSUM 93.5%. Reframed CUSUM as diagnostic tool. Added k=0 justification, robustness check (without BTCUSDT 1h: vs SimpleWR p=0.179), strategy dependence caveat. h sensitivity pending.
 - [2026-04-10] **Level 2 PASS** — CUSUM validated: 200 strategies × 6 agents, 73.5% win rate vs baseline, d=0.76, p≈0, bootstrap CI [+3180, +4560], 4/4 gates pass. BUT MaxDDStop beats CUSUM 93.5% on DD reduction.
@@ -78,14 +79,11 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
   - Phase C: db.py 錯誤處理改 raise TradeMemoryDBError（18→2 個 return False），加 get_connection context manager
   - Phase D: 12 property-based tests (hypothesis) + 5 integration tests（no mocks）
   - Phase E: 4 ADR + OWM 技術文章草稿
-- [2026-04-05] docs: README 商業化重寫 — hook + pricing + enterprise section + use cases + getting started 雙軌
-- [2026-04-04] feat: Decision Legitimacy Gate — 5-factor pre-trade confidence check
-- [2026-04-04] feat: ΔS Context Drift Monitor — Jaccard-based drift scoring on recall tools
 
 ## Current Status
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
 - **1374 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation + 14 SSRT - 9 removed), 1 failed (anthropic SDK), 1 skipped
-- **SSRT Module**: `src/tradememory/ssrt/` — mSPRT engine, regime-aware null, simulator, baselines. Phase 1 results in `validation/ssrt/`
+- **SSRT Module**: `src/tradememory/ssrt/` — mSPRT engine (tau=0.3 default), shift_null, regime-aware null, simulator, baselines. Phase 1+2 results in `validation/ssrt/`. Best method: mSPRT_t03 (81.4% power, Type I=0.008). Regime-aware approaches both fail.
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
 - **Phase 5 Rigorous Validation Complete**: 100 experiments (2 symbols × 1h × 50 grid strategies × 5 agents)
   - Result: **INVALID** — CalibratedAgent skips 97% trades (48/100 zero-trade), DD "reduction" from NOT TRADING
