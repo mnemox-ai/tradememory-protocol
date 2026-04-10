@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-04-10] **SSRT Phase 1** — mSPRT engine (Johari et al.) + regime-aware null + 15k Monte Carlo experiments. mSPRT Type I=0.012 (only method < 0.05). Regime-aware null worse than fixed null (evidence loss on reset). 14 new tests, 12 files.
 - [2026-04-10] **arXiv paper major revision** — 6300 words, 17 refs. MaxDDStop (equity DD threshold) outperforms CUSUM 93.5%. Reframed CUSUM as diagnostic tool. Added k=0 justification, robustness check (without BTCUSDT 1h: vs SimpleWR p=0.179), strategy dependence caveat. h sensitivity pending.
 - [2026-04-10] **Level 2 PASS** — CUSUM validated: 200 strategies × 6 agents, 73.5% win rate vs baseline, d=0.76, p≈0, bootstrap CI [+3180, +4560], 4/4 gates pass. BUT MaxDDStop beats CUSUM 93.5% on DD reduction.
 - [2026-04-10] **Level 0+1** — BOCPD: DEAD（sparse binary 不適合）, CUSUM: ALIVE, DQS: DEAD
@@ -83,7 +84,8 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 
 ## Current Status
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
-- **1370 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation - 9 removed), 1 skipped
+- **1374 tests passing** (1253 + 60 strategy validator + 11 legitimacy + 12 property-based + 5 integration + 10 DQS + 8 changepoint + 10 simulation + 14 SSRT - 9 removed), 1 failed (anthropic SDK), 1 skipped
+- **SSRT Module**: `src/tradememory/ssrt/` — mSPRT engine, regime-aware null, simulator, baselines. Phase 1 results in `validation/ssrt/`
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
 - **Phase 5 Rigorous Validation Complete**: 100 experiments (2 symbols × 1h × 50 grid strategies × 5 agents)
   - Result: **INVALID** — CalibratedAgent skips 97% trades (48/100 zero-trade), DD "reduction" from NOT TRADING
