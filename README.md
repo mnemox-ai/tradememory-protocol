@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/mnemox-ai-tradememory-protocol-badge.png)](https://mseep.ai/app/mnemox-ai-tradememory-protocol)
+
 <!-- mcp-name: io.github.mnemox-ai/tradememory-protocol -->
 
 <p align="center">
