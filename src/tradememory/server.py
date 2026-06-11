@@ -884,7 +884,11 @@ async def owm_remember(req: RememberTradeRequest):
             "strategy": req.strategy_name,
             "confidence": req.confidence,
             "reasoning": req.market_context,
-            "market_context": {"description": req.market_context, "entry_price": req.entry_price},
+            "market_context": {
+                "price": req.entry_price,  # TradeRecord requires market_context.price
+                "description": req.market_context,
+                "entry_price": req.entry_price,
+            },
             "references": [],
             "exit_timestamp": None,
             "exit_price": req.exit_price,
