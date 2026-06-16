@@ -34,6 +34,39 @@ The trader also built automation scripts for portfolio dashboards, price updates
 
 ---
 
+### Optional sentiment evidence
+
+TradeMemory does not call third-party APIs automatically, but the trader can
+attach externally fetched sentiment as part of the `market_context`. For
+example, an agent can fetch an Adanos Market Sentiment API snapshot and format
+it before calling `remember_trade`:
+
+```python
+import requests
+
+from tradememory.data.adanos import format_adanos_market_context
+
+response = requests.get(
+    "https://api.adanos.org/reddit/stocks/v1/stock/AAPL",
+    headers={"X-API-Key": "sk_live_your_key_here"},
+    params={"from": "2026-06-09", "to": "2026-06-16"},
+    timeout=10,
+)
+response.raise_for_status()
+sentiment_context = format_adanos_market_context(response.json(), source="reddit")
+
+# Pass this into remember_trade alongside price action, regime, and strategy context.
+market_context = (
+    "Post-earnings gap up, above 20-day moving average. "
+    f"{sentiment_context}"
+)
+```
+
+This keeps API keys and network calls outside TradeMemory while preserving the
+sentiment evidence that shaped the trade decision.
+
+---
+
 ## Case 2: Forex EA System — Automated Memory Loop
 
 **Profile**
