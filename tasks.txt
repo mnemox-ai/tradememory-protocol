@@ -1,0 +1,5 @@
+# TradeMemory Policy Evolution Plane design workflow
+# Implementation tasks will replace this design-only task file after Sean approves the written specification.
+Review C:/Users/Sean/projects/tradememory-protocol/docs/superpowers/specs/2026-07-14-policy-evolution-plane-design.md against the approved product decisions, current repository architecture, and high-reasoning Codex review; report contradictions, placeholders, ambiguous requirements, and accidental implementation scope without changing production code.
+Verify C:/Users/Sean/projects/tradememory-protocol/docs/superpowers/specs/2026-07-14-policy-evolution-plane-design.md explicitly separates evidence/control events, typed policies, validation status/verdict, rollout/assignment, local/cloud trust boundaries, MT5 replay, and deferred scope; fix documentation-only defects.
+After Sean approves the written specification, invoke the writing-plans workflow to replace C:/Users/Sean/projects/tradememory-protocol/tasks.txt with self-contained implementation tasks that include exact paths, tests, dependencies, migration checkpoints, and rollback criteria.
