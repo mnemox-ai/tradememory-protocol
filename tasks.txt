@@ -1,5 +1,20 @@
-# TradeMemory Policy Evolution Plane design workflow
-# Implementation tasks will replace this design-only task file after Sean approves the written specification.
-Review C:/Users/Sean/projects/tradememory-protocol/docs/superpowers/specs/2026-07-14-policy-evolution-plane-design.md against the approved product decisions, current repository architecture, and high-reasoning Codex review; report contradictions, placeholders, ambiguous requirements, and accidental implementation scope without changing production code.
-Verify C:/Users/Sean/projects/tradememory-protocol/docs/superpowers/specs/2026-07-14-policy-evolution-plane-design.md explicitly separates evidence/control events, typed policies, validation status/verdict, rollout/assignment, local/cloud trust boundaries, MT5 replay, and deferred scope; fix documentation-only defects.
-After Sean approves the written specification, invoke the writing-plans workflow to replace C:/Users/Sean/projects/tradememory-protocol/tasks.txt with self-contained implementation tasks that include exact paths, tests, dependencies, migration checkpoints, and rollback criteria.
+# TradeMemory Policy Evolution Plane implementation tasks
+# Execute in order. Each task is self-contained by reference to the approved spec and formal plan.
+Implement Task 1 from C:/Users/Sean/projects/tradememory-protocol/docs/superpowers/plans/2026-07-14-policy-evolution-plane-implementation.md: freeze public behavior and add ADRs for bounded contexts and bitemporal events; run the exact focused tests, update AGENTS.md, commit, and push.
+Implement Task 2 from the formal plan: add typed policy evolution models and canonical hashing with TDD; run model/property regressions, review typed boundaries, update AGENTS.md, commit, and push.
+Implement Task 3 from the formal plan: add additive SQLite/Alembic policy schema and repositories with idempotency conflict and assignment CAS tests; review DDL, update AGENTS.md, commit, and push.
+Implement Task 4 from the formal plan: make trade evidence and five-layer memory compatibility writes atomic; inject failures at every write, run integration regressions, update AGENTS.md, commit, and push.
+Implement Task 5 from the formal plan: add deterministic projection rebuild and conservative legacy backfill; verify idempotency on a copied database, update AGENTS.md, commit, and push.
+Implement Task 6 from the formal plan: introduce RecallPolicy V1 with exact legacy ranking parity and counterexample/large-loss quotas; run recall regressions, update AGENTS.md, commit, and push.
+Implement Task 7 from the formal plan: build policy-neutral validation orchestration with separate run status and verdict; verify reproducibility and assignment isolation, update AGENTS.md, commit, and push.
+Implement Task 8 from the formal plan: repair strategy evolution temporal leakage, sealed holdout handling, DSR semantics, and trial counting; complete independent quantitative review, update AGENTS.md, commit, and push.
+Implement Task 9 from the formal plan: add separate recall and risk evolution plugins with anti-leverage, opportunity-coverage, counterexample, and cold-start gates; update AGENTS.md, commit, and push.
+Implement Task 10 from the formal plan: separate reflection hypotheses from governed candidates and replace in-memory evolution history with persisted records; restart-test, update AGENTS.md, commit, and push.
+Implement Task 11 from the formal plan: add scoped deterministic policy resolution, compatible bundles, stable canary routing, and CAS assignments; run concurrency tests, update AGENTS.md, commit, and push.
+Implement Task 12 from the formal plan: implement staged promotion profiles, institutional approval, opt-out, pause, and automatic rollback; complete safety review, update AGENTS.md, commit, and push.
+Implement Task 13 from the formal plan: publish the open Adapter Protocol, Python SDK, retry/idempotency contracts, and no-execution tests; update AGENTS.md, commit, and push.
+Implement Task 14 from the formal plan: add the secure local HTTP gateway and additive MCP/REST evolution APIs; run auth/audit/security regressions, update AGENTS.md, commit, and push.
+Implement Task 15 from the formal plan: build the MT5 production decision-core bridge with signed cached policies and crash-safe event spool; compile and contract-test, update AGENTS.md, commit, and push.
+Implement Task 16 from the formal plan: build the deterministic MT5 Strategy Tester harness, scenario fixtures, golden event ledgers, and watchdog; run offline and MT5 integration tests, update AGENTS.md, commit, and push.
+Implement Task 17 from the formal plan: add deny-by-default cohort contribution/prior contracts and local privacy preview without networking; complete privacy review, update AGENTS.md, commit, and push.
+Implement Task 18 from the formal plan: rehearse migration, run full lint/type/test/replay suites, complete code/architecture/security/launch reviews, update all documentation and AGENTS.md, commit, and push only when every release gate passes.
