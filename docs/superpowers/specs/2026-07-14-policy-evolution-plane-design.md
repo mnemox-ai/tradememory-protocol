@@ -1,8 +1,8 @@
 # TradeMemory Policy Evolution Plane — Design Specification
 
-**Status:** Approved design  
-**Date:** 2026-07-14  
-**Owner:** Mnemox AI  
+**Status:** Approved design
+**Date:** 2026-07-14
+**Owner:** Mnemox AI
 **Scope:** TradeMemory Protocol core, MT5 reference adapter, local/cloud boundary
 
 ## 1. Executive Summary
