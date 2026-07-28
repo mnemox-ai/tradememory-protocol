@@ -177,7 +177,14 @@ class TestBuildTradeRecords:
 class TestWithRealReports:
     """Test with actual MT5 reports if available."""
 
-    REPORT_DIR = r"C:\Users\johns\AppData\Roaming\MetaQuotes\Terminal\D0E8209F77C8CF37AD8BF550E51FF075\reports"
+    REPORT_DIR = os.environ.get(
+        "MT5_REPORT_DIR",
+        os.path.join(
+            os.path.expanduser("~"),
+            "AppData", "Roaming", "MetaQuotes", "Terminal",
+            "D0E8209F77C8CF37AD8BF550E51FF075", "reports",
+        ),
+    )
 
     @pytest.fixture
     def real_report(self):

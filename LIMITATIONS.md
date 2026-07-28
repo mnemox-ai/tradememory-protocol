@@ -1,6 +1,6 @@
 # TradeMemory Protocol — Known Limitations & Roadmap
 
-> Last updated: 2026-05-14 · Applies to: v0.5.2 (post-audit-chain refit)
+> Last updated: 2026-07-29 · Applies to: v0.5.2 (post-audit-chain refit)
 
 We publish this document because partners, regulators, and the open-source
 community deserve to know what TradeMemory does **today**, what is **research-
@@ -170,10 +170,10 @@ opposed the proposed action. This was misleading and we have fixed it.
 - **No HA / replication.** SQLite is a single file. Backup is `cp tradememory.db tradememory.db.bak`.
 - **No baseline metrics endpoint** (no Prometheus / OTEL). The `/health`
   endpoint exists; serious observability is on the roadmap.
-- **CHANGELOG** is being rewritten — it stopped at v0.5.0; v0.5.1 and v0.5.2
-  entries are being added in this same release cycle.
+- **CHANGELOG** is current through v0.5.2 (0.5.1 and 0.5.2 sections added
+  2026-07-29).
 - **db.py uses raw `CREATE TABLE IF NOT EXISTS`** — this violates our own
-  `.claude/rules/task-01-database.md` rule. The PG track uses Alembic
+  internal migration checklist. The PG track uses Alembic
   properly; the SQLite layer will follow when we converge stacks.
 
 ---

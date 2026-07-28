@@ -144,7 +144,7 @@ Strategy C and Strategy E were invented independently, from different datasets, 
 1. **Time-of-day bias** — specific UTC hours carry persistent directional edge
 2. **Trend filter** — 12-hour trend confirmation before entry
 3. **Short holding period** — max 6 hours, in-and-out
-4. **Asymmetric risk/reward** — 2:1 TP/SL guarantees positive expectancy at 50% win rate
+4. **Asymmetric risk/reward** — 2:1 TP/SL implies positive expectancy before costs (fees and slippage reduce this) at 50% win rate
 
 This meta-pattern was not programmed. It was not suggested. It emerged from two independent evolution cycles. When two completely separate experiments converge on the same solution, that's strong evidence of underlying structure.
 

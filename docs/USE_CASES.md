@@ -1,6 +1,6 @@
 # Real-World Use Cases
 
-Three ways teams use TradeMemory in production.
+Three usage patterns for TradeMemory.
 
 ---
 
@@ -53,11 +53,11 @@ The EA trades automatically. TradeMemory records everything:
 3. **Audit trail** — Each TDR is SHA-256 hashed at creation for tamper detection
 4. **Weekly review** — `get_strategy_performance` compares strategies side by side
 
-The system logs thousands of decisions daily. Most are "FILTERED" — valid signals blocked by risk rules. These filtered decisions are the most valuable review data.
+The system is designed to log thousands of decisions daily. Most are "FILTERED" — valid signals blocked by risk rules. These filtered decisions are the most valuable review data.
 
 > **Key insight:** Recording why you DIDN'T trade is as valuable as recording why you did. Filtered signals reveal how your risk rules interact with real market conditions.
 
-*From the TradeMemory team's own production system.*
+*From the TradeMemory team's own system (first-party, demo account).*
 
 ---
 
@@ -106,7 +106,7 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 
 > **Key insight:** Regulators don't ask how much your AI made. They ask why it made each decision.
 
-*Representative scenario based on TradeMemory's audit capabilities.*
+*Illustrative scenario (not a customer deployment), based on TradeMemory's audit capabilities.*
 
 ---
 

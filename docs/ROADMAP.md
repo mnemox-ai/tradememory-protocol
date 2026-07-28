@@ -1,5 +1,7 @@
 # TradeMemory Protocol — 開發路線圖
 
+> Last reviewed: 2026-07-29. Sections below may reference older sprint dates; the Pending table is refreshed as of this date.
+
 ## 執行說明
 
 這是 Mnemox AI 的主線開發計畫。Claude Code 每次開新 session 時讀取此檔案，找到第一個 ❌ 任務繼續執行。完成後標記 ✅ 並 commit。
@@ -481,14 +483,14 @@
 | # | 項目 | 狀態 | 備註 |
 |---|------|------|------|
 | 1 | ~~v0.5.1 PyPI publish~~ | ✅ 已發 | PyPI + GitHub Release 2026-03-27 |
-| 2 | PR #2 (Fronteir AI hosted) | 🔍 待 review | ElishaKay 外部貢獻，README 加 hosted link |
+| 2 | PR triage | ✅ #6 merged、#7 review 中、#2/#3 closed | 2026-07-29 |
 | 3 | mt5_sync_v3 close retry 邏輯 | 🔧 未 commit | 5 次重試 + abandon，改善 closed trade sync 穩定性 |
-| 4 | CHANGELOG v0.5.1 | ❌ 未寫 | CHANGELOG.md 停在 v0.5.0 |
-| 5 | Phase 1 Real Data | ⏳ 等數據 | NG_Gold demo running，等 4-6 週交易數據 |
+| 4 | CHANGELOG | ✅ current through v0.5.2 | 0.5.1 / 0.5.2 sections 已補齊 (2026-07-29) |
+| 5 | Phase 1 Real Data | ⏳ 等數據 | NG_Gold demo running，original 4-6 week window lapsed; timeline pending owner's live-data decision (2026-07-29 註) |
 | 6 | anti-resonance PyPI | ❌ 未 publish | v0.2.0 code done in separate repo |
 | 7 | MQL5 article Section 6 | ⏳ blocked | 等 Phase 1 real data |
 | 8 | PDF Report (Phase 2.5) | 🔄 DEFERRED | Sean 決策延後 |
-| 9 | Live Executor monitoring | ⚠️ 無 alert | GH Actions 每小時跑 Strategy E，但無失敗通知 |
+| 9 | Live Executor monitoring | ⚠️ 無 alert | GH Actions 每小時跑 Strategy E，但無失敗通知 (known gap, tracked) |
 
 ---
 

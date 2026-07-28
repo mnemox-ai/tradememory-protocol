@@ -366,7 +366,7 @@ class DashboardService:
             dream_path = Path(
                 os.environ.get(
                     "DREAM_DATA_PATH",
-                    r"C:\Users\johns\projects\trade-dreaming\data",
+                    str(Path.home() / "projects" / "trade-dreaming" / "data"),
                 )
             )
 

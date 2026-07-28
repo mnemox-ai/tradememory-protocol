@@ -105,3 +105,10 @@ scripts/research/output/
 # internal task runner files
 tasks*.txt
 tasks-*.md
+
+# private tooling / internal marketing drafts
+.mcp.json
+docs/marketing/
+
+# internal reports (market research, distribution logs, trader fingerprints)
+reports/

@@ -232,7 +232,7 @@ Product narrative: "TradeMemory monitors your trading agent's behavioral health.
 ### What an Investor Would Ask
 1. "What's your moat?" → The combination of persistent memory + behavioral changepoint is unique. But the individual components are reproducible in 2-3 weeks.
 2. "Show me the data." → Breakout: Sharpe 6→15, DD -65%. But only 1/3 strategies. Need more experiments.
-3. "What's the path to revenue?" → Strategy-level monitoring as SaaS ($29/mo) or consulting service ($2K-5K/engagement). First paying user (Hevin) confirmed "her trading improved."
+3. "What's the path to revenue?" → Strategy-level monitoring as SaaS ($29/mo) or consulting service ($2K-5K/engagement). An early production user reported that the system improved their trading review discipline.
 
 ---
 
@@ -261,4 +261,4 @@ Git: 17 commits in this sprint, all on master, pushed.
 
 4. **Is there a way to make DQS work at trade level without building a strategy?** The fundamental challenge: any feature that predicts individual trade outcomes IS a trading signal. Is there a middle ground?
 
-5. **For fundraising: is the research approach (paper + experiments) the right path? Or should we focus on building a polished product with Hevin's testimonial?** These are different paths with different timelines.
+5. **For fundraising: is the research approach (paper + experiments) the right path? Or should we focus on building a polished product with early-user testimonials?** These are different paths with different timelines.

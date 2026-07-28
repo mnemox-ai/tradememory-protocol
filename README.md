@@ -109,15 +109,15 @@ docker compose up -d
 | **Audit** | `export_audit_trail` · `verify_audit_hash` | SHA-256 tamper detection + bulk export |
 
 <details>
-<summary>All 17 MCP tools + REST API</summary>
+<summary>All 20 MCP tools + REST API</summary>
 
 | Category | Tools |
 |----------|-------|
 | **Core Memory** | `get_strategy_performance` · `get_trade_reflection` |
 | **OWM Cognitive** | `remember_trade` · `recall_memories` · `get_behavioral_analysis` · `get_agent_state` · `create_trading_plan` · `check_active_plans` |
-| **Risk & Governance** | `check_trade_legitimacy` · `validate_strategy` |
+| **Risk & Governance** | `check_trade_legitimacy` · `validate_strategy` · `compute_dqs` |
 | **Evolution** | `evolution_fetch_market_data` · `evolution_discover_patterns` · `evolution_run_backtest` · `evolution_evolve_strategy` · `evolution_get_log` |
-| **Audit** | `export_audit_trail` · `verify_audit_hash` |
+| **Audit** | `export_audit_trail` · `verify_audit_hash` · `verify_audit_chain` · `get_daily_root` |
 
 **REST API:** 35+ endpoints for trade recording, reflections, risk, MT5 sync, OWM, evolution, and audit. [Full reference →](docs/API.md)
 
@@ -128,7 +128,7 @@ docker compose up -d
 | | Community | Pro | Enterprise |
 |---|---|---|---|
 | **Price** | **Free** | **$29/mo** (Coming Soon) | **Contact Us** |
-| MCP tools | 17 tools | 17 tools | 17 tools |
+| MCP tools | 20 tools | 20 tools | 20 tools |
 | Storage | SQLite, self-hosted | Hosted API | Private deployment |
 | Dashboard | — | Web dashboard | Custom dashboard |
 | Compliance | Audit trail included | Audit trail included | Compliance reports + SLA |
@@ -189,7 +189,7 @@ See [LIMITATIONS.md](LIMITATIONS.md) for the full audit-chain maturity statement
 TradeMemory's OWM framework is grounded in cognitive science (Tulving 1972)
 and reinforcement learning (Schaul et al. 2015). Current status:
 
-- **OWM five-factor scoring:** implemented, tested (1,300+ tests)
+- **OWM five-factor scoring:** implemented, tested (1,400+ tests)
 - **Statistical validation:** DSR, MBL implemented (Bailey-de Prado 2014)
 - **Audit trail:** SHA-256 tamper-evident TDR
 - **Evolution engine:** research phase (strategy generation works, statistical gate pass rate under optimization)

@@ -404,7 +404,7 @@ Sync closed trades from MT5 to TradeJournal. Groups MT5 deals by position, deter
 {
   "status": "healthy",
   "service": "TradeMemory Protocol",
-  "version": "0.1.0"
+  "version": "0.5.2"
 }
 ```
 
@@ -416,11 +416,8 @@ These tools are planned but not yet available:
 
 | Tool | Purpose |
 |------|---------|
-| `reflect.run_weekly` | Weekly deep reflection with strategy-level analysis |
 | `reflect.get_insights` | Retrieve curated L2 insights |
 | `reflect.query_patterns` | Ask specific questions about discovered patterns |
-| `risk.get_constraints` | Get current dynamic risk parameters |
-| `risk.check_trade` | Validate a proposed trade against active constraints |
 | `risk.get_performance` | Get aggregated performance metrics |
 | `risk.override` | Human override of risk parameters (requires auth) |
 | `state.get_identity` | Get agent identity and personality context |

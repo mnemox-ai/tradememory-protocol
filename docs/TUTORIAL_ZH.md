@@ -41,7 +41,7 @@ cp .env.example .env
 
 ```bash
 python -m pytest tests/ -q
-# 預期結果：1,233 passed
+# 預期結果：all tests pass（數量隨版本成長，以 CI 為準）
 ```
 
 ---
@@ -299,7 +299,7 @@ TradeMemory 提供 17 個 MCP 工具，分為四大類：
 
 | 工具 | 說明 |
 |------|------|
-| `export_audit_trail` | 匯出交易決策記錄，含 SHA-256 防竄改驗證 |
+| `export_audit_trail` | 匯出交易決策記錄，含 SHA-256 可驗竄改驗證 |
 | `verify_audit_hash` | 驗證決策記錄完整性，重新計算 SHA-256 雜湊 |
 
 ---

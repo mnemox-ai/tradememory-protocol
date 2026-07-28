@@ -20,8 +20,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Header, Query
+from fastapi import Depends, FastAPI, HTTPException, Header, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from tradememory.mcp_server import mcp
@@ -36,7 +37,7 @@ mcp_http = mcp.http_app(path="/mcp", transport="streamable-http", stateless_http
 app = FastAPI(
     title="TradeMemory Hosted API",
     description="Multi-tenant AI Trading Memory API",
-    version="0.5.0",
+    version="0.5.2",
     lifespan=mcp_http.lifespan,
 )
 
@@ -52,6 +53,21 @@ app.add_middleware(
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def mcp_require_api_key(request: Request, call_next):
+    # The mounted MCP sub-app bypasses route dependencies, so gate it here:
+    # same Bearer tm_live_*/tm_test_* contract as the REST endpoints.
+    if request.url.path.startswith("/mcp"):
+        auth = request.headers.get("authorization", "")
+        api_key = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
+        if not api_key.startswith(("tm_live_", "tm_test_")) or not get_db().validate_key(api_key):
+            return JSONResponse(
+                status_code=401,
+                content={"error": "unauthorized", "message": "MCP endpoint requires a Bearer API key"},
+            )
+    return await call_next(request)
 
 
 # ========== Database ==========
@@ -422,7 +438,7 @@ class RecallTradesResponse(BaseModel):
 @app.get("/api/v1/health")
 async def health():
     """Health check — no auth required."""
-    return {"status": "healthy", "version": "0.5.0"}
+    return {"status": "healthy", "version": "0.5.2"}
 
 
 @app.post("/api/v1/trades", status_code=201, response_model=StoreTradeResponse)

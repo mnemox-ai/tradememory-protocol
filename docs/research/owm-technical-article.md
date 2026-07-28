@@ -7,7 +7,7 @@ Draft v1.0 -- April 2026
 
 ## Abstract
 
-We present Outcome-Weighted Memory (OWM), a cognitive memory architecture for AI trading agents that replaces uniform recall with a five-factor multiplicative scoring model grounded in Tulving's memory taxonomy. OWM organizes agent experience into five memory layers -- episodic, semantic, procedural, affective, and prospective -- and retrieves memories using a product of outcome quality, context similarity, recency, confidence, and affective modulation. The architecture requires no training data and functions from the first trade. We describe the mathematical formulation, discuss our implementation as an open-source MCP server with 19 tools and 1293 tests, and report honest preliminary results from a small empirical deployment (n=40 trades, XAUUSD, 3 strategies). OWM is deployed in production and available at [tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol).
+We present Outcome-Weighted Memory (OWM), a cognitive memory architecture for AI trading agents that replaces uniform recall with a five-factor multiplicative scoring model grounded in Tulving's memory taxonomy. OWM organizes agent experience into five memory layers -- episodic, semantic, procedural, affective, and prospective -- and retrieves memories using a product of outcome quality, context similarity, recency, confidence, and affective modulation. The architecture requires no training data and functions from the first trade. We describe the mathematical formulation, discuss our implementation as an open-source MCP server with 19 tools and 1293 tests, and report honest preliminary results from a small empirical deployment (n=40 trades, XAUUSD, 3 strategies). OWM is deployed against a live demo account and available at [tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol).
 
 ---
 
@@ -95,7 +95,7 @@ The floor of 0.5 ensures early memories (formed with default confidence) are not
 
 ## 5. Empirical Setup
 
-OWM is implemented as a Python MCP (Model Context Protocol) server, deployed and used in production for live trading assistance. The current deployment comprises:
+OWM is implemented as a Python MCP (Model Context Protocol) server, deployed and used against a MetaTrader 5 demo account for live trading assistance. The current deployment comprises:
 
 - **19 MCP tools** covering memory storage, recall, strategy performance, trade reflection, strategy validation, context drift monitoring, and decision legitimacy checks.
 - **1293 passing tests** across the full codebase, including 60 dedicated strategy validator tests and 11 legitimacy gate tests.
@@ -115,7 +115,7 @@ We state plainly: $n = 40$ is insufficient for rigorous statistical claims. The 
 
 **Qualitative Observations.** The primary measurable benefit so far is pre-trade discipline. When the agent recalls 3-5 past trades in similar conditions before making a decision, the decision context includes explicit references to prior outcomes. In user testing, this recall step prevented at least two planned entries where the recalled memories showed consistent losses in the matching regime. This is anecdotal, not statistical.
 
-**What $n \geq 100$ Would Enable.** With 100+ trades per strategy, we could compute regime-conditional statistics with meaningful confidence intervals, validate whether OWM recall actually improves decision quality versus a recency-only baseline, and test parameter sensitivity of the five factors. We estimate reaching this threshold within 3-4 months of continued demo trading.
+**What $n \geq 100$ Would Enable.** With 100+ trades per strategy, we could compute regime-conditional statistics with meaningful confidence intervals, validate whether OWM recall actually improves decision quality versus a recency-only baseline, and test parameter sensitivity of the five factors. We estimate reaching this threshold within 3-4 months of continued demo trading (estimate as of April 2026).
 
 **Context Drift Monitor.** The Jaccard-based $\Delta S$ drift detector correctly identified regime transitions in the trade history, flagging recalled memories from trending-up periods when the current regime had shifted to ranging. While not a performance metric, this confirms the context similarity machinery functions as designed.
 

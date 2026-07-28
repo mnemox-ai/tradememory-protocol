@@ -41,7 +41,7 @@ Verify installation:
 
 ```bash
 python -m pytest tests/ -q
-# Expected: 1,233 passed
+# Expected: all tests pass (count grows with releases; CI is the source of truth)
 ```
 
 ---
@@ -120,6 +120,8 @@ This calls `recall_memories` with outcome-weighted scoring — trades with bette
 ---
 
 ## Step 5: Evolution Engine
+
+*Note: the evolution engine is research-phase (see ADR 004 and LIMITATIONS.md) — no strategy has yet passed the full statistical gate. Treat outputs as hypotheses, not signals.*
 
 The Evolution Engine uses Claude to **discover trading strategies from raw price data**, then backtests and selects survivors across generations.
 

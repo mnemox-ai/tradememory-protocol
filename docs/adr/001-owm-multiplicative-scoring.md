@@ -34,7 +34,7 @@ Each factor is normalized to `[0, 1]` with a configurable floor to prevent colla
 
 ### Rationale
 
-**Zero-on-any-dimension property.** A memory with terrible outcome quality (Q near 0) should not surface regardless of how recent or contextually similar it is. Additive scoring cannot enforce this -- a high recency score would rescue a catastrophic trade. Multiplicative scoring makes this a mathematical guarantee.
+**Zero-on-any-dimension property.** A memory with terrible outcome quality (Q near 0) should not surface regardless of how recent or contextually similar it is. Additive scoring cannot enforce this -- a high recency score would rescue a catastrophic trade. Multiplicative scoring makes this a mathematical property (bounded below by factor floors).
 
 **No training data required.** Neural approaches need hundreds of labeled recall examples to learn weights. TradeMemory must work from trade #1. Multiplicative scoring is effective immediately with sensible defaults.
 

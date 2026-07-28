@@ -34,14 +34,14 @@ Discord webhook (open/close/advisor alerts)
 ## 安裝
 
 ```bash
-cd C:\Users\johns\projects\tradememory-protocol
+cd C:\Users\<你的使用者名稱>\projects\tradememory-protocol
 .venv\Scripts\activate
 pip install MetaTrader5 python-dotenv requests fastapi uvicorn
 ```
 
 ## .env 設定
 
-確認 `C:\Users\johns\projects\tradememory-protocol\.env` 包含：
+確認 `C:\Users\<你的使用者名稱>\projects\tradememory-protocol\.env` 包含：
 
 ```env
 MT5_LOGIN=你的帳號
@@ -58,7 +58,7 @@ DISCORD_WEBHOOK_URL=你的webhook
 ## 手動啟動
 
 ```bash
-cd C:\Users\johns\projects\tradememory-protocol
+cd C:\Users\<你的使用者名稱>\projects\tradememory-protocol
 .venv\Scripts\activate
 uvicorn scripts.mt5_sync_v3:app --port 9001 --host 0.0.0.0
 ```
@@ -77,7 +77,7 @@ scripts\start_mt5_sync_v3.bat
 ### 方法 1：匯入 XML
 
 ```powershell
-schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\johns\projects\tradememory-protocol\scripts\MT5SyncV3_AutoStart.xml"
+schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\MT5SyncV3_AutoStart.xml"
 ```
 
 ### 方法 2：手動建立
@@ -91,8 +91,8 @@ schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\johns\projects\trademe
    - At log on → Delay task for **30 seconds**（等 MT5 啟動）
 5. **Actions**：
    - Program: `cmd.exe`
-   - Arguments: `/c "C:\Users\johns\projects\tradememory-protocol\scripts\start_mt5_sync_v3.bat"`
-   - Start in: `C:\Users\johns\projects\tradememory-protocol`
+   - Arguments: `/c "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\start_mt5_sync_v3.bat"`
+   - Start in: `C:\Users\<你的使用者名稱>\projects\tradememory-protocol`
 6. **Settings**：
    - Allow task to be run on demand: ✅
    - If the task is already running: Do not start a new instance

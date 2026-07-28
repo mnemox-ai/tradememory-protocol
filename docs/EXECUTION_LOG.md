@@ -8,7 +8,6 @@ Commit: `de606f1` | Pushed: 2026-03-25 | Tests: 1199 passed, 1 skipped
 - Status: DONE
 - Findings: .env was NEVER committed to git history. No BFG needed.
 - Changes:
-  - Created `C:\Users\johns\Desktop\tradememory-secrets\` (backup)
   - `.gitignore` hardened (`.env.*`, `*.key`, `*secrets*`, `!.env.example`)
   - Added `ANTHROPIC_API_KEY` placeholder to `.env.example`
 
