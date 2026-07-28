@@ -49,7 +49,20 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_TSA_URL = "https://freetsa.org/tsr"
 TSA_URL_ENV = "TRADEMEMORY_TSA_URL"
+TSA_ENABLED_ENV = "TRADEMEMORY_TSA"
 TSA_TIMEOUT_SECONDS = 10
+
+
+def tsa_enabled_by_default() -> bool:
+    """Whether RFC 3161 timestamping is on when callers don't say otherwise.
+
+    Defaults to ON (v0.5.3+): daily roots get an independent-time attestation
+    unless the user opts out with TRADEMEMORY_TSA=off. This is the single
+    documented exception to the local-first no-outbound-calls posture.
+    """
+    return os.environ.get(TSA_ENABLED_ENV, "on").strip().lower() not in (
+        "off", "0", "false", "no",
+    )
 
 # DER-encoded AlgorithmIdentifier for SHA-256 (RFC 5754 / id-sha256
 # 2.16.840.1.101.3.4.2.1) with NULL parameters omitted.

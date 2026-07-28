@@ -170,7 +170,7 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 
 - **絕不碰 API 金鑰。** TradeMemory 不執行交易、不移動資金、不存取錢包。
 - **只讀取和記錄。** 你的 agent 把決策上下文傳給 TradeMemory。它儲存它。就這樣。
-- **預設不對外連線。** 唯一可選的對外呼叫是 RFC 3161 信任時間戳（預設關閉）。資料不會傳給第三方。
+- **Local-first。** 唯一的對外呼叫是每日稽核 root 的 RFC 3161 信任時間戳——送出的只是 32 bytes 的雜湊，不含任何交易資料（預設開啟，可用 `TRADEMEMORY_TSA=off` 關閉）。其餘資料不離開你的機器。
 - **SHA-256 竄改偵測。** 每筆紀錄在建立時就計算雜湊。可隨時驗證完整性。
 - **1,400+ 測試通過。** 完整測試套件與 CI。
 

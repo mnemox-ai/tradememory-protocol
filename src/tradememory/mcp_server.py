@@ -886,6 +886,30 @@ async def check_active_plans(
         else:
             pending.append(plan_summary)
 
+    # Side effect: persist each trigger event — "the plan fired" is the
+    # alert half of the post-alert behavior metric. Never blocks the check.
+    for plan_summary in triggered:
+        try:
+            planned_action = plan_summary.get("planned_action")
+            if isinstance(planned_action, (dict, list)):
+                planned_action = json.dumps(planned_action)
+            db.insert_decision_event(
+                tool="plan_triggered",
+                strategy=None,
+                symbol=None,
+                factors={
+                    "plan_id": plan_summary.get("plan_id"),
+                    "trigger_type": plan_summary.get("trigger_type"),
+                    "trigger_condition": plan_summary.get("trigger_condition"),
+                    "priority": plan_summary.get("priority"),
+                    "context_regime": context_regime,
+                    "context_atr_d1": context_atr_d1,
+                },
+                recommendation=planned_action,
+            )
+        except Exception as e:
+            logger.debug(f"decision_events logging skipped: {e}")
+
     return {
         "active_count": len(triggered) + len(pending),
         "triggered": triggered,
@@ -1219,7 +1243,7 @@ async def verify_audit_chain(
 async def get_daily_root(
     date: str,
     rebuild: bool = False,
-    request_tsa: bool = False,
+    request_tsa: Optional[bool] = None,
     include_token: bool = False,
 ) -> dict:
     """Get (or rebuild) the daily Merkle root for a UTC date.
@@ -1231,10 +1255,11 @@ async def get_daily_root(
     Args:
         date: Date in YYYY-MM-DD format (or full ISO datetime).
         rebuild: If True, recompute and overwrite the stored root.
-        request_tsa: If True (and rebuild=True), submit the root to the
-            configured RFC 3161 TSA (default freetsa.org) and store the
-            returned TimeStampToken. TSA failures are logged but do not
-            abort the rebuild.
+        request_tsa: Whether to submit the rebuilt root to the configured
+            RFC 3161 TSA (default freetsa.org) and store the returned
+            TimeStampToken. None (default) follows the TRADEMEMORY_TSA env
+            setting — ON unless set to "off". TSA failures are logged but
+            do not abort the rebuild.
         include_token: If True, include a base64-encoded `tsa_token`
             in the response (default False — the token can be large).
 
@@ -1432,6 +1457,21 @@ async def check_trade_legitimacy(
         "drawdown_pct": round(drawdown_pct, 2),
     }
 
+    # Side effect: persist the gate decision so post-alert behavior change
+    # is measurable later. Must never block the gate itself.
+    try:
+        db.insert_decision_event(
+            tool="check_trade_legitimacy",
+            strategy=strategy_name,
+            symbol=symbol,
+            tier=result.get("tier"),
+            score=result.get("legitimacy_score"),
+            factors=result.get("factors"),
+            recommendation=result.get("recommendation"),
+        )
+    except Exception as e:
+        logger.debug(f"decision_events logging skipped: {e}")
+
     return result
 
 
@@ -1477,6 +1517,26 @@ async def compute_dqs(
         context_regime=context_regime,
         context_atr_d1=context_atr_d1,
     )
+
+    # Side effect: persist the gate decision so post-alert behavior change
+    # is measurable later. Must never block the gate itself.
+    try:
+        db.insert_decision_event(
+            tool="compute_dqs",
+            strategy=strategy_name,
+            symbol=symbol.upper(),
+            tier=result.tier,
+            score=result.score,
+            factors={
+                "factors": result.factors,
+                "direction": direction.lower(),
+                "proposed_lot": proposed_lot_size,
+                "regime": context_regime,
+            },
+            recommendation=result.recommendation,
+        )
+    except Exception as e:
+        logger.debug(f"decision_events logging skipped: {e}")
 
     return {
         "dqs_score": result.score,

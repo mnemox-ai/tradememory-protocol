@@ -1375,6 +1375,41 @@ async def audit_get_decision_record(trade_id: str):
     return tdr.model_dump(mode="json")
 
 
+@app.post("/audit/root/{date}")
+async def build_audit_root(date: str, request_tsa: Optional[bool] = None):
+    """Build (or rebuild) the daily Merkle root for a UTC date.
+
+    `request_tsa=None` (default) follows the TRADEMEMORY_TSA env setting —
+    ON unless set to "off" — so the rebuilt root gets an RFC 3161
+    TimeStampToken from the configured TSA. TSA failures are logged and
+    non-fatal. Used by scripts/daily_reflection.py to anchor yesterday's
+    root as part of the daily loop.
+    """
+    from .audit.chain import ChainBuilder
+
+    db = journal.db
+    try:
+        with db.get_connection() as conn:
+            builder = ChainBuilder(conn)
+            root = builder.build_daily_root(date, request_tsa=request_tsa)
+            row = conn.execute(
+                "SELECT tsa_token FROM audit_roots WHERE period_start = ?",
+                (root.period_start,),
+            ).fetchone()
+            has_token = bool(row and row["tsa_token"])
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return {
+        "period_start": root.period_start,
+        "period_end": root.period_end,
+        "root_hash": root.root_hash,
+        "prev_root_hash": root.prev_root_hash,
+        "record_count": root.record_count,
+        "generated_at": root.generated_at,
+        "has_tsa_token": has_token,
+    }
+
+
 @app.get("/audit/export")
 async def audit_export(
     start: Optional[str] = None,

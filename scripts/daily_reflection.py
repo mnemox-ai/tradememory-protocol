@@ -11,7 +11,7 @@ Usage:
 import argparse
 import os
 import requests
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -42,6 +42,28 @@ def send_discord(title: str, message: str, color: int = 0x9B59B6):
         requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=5)
     except Exception:
         pass  # Never fail the script for a notification issue
+
+
+def anchor_yesterday_root() -> str:
+    """Build + RFC 3161 timestamp yesterday's audit root via the API.
+
+    Non-fatal: the reflection must not fail because anchoring did.
+    Returns a one-line status string for the report / notification.
+    """
+    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    try:
+        resp = requests.post(f"{TRADEMEMORY_API}/audit/root/{yesterday}", timeout=30)
+        if resp.ok:
+            data = resp.json()
+            anchored = "RFC 3161 anchored" if data.get("has_tsa_token") else "local only"
+            root_hash = (data.get("root_hash") or "")[:16]
+            return (
+                f"Audit root {yesterday}: {root_hash}... "
+                f"({data.get('record_count', 0)} records, {anchored})"
+            )
+        return f"Audit root {yesterday}: build failed (HTTP {resp.status_code})"
+    except Exception as e:
+        return f"Audit root {yesterday}: skipped ({type(e).__name__})"
 
 
 def generate_daily_reflection(target_date: date = None) -> str:
@@ -248,6 +270,13 @@ def main():
     else:
         target_date = date.fromisoformat(args.date) if args.date else None
         summary = generate_daily_reflection(target_date)
+
+        # Anchor yesterday's audit root as part of the daily loop (v0.5.3):
+        # the root gets an independent RFC 3161 timestamp by default.
+        root_status = anchor_yesterday_root()
+        print(f"\n{root_status}")
+        if summary:
+            summary += f"\n\n{root_status}"
 
         if summary:
             d = target_date or date.today()

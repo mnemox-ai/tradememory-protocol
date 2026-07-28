@@ -180,7 +180,7 @@ See [LIMITATIONS.md](LIMITATIONS.md) for the full audit-chain maturity statement
 
 - **Never touches API keys.** TradeMemory does not execute trades, move funds, or access wallets.
 - **Read and record only.** Your agent passes decision context to TradeMemory. It stores it. That's it.
-- **Local-first.** No external network calls by default; the only optional outbound call is RFC 3161 trusted timestamping, and only if you enable it. No data is sent to third parties.
+- **Local-first.** The only outbound call is RFC 3161 trusted timestamping of daily audit roots — a 32-byte hash, no trade data (on by default; disable with `TRADEMEMORY_TSA=off`). Nothing else leaves your machine.
 - **SHA-256 chained audit ledger.** Every record is hashed at creation and linked to the previous record. Daily Merkle roots anchor the chain. Verify integrity at the record, slice, or day level. Tampering is detectable at every level; external anchoring (TSA by default) is on the roadmap.
 - **1,400+ tests passing.** Full test suite with CI.
 

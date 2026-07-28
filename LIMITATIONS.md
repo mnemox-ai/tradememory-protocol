@@ -96,11 +96,13 @@ The goal is to be a partner you can build on without surprises later.
   that can be published externally.
 
 ### What is NOT in v0.5.2
-- **RFC 3161 TSA timestamping** — daily roots are local-only today. A
-  `tsa_token BLOB` column is reserved on `audit_roots` for the
-  TimeStampToken; the client code is on the 1-2 week roadmap.
-- **External anchoring** (OpenTimestamps / blockchain / public log). On the
-  60-day roadmap.
+- **RFC 3161 TSA timestamping** — shipped (`audit/tsa.py`, zero extra
+  dependencies) and **on by default since v0.5.3**: daily root builds
+  submit the root hash to the configured TSA (default freetsa.org;
+  community-run, not eIDAS-qualified — swap via `TRADEMEMORY_TSA_URL`).
+  Opt out with `TRADEMEMORY_TSA=off`. TSA failures never block the chain.
+- **External anchoring beyond TSA** (OpenTimestamps / blockchain / public
+  log). Still on the roadmap.
 - **zkML proof of inference** — proving "this strategy was actually run on
   this market context to produce this decision" is on the 90-day roadmap
   via EZKL integration. The audit chain proves *memory existed*; zkML

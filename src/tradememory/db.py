@@ -368,6 +368,34 @@ class Database:
                 )
             """)
 
+            # Decision events: every pre-trade gate check (legitimacy, DQS)
+            # and plan trigger is persisted here so post-alert behavior
+            # metrics (sizing change, skip rate, repeat-mistake windows)
+            # can be computed later. Alert history cannot be backfilled —
+            # this table only accumulates from the moment it ships.
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS decision_events (
+                    id TEXT PRIMARY KEY,
+                    timestamp TEXT NOT NULL,
+                    tool TEXT NOT NULL,
+                    strategy TEXT,
+                    symbol TEXT,
+                    tier TEXT,
+                    score REAL,
+                    factors_json TEXT,
+                    recommendation TEXT,
+                    linked_trade_id TEXT
+                )
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_decision_events_time
+                ON decision_events(timestamp)
+            """)
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_decision_events_tool
+                ON decision_events(tool, timestamp)
+            """)
+
             # Multi-tenancy scaffold: tenant_id column on trade_records.
             # NULL = legacy / default-tenant rows. Idempotent add for existing
             # DBs that were created before v0.5.2.
@@ -386,6 +414,68 @@ class Database:
             conn.commit()
         finally:
             conn.close()
+
+    def insert_decision_event(
+        self,
+        tool: str,
+        strategy: Optional[str] = None,
+        symbol: Optional[str] = None,
+        tier: Optional[str] = None,
+        score: Optional[float] = None,
+        factors: Optional[Dict[str, Any]] = None,
+        recommendation: Optional[str] = None,
+        linked_trade_id: Optional[str] = None,
+    ) -> str:
+        """Persist a pre-trade gate / plan-trigger event.
+
+        Feeds the post-alert behavior metrics (did sizing change after a
+        caution/skip tier? did trading pause?). Callers should wrap this in
+        try/except — metrics persistence must never block the gate itself.
+        """
+        import uuid
+
+        event_id = f"de-{uuid.uuid4().hex[:12]}"
+        with self.get_connection() as conn:
+            conn.execute(
+                """INSERT INTO decision_events
+                   (id, timestamp, tool, strategy, symbol, tier, score,
+                    factors_json, recommendation, linked_trade_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    event_id,
+                    datetime.now(timezone.utc).isoformat(),
+                    tool,
+                    strategy,
+                    symbol,
+                    tier,
+                    score,
+                    json.dumps(factors) if factors is not None else None,
+                    recommendation,
+                    linked_trade_id,
+                ),
+            )
+        return event_id
+
+    def query_decision_events(
+        self,
+        tool: Optional[str] = None,
+        since: Optional[str] = None,
+        limit: int = 1000,
+    ) -> List[Dict[str, Any]]:
+        """Query decision events, newest first."""
+        with self.get_connection() as conn:
+            sql = "SELECT * FROM decision_events WHERE 1=1"
+            params: List[Any] = []
+            if tool:
+                sql += " AND tool = ?"
+                params.append(tool)
+            if since:
+                sql += " AND timestamp >= ?"
+                params.append(since)
+            sql += " ORDER BY timestamp DESC LIMIT ?"
+            params.append(limit)
+            rows = conn.execute(sql, params).fetchall()
+            return [dict(r) for r in rows]
 
     def insert_trade(self, trade_data: Dict[str, Any]) -> bool:
         """

@@ -37,7 +37,7 @@ mcp_http = mcp.http_app(path="/mcp", transport="streamable-http", stateless_http
 app = FastAPI(
     title="TradeMemory Hosted API",
     description="Multi-tenant AI Trading Memory API",
-    version="0.5.2",
+    version="0.5.3",
     lifespan=mcp_http.lifespan,
 )
 
@@ -438,7 +438,7 @@ class RecallTradesResponse(BaseModel):
 @app.get("/api/v1/health")
 async def health():
     """Health check — no auth required."""
-    return {"status": "healthy", "version": "0.5.2"}
+    return {"status": "healthy", "version": "0.5.3"}
 
 
 @app.post("/api/v1/trades", status_code=201, response_model=StoreTradeResponse)

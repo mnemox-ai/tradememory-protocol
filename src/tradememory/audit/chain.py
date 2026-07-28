@@ -283,19 +283,26 @@ class ChainBuilder:
         return DailyRoot(*row) if row else None
 
     def build_daily_root(
-        self, date_str: str, request_tsa: bool = False
+        self, date_str: str, request_tsa: Optional[bool] = None
     ) -> DailyRoot:
         """Build (or rebuild) the Merkle root for a single UTC date.
 
         Returns the DailyRoot. If a root already exists for this date, it is
         overwritten with the recomputed value (use for backfill / repair).
 
-        If `request_tsa=True`, the root hash is submitted to the configured
-        RFC 3161 Time Stamp Authority (default freetsa.org) and the returned
-        TimeStampToken is stored as a BLOB in `audit_roots.tsa_token`. TSA
-        failures are logged but do NOT abort the root build — timestamping
-        is an additive attestation layer, not a precondition for the chain.
+        `request_tsa=None` (the default) follows the TRADEMEMORY_TSA env
+        setting — ON unless set to off — so freshly built roots get an
+        RFC 3161 TimeStampToken from the configured TSA (default
+        freetsa.org), stored as a BLOB in `audit_roots.tsa_token`. Pass an
+        explicit False for bulk/backfill paths. TSA failures are logged but
+        do NOT abort the root build — timestamping is an additive
+        attestation layer, not a precondition for the chain.
         """
+        if request_tsa is None:
+            from .tsa import tsa_enabled_by_default
+
+            request_tsa = tsa_enabled_by_default()
+
         period_start, period_end = self._utc_day_bounds(date_str)
 
         rows = self.conn.execute(
@@ -429,9 +436,11 @@ class ChainBuilder:
                 pass
 
         # Rebuild Merkle roots for every touched day in ascending order.
+        # Explicit request_tsa=False: backfill can touch many days and must
+        # not hammer the TSA; timestamp fresh roots via the daily path.
         roots_built = 0
         for day in sorted(days_touched):
-            self.build_daily_root(day)
+            self.build_daily_root(day, request_tsa=False)
             roots_built += 1
 
         return {"records": appended, "roots": roots_built}

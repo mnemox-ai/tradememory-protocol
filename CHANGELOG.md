@@ -5,6 +5,33 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.5.3] - 2026-07-29
+
+### Added
+- **Anchored audit by default.** RFC 3161 timestamping of daily Merkle
+  roots is now ON unless `TRADEMEMORY_TSA=off`: `build_daily_root` and the
+  `get_daily_root` MCP tool default to the env setting, a new
+  `POST /audit/root/{date}` REST endpoint builds+timestamps a root, and
+  `scripts/daily_reflection.py` anchors yesterday's root as part of the
+  daily loop. Only a 32-byte hash leaves the machine — never trade data.
+  Backfill paths explicitly skip TSA to avoid hammering the authority.
+- **`decision_events` table** — every pre-trade gate check
+  (`check_trade_legitimacy`, `compute_dqs`) and every plan trigger is now
+  persisted with tier, score, factors and recommendation
+  (`Database.insert_decision_event` / `query_decision_events`). This is
+  the instrumentation for post-alert behavior metrics (sizing change
+  after a caution, skip rate after an alert). Events accumulate from
+  v0.5.3 forward; alert history cannot be backfilled.
+
+### Changed
+- Hosted MCP endpoint (`/mcp`) now requires the same Bearer
+  `tm_live_*`/`tm_test_*` API key as the REST endpoints — it previously
+  served tool calls unauthenticated (fixed post-0.5.2, recorded here).
+- `LIMITATIONS.md` corrected: the RFC 3161 client shipped in v0.5.2 and
+  is on by default in v0.5.3 (previously understated as roadmap-only).
+
+---
+
 ## [0.5.2] - 2026-07-29
 
 ### Added
