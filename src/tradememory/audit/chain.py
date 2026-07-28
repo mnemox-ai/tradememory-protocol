@@ -336,6 +336,19 @@ class ChainBuilder:
                     period_start, root_hash[:16], e,
                 )
 
+        # Rebuilding must never destroy a still-valid proof: if this run
+        # produced no fresh token but a token already exists for the SAME
+        # root hash, carry it forward. (If the hash changed, the old token
+        # no longer proves this root — dropping it is the honest outcome.)
+        if tsa_token is None:
+            prev_row = self.conn.execute(
+                "SELECT root_hash, tsa_token FROM audit_roots "
+                "WHERE period_start = ?",
+                (period_start,),
+            ).fetchone()
+            if prev_row and prev_row["tsa_token"] and prev_row["root_hash"] == root_hash:
+                tsa_token = prev_row["tsa_token"]
+
         self.conn.execute(
             "INSERT OR REPLACE INTO audit_roots "
             "(period_start, period_end, root_hash, prev_root_hash, "

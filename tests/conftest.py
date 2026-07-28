@@ -8,4 +8,7 @@ explicitly.
 
 import os
 
-os.environ.setdefault("TRADEMEMORY_TSA", "off")
+# Unconditional (not setdefault): a developer machine or CI with
+# TRADEMEMORY_TSA=on in the environment must still never hit a real TSA
+# from the test suite.
+os.environ["TRADEMEMORY_TSA"] = "off"

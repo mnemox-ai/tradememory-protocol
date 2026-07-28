@@ -6,7 +6,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 
 - GitHub: mnemox-ai/tradememory-protocol
 - PyPI: tradememory-protocol
-- 版本: v0.5.3
+- 版本: v0.5.4
 - Tests: 1,400+ passing（以 CI badge 為準，文件裡不要寫死數字）
 - Default branch: `master`（不是 main）
 

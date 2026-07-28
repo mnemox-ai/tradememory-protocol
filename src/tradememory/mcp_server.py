@@ -888,27 +888,46 @@ async def check_active_plans(
 
     # Side effect: persist each trigger event — "the plan fired" is the
     # alert half of the post-alert behavior metric. Never blocks the check.
-    for plan_summary in triggered:
+    # Dedup per (plan_id, UTC day): agents poll this tool, and re-logging
+    # the same standing alert every poll would flood the table and inflate
+    # the metric's denominator.
+    if triggered:
         try:
-            planned_action = plan_summary.get("planned_action")
-            if isinstance(planned_action, (dict, list)):
-                planned_action = json.dumps(planned_action)
-            db.insert_decision_event(
-                tool="plan_triggered",
-                strategy=None,
-                symbol=None,
-                factors={
-                    "plan_id": plan_summary.get("plan_id"),
-                    "trigger_type": plan_summary.get("trigger_type"),
-                    "trigger_condition": plan_summary.get("trigger_condition"),
-                    "priority": plan_summary.get("priority"),
-                    "context_regime": context_regime,
-                    "context_atr_d1": context_atr_d1,
-                },
-                recommendation=planned_action,
-            )
+            day_start = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00")
+            already_logged = {
+                e.get("linked_trade_id")
+                for e in db.query_decision_events(
+                    tool="plan_triggered", since=day_start, limit=1000
+                )
+            }
         except Exception as e:
-            logger.debug(f"decision_events logging skipped: {e}")
+            logger.warning(f"decision_events dedup query failed: {e}")
+            already_logged = set()
+        for plan_summary in triggered:
+            plan_id = plan_summary.get("plan_id")
+            if plan_id in already_logged:
+                continue
+            try:
+                planned_action = plan_summary.get("planned_action")
+                if isinstance(planned_action, (dict, list)):
+                    planned_action = json.dumps(planned_action)
+                db.insert_decision_event(
+                    tool="plan_triggered",
+                    strategy=None,
+                    symbol=None,
+                    factors={
+                        "plan_id": plan_id,
+                        "trigger_type": plan_summary.get("trigger_type"),
+                        "trigger_condition": plan_summary.get("trigger_condition"),
+                        "priority": plan_summary.get("priority"),
+                        "context_regime": context_regime,
+                        "context_atr_d1": context_atr_d1,
+                    },
+                    recommendation=planned_action,
+                    linked_trade_id=plan_id,
+                )
+            except Exception as e:
+                logger.warning(f"decision_events logging skipped: {e}")
 
     return {
         "active_count": len(triggered) + len(pending),
@@ -1470,7 +1489,7 @@ async def check_trade_legitimacy(
             recommendation=result.get("recommendation"),
         )
     except Exception as e:
-        logger.debug(f"decision_events logging skipped: {e}")
+        logger.warning(f"decision_events logging skipped: {e}")
 
     return result
 
@@ -1536,7 +1555,7 @@ async def compute_dqs(
             recommendation=result.recommendation,
         )
     except Exception as e:
-        logger.debug(f"decision_events logging skipped: {e}")
+        logger.warning(f"decision_events logging skipped: {e}")
 
     return {
         "dqs_score": result.score,

@@ -413,3 +413,72 @@ def test_utc_day_bounds_date_only():
 def test_utc_day_bounds_with_timestamp():
     start, _ = ChainBuilder._utc_day_bounds("2026-05-14T15:30:00+00:00")
     assert start == "2026-05-14T00:00:00+00:00"
+
+
+# ---------------------------------------------------------------------------
+# TSA token preservation on rebuild
+# ---------------------------------------------------------------------------
+
+def _seed_day(cb, day, n):
+    prev = GENESIS_HASH
+    for i in range(n):
+        content = f"{i:02d}" * 32
+        dh = chained_hash(prev, content)
+        cb.conn.execute(
+            "INSERT INTO audit_chain (record_id, sequence_num, content_hash, "
+            "prev_hash, data_hash, chained_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (f"tok{i}", i + 1, content, prev, dh, f"{day}T0{i}:00:00+00:00"),
+        )
+        prev = dh
+    cb.conn.commit()
+    return prev
+
+
+def test_rebuild_preserves_token_when_root_unchanged(db):
+    """Rebuilding an identical root must never destroy an existing anchor."""
+    cb = _builder(db)
+    day = "2026-05-14"
+    _seed_day(cb, day, 3)
+    root1 = cb.build_daily_root(day, request_tsa=False)
+    cb.conn.execute(
+        "UPDATE audit_roots SET tsa_token = ? WHERE period_start = ?",
+        (b"fake-tst", root1.period_start),
+    )
+    cb.conn.commit()
+
+    root2 = cb.build_daily_root(day, request_tsa=False)
+    assert root2.root_hash == root1.root_hash
+    row = cb.conn.execute(
+        "SELECT tsa_token FROM audit_roots WHERE period_start = ?",
+        (root1.period_start,),
+    ).fetchone()
+    assert row["tsa_token"] == b"fake-tst"
+
+
+def test_rebuild_drops_token_when_root_changed(db):
+    """If the recomputed root differs, the old token no longer proves it."""
+    cb = _builder(db)
+    day = "2026-05-14"
+    prev = _seed_day(cb, day, 3)
+    root1 = cb.build_daily_root(day, request_tsa=False)
+    cb.conn.execute(
+        "UPDATE audit_roots SET tsa_token = ? WHERE period_start = ?",
+        (b"fake-tst", root1.period_start),
+    )
+    # Append a fourth record inside the same day — root will change.
+    content = "ff" * 32
+    dh = chained_hash(prev, content)
+    cb.conn.execute(
+        "INSERT INTO audit_chain (record_id, sequence_num, content_hash, "
+        "prev_hash, data_hash, chained_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("tok3", 4, content, prev, dh, f"{day}T09:00:00+00:00"),
+    )
+    cb.conn.commit()
+
+    root2 = cb.build_daily_root(day, request_tsa=False)
+    assert root2.root_hash != root1.root_hash
+    row = cb.conn.execute(
+        "SELECT tsa_token FROM audit_roots WHERE period_start = ?",
+        (root1.period_start,),
+    ).fetchone()
+    assert row["tsa_token"] is None

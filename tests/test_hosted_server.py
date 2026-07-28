@@ -49,7 +49,7 @@ class TestHealth:
         assert resp.status_code == 200
         data = resp.json()
         assert data["status"] == "healthy"
-        assert data["version"] == "0.5.3"
+        assert data["version"] == "0.5.4"
 
 
 # ========== Auth ==========

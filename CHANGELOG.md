@@ -5,6 +5,41 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [0.5.4] - 2026-07-29
+
+Hotfix release: an adversarial review immediately after 0.5.3 found three
+critical gaps in the new anchoring path. Fixed same-day.
+
+### Fixed
+- **Rebuilds no longer destroy existing anchors.** `build_daily_root` used
+  `INSERT OR REPLACE`, which nulled a stored `tsa_token` on every rebuild
+  (TSA off, TSA failure, or backfill). The token is now carried forward
+  when the recomputed root hash is unchanged — and honestly dropped when
+  the data (and therefore the root) actually changed.
+- **TSA rejections can no longer masquerade as anchors.** `request_timestamp`
+  now parses PKIStatus and raises on an explicit rejection (status not in
+  granted/grantedWithMods) instead of storing the rejection response and
+  reporting `has_tsa_token: true`.
+- **`POST /audit/root/{date}` is protect-by-default.** An already-anchored
+  root is returned as-is (`already_anchored: true`) instead of being
+  rebuilt; pass `force=true` to rebuild. The endpoint is also sync now, so
+  the blocking TSA call runs on the threadpool instead of stalling the
+  event loop.
+- **Anchoring uses the last completed UTC day.** `daily_reflection.py`
+  previously used local "yesterday", which on UTC+N machines could anchor
+  a UTC day that had not finished yet; backfill runs (`--date`) now anchor
+  relative to the target date.
+- **`plan_triggered` events dedup per (plan, UTC day)** — agents polling
+  `check_active_plans` no longer flood `decision_events` with the same
+  standing alert. Plan id is stored in `linked_trade_id` for joins.
+- decision_events persistence failures now log at WARNING (was DEBUG).
+- Test suite forces `TRADEMEMORY_TSA=off` unconditionally (was
+  `setdefault`, which an inherited env var could override).
+- Version strings caught up in `server.py` (REST app said 0.5.2) and the
+  TSA client User-Agent no longer embeds a stale version.
+
+---
+
 ## [0.5.3] - 2026-07-29
 
 ### Added

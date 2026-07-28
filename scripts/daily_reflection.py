@@ -44,13 +44,23 @@ def send_discord(title: str, message: str, color: int = 0x9B59B6):
         pass  # Never fail the script for a notification issue
 
 
-def anchor_yesterday_root() -> str:
-    """Build + RFC 3161 timestamp yesterday's audit root via the API.
+def anchor_yesterday_root(target_date: date = None) -> str:
+    """Build + RFC 3161 timestamp the last COMPLETED UTC day's audit root.
+
+    UTC, not local time: root periods are UTC day bounds, and "local
+    yesterday" on a UTC+N machine can still be an unfinished UTC day —
+    anchoring that would freeze a half-day root. When `target_date` is
+    given (backfill runs with --date), anchor the day before it instead.
 
     Non-fatal: the reflection must not fail because anchoring did.
     Returns a one-line status string for the report / notification.
     """
-    yesterday = (date.today() - timedelta(days=1)).isoformat()
+    if target_date is not None:
+        yesterday = (target_date - timedelta(days=1)).isoformat()
+    else:
+        yesterday = (
+            datetime.now(timezone.utc).date() - timedelta(days=1)
+        ).isoformat()
     try:
         resp = requests.post(f"{TRADEMEMORY_API}/audit/root/{yesterday}", timeout=30)
         if resp.ok:
@@ -271,9 +281,9 @@ def main():
         target_date = date.fromisoformat(args.date) if args.date else None
         summary = generate_daily_reflection(target_date)
 
-        # Anchor yesterday's audit root as part of the daily loop (v0.5.3):
+        # Anchor the last completed UTC day's audit root (v0.5.3+):
         # the root gets an independent RFC 3161 timestamp by default.
-        root_status = anchor_yesterday_root()
+        root_status = anchor_yesterday_root(target_date)
         print(f"\n{root_status}")
         if summary:
             summary += f"\n\n{root_status}"

@@ -136,6 +136,26 @@ async def test_triggered_plan_persists_event(_fresh_db):
 
 
 @pytest.mark.asyncio
+async def test_triggered_plan_dedup_same_day(_fresh_db):
+    """Polling check_active_plans must not re-log the same standing alert."""
+    from tradememory.mcp_server import check_active_plans, create_trading_plan
+
+    await create_trading_plan(
+        trigger_type="market_condition",
+        trigger_condition='{"regime": "ranging"}',
+        planned_action='{"type": "switch_strategy"}',
+        reasoning="dedup check",
+        priority=0.5,
+    )
+    await check_active_plans(context_regime="ranging")
+    await check_active_plans(context_regime="ranging")
+    await check_active_plans(context_regime="ranging")
+
+    events = _fresh_db.query_decision_events(tool="plan_triggered")
+    assert len(events) == 1
+
+
+@pytest.mark.asyncio
 async def test_persistence_failure_never_blocks_gate(_fresh_db, monkeypatch):
     from tradememory.mcp_server import check_trade_legitimacy
 

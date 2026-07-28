@@ -1,6 +1,6 @@
 [project]
 name = "tradememory-protocol"
-version = "0.5.3"
+version = "0.5.4"
 description = "Decision audit trail + persistent memory for AI trading agents. SHA-256 tamper detection, outcome-weighted recall, strategy evolution via MCP."
 authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
 license = {text = "MIT"}

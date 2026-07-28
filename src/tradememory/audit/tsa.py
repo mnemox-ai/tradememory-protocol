@@ -187,7 +187,7 @@ def request_timestamp(
             "Content-Length": str(len(tsq_der)),
             # Some TSAs check User-Agent / Accept; be friendly.
             "Accept": "application/timestamp-reply",
-            "User-Agent": "tradememory-protocol/0.5.2 (+https://github.com/mnemox-ai/tradememory-protocol)",
+            "User-Agent": "tradememory-protocol (+https://github.com/mnemox-ai/tradememory-protocol)",
         },
         method="POST",
     )
@@ -214,6 +214,16 @@ def request_timestamp(
     if not body or body[0] != 0x30:
         raise TSAError(
             f"TSA response is not a DER SEQUENCE (first byte={body[:1]!r})"
+        )
+
+    # A TimeStampResp with PKIStatus outside (0=granted, 1=grantedWithMods)
+    # is an explicit rejection — storing it would fake an anchoring proof.
+    # None (unparseable) stays best-effort: some TSAs return bare tokens.
+    pki_status = parse_status_from_tsr(body)
+    if pki_status is not None and pki_status not in (0, 1):
+        raise TSAError(
+            f"TSA rejected the request: PKIStatus={pki_status} "
+            f"(expected 0=granted or 1=grantedWithMods)"
         )
 
     return TSAResponse(

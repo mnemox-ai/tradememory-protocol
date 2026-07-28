@@ -50,12 +50,17 @@ The goal is to be a partner you can build on without surprises later.
 
 ## 2. Architecture maturity
 
-### Today (v0.5.2)
+### Today (v0.5.4)
 - **Single-tenant SQLite** is the production storage layer (`db.py`).
 - FastAPI REST server binds to `127.0.0.1` only — there is an explicit
   comment in `server.py` line ~40 noting this.
 - **No bearer-token auth, no API keys, no RBAC, no rate limiting.**
 - Memory is local-process — no horizontal scaling.
+- **`decision_events` (v0.5.3+) is single-tenant like every other memory
+  table.** If the shared MCP app is mounted in a multi-tenant host, gate
+  events from all tenants land in one table with no tenant scoping — do
+  not expose `query_decision_events` cross-tenant until the tenancy work
+  above lands.
 
 ### In progress
 - A second PostgreSQL stack lives in parallel under `database.py`,

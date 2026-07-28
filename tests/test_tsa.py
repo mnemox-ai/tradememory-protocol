@@ -94,6 +94,10 @@ class _MockResponse:
 # A DER SEQUENCE prefix (0x30 + len) — enough for our content-type check.
 _FAKE_TSR = b"\x30\x82\x00\x10" + b"\x00" * 16
 
+# Minimal parseable TimeStampResp: SEQUENCE { SEQUENCE { INTEGER status } }
+_TSR_GRANTED = bytes.fromhex("30053003020100")   # PKIStatus = 0
+_TSR_REJECTED = bytes.fromhex("30053003020102")  # PKIStatus = 2 (rejection)
+
 
 def test_request_timestamp_success_returns_response():
     with patch("urllib.request.urlopen", return_value=_MockResponse(200, _FAKE_TSR)):
@@ -102,6 +106,19 @@ def test_request_timestamp_success_returns_response():
     assert resp.nonce == 99
     assert resp.sha256_hex == VALID_SHA256_HEX
     assert resp.tsa_url == DEFAULT_TSA_URL
+
+
+def test_request_timestamp_accepts_granted_status():
+    with patch("urllib.request.urlopen", return_value=_MockResponse(200, _TSR_GRANTED)):
+        resp = request_timestamp(VALID_SHA256_HEX, nonce=1)
+    assert resp.response_der == _TSR_GRANTED
+
+
+def test_request_timestamp_raises_on_rejected_status():
+    """A TSA rejection (PKIStatus=2) must never be stored as an anchor."""
+    with patch("urllib.request.urlopen", return_value=_MockResponse(200, _TSR_REJECTED)):
+        with pytest.raises(TSAError, match="PKIStatus=2"):
+            request_timestamp(VALID_SHA256_HEX, nonce=1)
 
 
 def test_request_timestamp_uses_env_url():

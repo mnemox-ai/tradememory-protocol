@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="TradeMemory Protocol",
     description="AI Agent Trading Memory & Adaptive Decision Layer",
-    version="0.5.2"
+    version="0.5.4"
 )
 
 # CORS middleware — allow dashboard dev server
@@ -1376,14 +1376,24 @@ async def audit_get_decision_record(trade_id: str):
 
 
 @app.post("/audit/root/{date}")
-async def build_audit_root(date: str, request_tsa: Optional[bool] = None):
-    """Build (or rebuild) the daily Merkle root for a UTC date.
+def build_audit_root(
+    date: str,
+    request_tsa: Optional[bool] = None,
+    force: bool = False,
+):
+    """Build the daily Merkle root for a UTC date (anchored by default).
 
-    `request_tsa=None` (default) follows the TRADEMEMORY_TSA env setting —
-    ON unless set to "off" — so the rebuilt root gets an RFC 3161
-    TimeStampToken from the configured TSA. TSA failures are logged and
-    non-fatal. Used by scripts/daily_reflection.py to anchor yesterday's
-    root as part of the daily loop.
+    `request_tsa=None` follows the TRADEMEMORY_TSA env setting — ON unless
+    set to "off". Protect-by-default: if a root for this date already
+    carries a TSA token, it is returned as-is (`already_anchored: true`)
+    instead of being rebuilt; pass `force=true` to rebuild anyway. This
+    keeps the endpoint idempotent, avoids re-hitting the TSA on retries,
+    and means a plain POST can never destroy an existing anchor.
+
+    Sync (not async) on purpose: the TSA call is blocking urllib — FastAPI
+    runs sync endpoints on the threadpool so the event loop stays free.
+
+    Used by scripts/daily_reflection.py to anchor yesterday's root.
     """
     from .audit.chain import ChainBuilder
 
@@ -1391,6 +1401,27 @@ async def build_audit_root(date: str, request_tsa: Optional[bool] = None):
     try:
         with db.get_connection() as conn:
             builder = ChainBuilder(conn)
+
+            if not force:
+                bounds_start, _ = builder._utc_day_bounds(date)
+                existing = conn.execute(
+                    "SELECT period_start, period_end, root_hash, "
+                    "prev_root_hash, record_count, generated_at, tsa_token "
+                    "FROM audit_roots WHERE period_start = ?",
+                    (bounds_start,),
+                ).fetchone()
+                if existing and existing["tsa_token"]:
+                    return {
+                        "period_start": existing["period_start"],
+                        "period_end": existing["period_end"],
+                        "root_hash": existing["root_hash"],
+                        "prev_root_hash": existing["prev_root_hash"],
+                        "record_count": existing["record_count"],
+                        "generated_at": existing["generated_at"],
+                        "has_tsa_token": True,
+                        "already_anchored": True,
+                    }
+
             root = builder.build_daily_root(date, request_tsa=request_tsa)
             row = conn.execute(
                 "SELECT tsa_token FROM audit_roots WHERE period_start = ?",
@@ -1407,6 +1438,7 @@ async def build_audit_root(date: str, request_tsa: Optional[bool] = None):
         "record_count": root.record_count,
         "generated_at": root.generated_at,
         "has_tsa_token": has_token,
+        "already_anchored": False,
     }
 
 
