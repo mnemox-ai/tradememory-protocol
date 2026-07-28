@@ -5,9 +5,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [0.5.2] - 2026-05-14
+## [0.5.2] - 2026-07-29
 
 ### Added
+- **RFC 3161 TSA client (`audit/tsa.py`)** — opt-in trusted timestamping of
+  daily Merkle roots (default endpoint freetsa.org; disabled by default).
+  Hand-rolled DER, zero new runtime dependencies.
+- **Bearer auth scaffold** for the hosted API surface, and **hybrid recall
+  wired into production** (OWM + optional vector fusion).
+- **SSRT module (`ssrt/`)** — mSPRT sequential testing engine for strategy
+  retirement decisions, with Monte Carlo validation experiments (Phase 1+2).
+- **arXiv paper reproduction package** — `research/level2/` now contains the
+  full main experiment (`run_matrix.py`, `analyze.py`, `RESULTS.md`, raw
+  `results.json`) plus a rolling-reproduction caveat in `research/README.md`.
 - **Audit chain (`audit/`).** Per-record content hashes are now linked into a
   forward-chained SHA-256 chain (`chained_hash = SHA256(prev_hash || content_hash)`)
   with a genesis block (`0` * 64). Tampering with any historical record
@@ -46,14 +56,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - TDR `MemoryContext` description updated to reflect the real semantic.
 
 ### Fixed
+- CI test collection: `numpy` and `hypothesis` are now declared dependencies
+  (test collection had been failing on CI since the SSRT and property-based
+  test suites were added).
 - The three call sites in `mcp_server.py` and `server.py` that set
   `anti_resonance_applied = len(refs) > 0` — a behavioural lie that was
   flagged in the pre-OTSO audit. The flag now reflects actual counter-evidence.
 
 ### Notes
-- 1,428 tests pass on this release (+50 new, no regressions). 0 failures.
+- 1,459 tests collected and passing on CI (3.10/3.11/3.12) at release time.
 - Phase 5 INVALID result is retained in the research log and now explicitly
   documented in `LIMITATIONS.md` Section 1.
+
+---
+
+## [0.5.1] - 2026-03-27
+
+### Added
+- **TDR audit schema (Phase 2)** — Trading Decision Records with REST/MCP
+  audit endpoints and per-record tamper detection.
+- **DecisionLogReader** — JSONL decision context for rich reasoning.
+- **Onboarding CLI** — setup wizard, `doctor`, multi-platform config.
+- **event_log integration** and credential hardening for the full trade
+  context pipeline.
+
+### Fixed
+- Pipeline P0-P2: `strategy_map`, TDR JSONL path, corruption handler.
+- Security: path traversal, audit-hash handling, recall_events, and
+  local-only binding.
+
+### Changed
+- README rewritten around the audit + memory dual-core positioning.
 
 ---
 

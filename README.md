@@ -7,7 +7,7 @@
 <div align="center">
 
 [![PyPI](https://img.shields.io/pypi/v/tradememory-protocol?style=flat-square&color=blue)](https://pypi.org/project/tradememory-protocol/)
-[![Tests](https://img.shields.io/badge/tests-1%2C428_passed-brightgreen?style=flat-square)](https://github.com/mnemox-ai/tradememory-protocol/actions)
+[![Tests](https://img.shields.io/github/actions/workflow/status/mnemox-ai/tradememory-protocol/ci.yml?branch=master&style=flat-square&label=tests)](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml)
 [![MCP Tools](https://img.shields.io/badge/MCP_tools-20-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
@@ -26,7 +26,7 @@ The AI trading stack is missing a layer. Every MCP server handles execution — 
 
 Your agent can buy 100 shares of AAPL but can't answer: *"What happened last time I bought AAPL in this condition?"*
 
-**TradeMemory is the memory layer.** One `pip install`, and your AI agent remembers every trade, every outcome, every mistake — with SHA-256 tamper-proof audit trail.
+**TradeMemory is the memory layer.** One `pip install`, and your AI agent remembers every trade, every outcome, every mistake — with a SHA-256 tamper-evident audit trail.
 
 Used in production by traders running pre-flight checklists before every position, and by EA systems logging thousands of decisions daily.
 
@@ -84,7 +84,7 @@ docker compose up -d
 |---|---|---|---|
 | **Market** | Stocks (AAPL, TSLA, ...) | XAUUSD (Gold) | Multi-asset |
 | **How** | Pre-flight checklist before every trade | Automated sync from MT5 | Full decision audit trail |
-| **Key value** | Discipline system — memory before every decision | Record why signals were blocked, not just executed | SHA-256 tamper-proof records for regulators |
+| **Key value** | Discipline system — memory before every decision | Record why signals were blocked, not just executed | SHA-256 tamper-evident records for regulators |
 | **Details** | [Read more →](docs/USE_CASES.md#case-1-us-equity-trader--pre-flight-workflow) | [Read more →](docs/USE_CASES.md#case-2-forex-ea-system--automated-memory-loop) | [Read more →](docs/USE_CASES.md#case-3-compliance-first-fund--audit-trail) |
 
 ## How it works
@@ -180,9 +180,9 @@ See [LIMITATIONS.md](LIMITATIONS.md) for the full audit-chain maturity statement
 
 - **Never touches API keys.** TradeMemory does not execute trades, move funds, or access wallets.
 - **Read and record only.** Your agent passes decision context to TradeMemory. It stores it. That's it.
-- **No external network calls.** The server runs locally. No data is sent to third parties.
-- **SHA-256 chained audit ledger.** Every record is hashed at creation and linked to the previous record. Daily Merkle roots anchor the chain. Verify integrity at the record, slice, or day level.
-- **1,428 tests passing.** Full test suite with CI.
+- **Local-first.** No external network calls by default; the only optional outbound call is RFC 3161 trusted timestamping, and only if you enable it. No data is sent to third parties.
+- **SHA-256 chained audit ledger.** Every record is hashed at creation and linked to the previous record. Daily Merkle roots anchor the chain. Verify integrity at the record, slice, or day level. Tampering is detectable at every level; external anchoring (TSA by default) is on the roadmap.
+- **1,400+ tests passing.** Full test suite with CI.
 
 ## Research Status
 
@@ -191,7 +191,7 @@ and reinforcement learning (Schaul et al. 2015). Current status:
 
 - **OWM five-factor scoring:** implemented, tested (1,300+ tests)
 - **Statistical validation:** DSR, MBL implemented (Bailey-de Prado 2014)
-- **Audit trail:** SHA-256 tamper-proof TDR
+- **Audit trail:** SHA-256 tamper-evident TDR
 - **Evolution engine:** research phase (strategy generation works, statistical gate pass rate under optimization)
 - **Hybrid recall:** OWM-only mode active, vector fusion available when embeddings configured
 - **Empirical validation:** ongoing (n=40 trades, target n>=100 for statistical significance)

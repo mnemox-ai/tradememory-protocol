@@ -180,9 +180,9 @@ Export all TDRs as JSON or JSONL for regulatory submission.
 
 - **TradeMemory never touches API keys.** It does not execute trades, move funds, or access wallets.
 - **Read and record only.** The agent calls TradeMemory after making a decision, passing the context. TradeMemory stores it.
-- **No external network calls.** The server runs locally. No data is sent to third parties.
+- **Local-first.** No external network calls by default; the only optional outbound call is RFC 3161 trusted timestamping, and only if you enable it. No data is sent to third parties.
 - **SHA-256 tamper detection.** Every record is hashed at creation time. Verify integrity at any point with `/audit/verify`.
-- **1,234 tests passing.** Full test suite with CI.
+- **1,400+ tests passing.** Full test suite with CI.
 - **Scale:** 17 MCP tools, 35 REST endpoints, 5-layer memory architecture (episodic, semantic, procedural, affective, prospective).
 
 ## Regulatory Alignment
