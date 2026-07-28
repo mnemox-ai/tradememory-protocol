@@ -117,6 +117,15 @@ class TestOWMRemember:
             assert resp.status_code == 200
             assert resp.json()["status"] == "stored"
 
+    def test_remembered_trade_is_reflectable(self, owm_client):
+        """Trades stored via /owm/remember must parse as TradeRecord —
+        market_context needs a 'price' field or the reflection engine 400s."""
+        resp = owm_client.post("/owm/remember", json=TRADE_1_WIN)
+        assert resp.status_code == 200
+        resp = owm_client.post("/reflect/run_daily")
+        assert resp.status_code == 200, resp.json()
+        assert resp.json()["success"] is True
+
 
 class TestOWMRecall:
     """Test POST /owm/recall returns correctly scored memories."""
