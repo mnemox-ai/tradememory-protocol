@@ -308,6 +308,45 @@ class TestSymbolFit:
         assert vb_p['metrics']['best_symbol'] == 'XAUUSD'
         assert vb_p['metrics']['worst_symbol'] == 'EURUSD'
 
+    def test_detect_single_symbol_specialist(self, temp_db, journal, reflection):
+        """Regression for issue #8: the specialist gate required a 50-point
+        PnL advantage (10x the sibling 5.0 direction-fit gate), so the
+        single-symbol branch never fired on realistic spreads. A profitable
+        specialist with a ~12-point advantage must be surfaced."""
+        # Solo specialist: 12 trades, GBPUSD only, +12.0% total PnL
+        for i in range(12):
+            pnl = 150.0 if i < 10 else -150.0  # net +1200 on 10k = +12.0%
+            _insert_backtest_trade(temp_db, "SC_GBPUSD_BUY_RR2_TH0.4", i, pnl,
+                                   "SoloScalper", "GBPUSD", "BUY",
+                                   timestamp=f"2025-06-15T{10 + i // 2:02d}:00:00")
+
+        # Multi-symbol strategy providing the non-solo baseline (~0% each)
+        for i in range(4):
+            pnl = 50.0 if i < 2 else -50.0
+            _insert_backtest_trade(temp_db, "IM_XAUUSD_BUY_RR3_TH0.5", i, pnl,
+                                   "IntradayMomentum", "XAUUSD", "BUY",
+                                   timestamp=f"2025-06-{15 + i:02d}T10:00:00")
+        for i in range(4):
+            pnl = 50.0 if i < 2 else -50.0
+            _insert_backtest_trade(temp_db, "IM_EURUSD_BUY_RR3_TH0.5", i, pnl,
+                                   "IntradayMomentum", "EURUSD", "BUY",
+                                   timestamp=f"2025-06-{15 + i:02d}T11:00:00")
+
+        conn = temp_db._get_connection()
+        try:
+            patterns = reflection._detect_symbol_fit(conn, 10000.0, "2025-06-15 to 2025-06-18")
+        finally:
+            conn.close()
+
+        solo = [p for p in patterns if p.get('metrics', {}).get('single_symbol')]
+        assert len(solo) == 1, (
+            "profitable single-symbol specialist with a realistic advantage "
+            "must produce a symbol_fit pattern"
+        )
+        assert solo[0]['strategy'] == 'SoloScalper'
+        assert solo[0]['symbol'] == 'GBPUSD'
+        assert solo[0]['pattern_type'] == 'symbol_fit'
+
 
 class TestMRAnalysis:
     """Test MeanReversion-specific analysis."""

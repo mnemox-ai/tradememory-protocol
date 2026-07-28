@@ -1331,8 +1331,8 @@ NEXT MONTH:
                 )
                 pnl_advantage = round(solo['pnl_pct'] - avg_non_solo_pnl, 1)
 
-                if pnl_advantage < 50:
-                    continue  # Not significant enough
+                if pnl_advantage < 5.0:
+                    continue  # Not significant enough (same scale as direction-fit delta gate)
 
                 idx += 1
                 desc = (
