@@ -38,13 +38,14 @@ The trader also built automation scripts for portfolio dashboards, price updates
 
 TradeMemory does not call third-party APIs automatically, but the trader can
 attach externally fetched sentiment as part of the `market_context`. For
-example, an agent can fetch an Adanos Market Sentiment API snapshot and format
-it before calling `remember_trade`:
+example, an agent can fetch an Adanos Market Sentiment API snapshot and map it
+to TradeMemory's vendor-neutral sentiment schema before calling
+`remember_trade`:
 
 ```python
 import requests
 
-from tradememory.data.adanos import format_adanos_market_context
+from tradememory.data import format_sentiment_context
 
 response = requests.get(
     "https://api.adanos.org/reddit/stocks/v1/stock/AAPL",
@@ -53,7 +54,17 @@ response = requests.get(
     timeout=10,
 )
 response.raise_for_status()
-sentiment_context = format_adanos_market_context(response.json(), source="reddit")
+adanos_data = response.json()
+score = adanos_data["sentiment_score"]
+label = "bullish" if score > 0 else "bearish" if score < 0 else "neutral"
+sentiment_context = format_sentiment_context(
+    {
+        "score": score,
+        "label": label,
+        "sample_window": "2026-06-09 to 2026-06-16 UTC",
+    },
+    source="Adanos Reddit",
+)
 
 # Pass this into remember_trade alongside price action, regime, and strategy context.
 market_context = (
@@ -63,7 +74,10 @@ market_context = (
 ```
 
 This keeps API keys and network calls outside TradeMemory while preserving the
-sentiment evidence that shaped the trade decision.
+sentiment evidence that shaped the trade decision. See
+[`examples/integrations/adanos_sentiment.py`](../examples/integrations/adanos_sentiment.py)
+for the provider-specific mapping. Other providers can map their responses to
+the same `score`, `label`, and `sample_window` fields.
 
 ---
 
