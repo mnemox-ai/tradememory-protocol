@@ -66,3 +66,16 @@ Data period: 1095 days (3 years), walk-forward split 67%/33%.
 - Strategy grid generates 243 combinations, filtered to ~150 valid
 - Each market segment uses the first 50 qualifying strategies
 - CUSUM threshold h=4.0, lot reduction x0.5 (same for all agents)
+
+### Rolling reproduction (read before re-running)
+
+The data window in `run_matrix.py` is **relative to the run date** (now
+minus 1095 days), not a frozen historical interval. Re-running today
+fetches a different 3-year window than the one behind `RESULTS.md`
+(dated 2026-04-10), so exact figures (73.5% win rate, d=0.76, CI bounds)
+will drift with market conditions. Direction and effect-size class have
+been stable across our internal re-runs, but this is a *rolling*
+reproduction, not a frozen-dataset one. Pinning a frozen OHLCV snapshot
+for exact reproduction is on the roadmap; until then, compare your
+re-run against `RESULTS.md` qualitatively (win rate ranking across
+agents, sign and magnitude class of DD deltas), not digit-for-digit.
