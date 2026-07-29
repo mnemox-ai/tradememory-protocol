@@ -69,14 +69,8 @@ MCP_PUBLIC_METHODS = {
 }
 
 
-async def _mcp_method(request: Request) -> Optional[str]:
-    """Read the JSON-RPC method without consuming the body downstream."""
-    body = await request.body()
-
-    async def _replay() -> Dict[str, Any]:
-        return {"type": "http.request", "body": body, "more_body": False}
-
-    request._receive = _replay  # noqa: SLF001 — re-arm the stream for the sub-app
+def _rpc_method(body: bytes) -> Optional[str]:
+    """Extract the JSON-RPC method name from a request body."""
     try:
         payload = json.loads(body or b"{}")
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -87,31 +81,85 @@ async def _mcp_method(request: Request) -> Optional[str]:
     return payload.get("method") if isinstance(payload, dict) else None
 
 
-@app.middleware("http")
-async def mcp_require_api_key(request: Request, call_next):
-    # The mounted MCP sub-app bypasses route dependencies, so gate it here:
-    # same Bearer tm_live_*/tm_test_* contract as the REST endpoints.
-    # Discovery methods (initialize, tools/list, ...) stay open; anything
-    # that can touch data requires a key.
-    if request.url.path.startswith("/mcp") and request.method == "POST":
-        # Only POST carries JSON-RPC calls. GET opens the SSE stream and
-        # DELETE ends a session — in stateless mode neither can return
-        # stored data on its own, and blocking GET breaks every gateway
-        # that establishes the stream before calling anything.
-        method = await _mcp_method(request)
-        if method not in MCP_PUBLIC_METHODS:
-            auth = request.headers.get("authorization", "")
-            api_key = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
+class MCPAuthMiddleware:
+    """Gate MCP tool calls, leave discovery open.
+
+    Deliberately pure ASGI rather than Starlette's BaseHTTPMiddleware:
+    the MCP endpoint answers over server-sent events, and
+    BaseHTTPMiddleware breaks streaming responses (the client gets headers
+    and then hangs — which is exactly how registry probes time out).
+
+    Only POST carries JSON-RPC calls; GET opens the event stream and
+    DELETE ends a session, neither of which can return stored data on
+    their own, so they pass straight through.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if (
+            scope["type"] != "http"
+            or scope.get("method") != "POST"
+            or not scope.get("path", "").startswith("/mcp")
+        ):
+            await self.app(scope, receive, send)
+            return
+
+        body = b""
+        while True:
+            message = await receive()
+            if message["type"] == "http.disconnect":
+                return
+            body += message.get("body", b"")
+            if not message.get("more_body", False):
+                break
+
+        if _rpc_method(body) not in MCP_PUBLIC_METHODS:
+            headers = {
+                k.decode("latin-1").lower(): v.decode("latin-1")
+                for k, v in scope.get("headers", [])
+            }
+            auth = headers.get("authorization", "")
+            api_key = (
+                auth.split(" ", 1)[1].strip()
+                if auth.lower().startswith("bearer ")
+                else ""
+            )
             if not api_key.startswith(("tm_live_", "tm_test_")) or not get_db().validate_key(api_key):
-                return JSONResponse(
-                    status_code=401,
-                    content={
-                        "error": "unauthorized",
-                        "message": "This MCP method requires a Bearer API key "
-                                   "(discovery methods such as tools/list are open)",
-                    },
-                )
-    return await call_next(request)
+                payload = json.dumps({
+                    "error": "unauthorized",
+                    "message": "This MCP method requires a Bearer API key "
+                               "(discovery methods such as tools/list are open)",
+                }).encode()
+                await send({
+                    "type": "http.response.start",
+                    "status": 401,
+                    "headers": [
+                        (b"content-type", b"application/json"),
+                        (b"content-length", str(len(payload)).encode()),
+                    ],
+                })
+                await send({"type": "http.response.body", "body": payload})
+                return
+
+        replayed = False
+
+        async def replay():
+            # Hand the buffered body over once, then fall back to the real
+            # transport so the app still sees disconnect events (returning
+            # the body forever makes streaming handlers wait for an end
+            # that never comes).
+            nonlocal replayed
+            if not replayed:
+                replayed = True
+                return {"type": "http.request", "body": body, "more_body": False}
+            return await receive()
+
+        await self.app(scope, replay, send)
+
+
+app.add_middleware(MCPAuthMiddleware)
 
 
 # ========== Database ==========

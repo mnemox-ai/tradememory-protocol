@@ -121,6 +121,22 @@ class TestMCPAuth:
         resp = client.post("/mcp", json=self.LIST_BODY, headers=self.MCP_ACCEPT)
         assert resp.status_code != 401
 
+    def test_tools_list_streams_a_real_body(self, client_and_key):
+        """Regression: a BaseHTTPMiddleware gate returned 200 with an EMPTY
+        body — registries saw a live endpoint that listed nothing and timed
+        out. The gate must not swallow the event stream."""
+        import json as _json
+        import re as _re
+
+        client, _ = client_and_key
+        resp = client.post("/mcp", json=self.LIST_BODY, headers=self.MCP_ACCEPT)
+        assert resp.status_code == 200
+        match = _re.search(r"data: (.*)", resp.text)
+        assert match, f"no SSE data frame in response: {resp.text[:200]!r}"
+        tools = _json.loads(match.group(1))["result"]["tools"]
+        assert len(tools) > 10
+        assert any(t["name"] == "remember_trade" for t in tools)
+
     def test_initialize_is_public(self, client_and_key):
         client, _ = client_and_key
         resp = client.post(
