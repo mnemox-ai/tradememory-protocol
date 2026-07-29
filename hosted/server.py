@@ -55,18 +55,58 @@ app.add_middleware(
 )
 
 
+# MCP methods that expose no user data and stay open, so registries and
+# uptime checks can discover the server. Tool *schemas* are already public
+# (they're in the repo); tool *calls* touch memory and stay gated.
+MCP_PUBLIC_METHODS = {
+    "initialize",
+    "notifications/initialized",
+    "ping",
+    "tools/list",
+    "resources/list",
+    "resources/templates/list",
+    "prompts/list",
+}
+
+
+async def _mcp_method(request: Request) -> Optional[str]:
+    """Read the JSON-RPC method without consuming the body downstream."""
+    body = await request.body()
+
+    async def _replay() -> Dict[str, Any]:
+        return {"type": "http.request", "body": body, "more_body": False}
+
+    request._receive = _replay  # noqa: SLF001 — re-arm the stream for the sub-app
+    try:
+        payload = json.loads(body or b"{}")
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    if isinstance(payload, list):  # JSON-RPC batch: gate unless ALL are public
+        methods = [m.get("method") for m in payload if isinstance(m, dict)]
+        return methods[0] if len(set(methods)) == 1 else "batch/mixed"
+    return payload.get("method") if isinstance(payload, dict) else None
+
+
 @app.middleware("http")
 async def mcp_require_api_key(request: Request, call_next):
     # The mounted MCP sub-app bypasses route dependencies, so gate it here:
     # same Bearer tm_live_*/tm_test_* contract as the REST endpoints.
+    # Discovery methods (initialize, tools/list, ...) stay open; anything
+    # that can touch data requires a key.
     if request.url.path.startswith("/mcp"):
-        auth = request.headers.get("authorization", "")
-        api_key = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
-        if not api_key.startswith(("tm_live_", "tm_test_")) or not get_db().validate_key(api_key):
-            return JSONResponse(
-                status_code=401,
-                content={"error": "unauthorized", "message": "MCP endpoint requires a Bearer API key"},
-            )
+        method = await _mcp_method(request) if request.method == "POST" else None
+        if method not in MCP_PUBLIC_METHODS:
+            auth = request.headers.get("authorization", "")
+            api_key = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
+            if not api_key.startswith(("tm_live_", "tm_test_")) or not get_db().validate_key(api_key):
+                return JSONResponse(
+                    status_code=401,
+                    content={
+                        "error": "unauthorized",
+                        "message": "This MCP method requires a Bearer API key "
+                                   "(discovery methods such as tools/list are open)",
+                    },
+                )
     return await call_next(request)
 
 

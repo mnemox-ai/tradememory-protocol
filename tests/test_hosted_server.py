@@ -79,32 +79,73 @@ class TestAuth:
 
 
 class TestMCPAuth:
-    """The mounted MCP sub-app bypasses route dependencies — the middleware must gate it."""
+    """The mounted MCP sub-app bypasses route dependencies — the middleware must gate it.
 
-    MCP_BODY = {"jsonrpc": "2.0", "method": "tools/list", "id": 1}
+    Discovery methods stay open so registries (Smithery, MCP Registry) and
+    uptime checks can introspect the server; anything that can touch stored
+    memory requires a key.
+    """
+
+    CALL_BODY = {
+        "jsonrpc": "2.0", "method": "tools/call", "id": 1,
+        "params": {"name": "get_agent_state", "arguments": {}},
+    }
+    LIST_BODY = {"jsonrpc": "2.0", "method": "tools/list", "id": 1}
     MCP_ACCEPT = {"Accept": "application/json, text/event-stream"}
 
-    def test_mcp_requires_key(self, client_and_key):
+    def test_tool_call_requires_key(self, client_and_key):
         client, _ = client_and_key
-        resp = client.post("/mcp", json=self.MCP_BODY, headers=self.MCP_ACCEPT)
+        resp = client.post("/mcp", json=self.CALL_BODY, headers=self.MCP_ACCEPT)
         assert resp.status_code == 401
         assert resp.json()["error"] == "unauthorized"
 
-    def test_mcp_rejects_bad_key(self, client_and_key):
+    def test_tool_call_rejects_bad_key(self, client_and_key):
         client, _ = client_and_key
         resp = client.post(
-            "/mcp", json=self.MCP_BODY,
+            "/mcp", json=self.CALL_BODY,
             headers={**self.MCP_ACCEPT, "Authorization": "Bearer tm_live_nonexistent"},
         )
         assert resp.status_code == 401
 
-    def test_mcp_accepts_valid_key(self, client_and_key):
+    def test_tool_call_accepts_valid_key(self, client_and_key):
         client, api_key = client_and_key
         resp = client.post(
-            "/mcp", json=self.MCP_BODY,
+            "/mcp", json=self.CALL_BODY,
             headers={**self.MCP_ACCEPT, **auth_header(api_key)},
         )
         assert resp.status_code != 401
+
+    def test_tools_list_is_public(self, client_and_key):
+        """Registries must be able to enumerate tools without a key."""
+        client, _ = client_and_key
+        resp = client.post("/mcp", json=self.LIST_BODY, headers=self.MCP_ACCEPT)
+        assert resp.status_code != 401
+
+    def test_initialize_is_public(self, client_and_key):
+        client, _ = client_and_key
+        resp = client.post(
+            "/mcp",
+            json={
+                "jsonrpc": "2.0", "method": "initialize", "id": 1,
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {"name": "registry-probe", "version": "1"},
+                },
+            },
+            headers=self.MCP_ACCEPT,
+        )
+        assert resp.status_code != 401
+
+    def test_unknown_method_still_gated(self, client_and_key):
+        """Anything not on the public allowlist must still require a key."""
+        client, _ = client_and_key
+        resp = client.post(
+            "/mcp",
+            json={"jsonrpc": "2.0", "method": "resources/read", "id": 1, "params": {}},
+            headers=self.MCP_ACCEPT,
+        )
+        assert resp.status_code == 401
 
 
 # ========== Store Trade ==========
