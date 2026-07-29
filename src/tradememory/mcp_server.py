@@ -28,7 +28,28 @@ from .owm_helpers import (
 
 logger = logging.getLogger(__name__)
 
-mcp = FastMCP("tradememory-protocol")
+from . import __version__ as _VERSION
+
+mcp = FastMCP(
+    "tradememory-protocol",
+    version=_VERSION,
+    website_url="https://github.com/mnemox-ai/tradememory-protocol",
+    instructions=(
+        "Decision audit trail and persistent memory for AI trading agents.\n\n"
+        "Before proposing a trade: call `recall_memories` for the symbol and "
+        "current conditions, and `check_trade_legitimacy` (or `compute_dqs`) "
+        "to see whether this strategy has earned full size right now. Weigh "
+        "what comes back — recall is ranked by how those past trades actually "
+        "turned out, so losses in similar conditions surface first.\n\n"
+        "After a trade: call `remember_trade` with the full reasoning, then "
+        "record the outcome when the position closes. Every decision is "
+        "SHA-256 hash-chained; `verify_audit_chain` and `get_daily_root` prove "
+        "the record has not been altered, and `export_audit_trail` produces a "
+        "reviewable log.\n\n"
+        "This server never places orders, moves funds, or touches API keys. "
+        "It records and recalls only."
+    ),
+)
 
 # Shared instance — initialized on first use
 _db: Optional[Database] = None

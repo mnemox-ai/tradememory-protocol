@@ -668,10 +668,12 @@ async def update_adjustment_status(req: UpdateAdjustmentStatusRequest):
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
+    from . import __version__
+
     return {
         "status": "healthy",
         "service": "TradeMemory Protocol",
-        "version": "0.5.1"
+        "version": __version__,
     }
 
 

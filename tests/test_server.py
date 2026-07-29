@@ -42,7 +42,8 @@ class TestHealthEndpoint:
         data = resp.json()
         assert data["status"] == "healthy"
         assert data["service"] == "TradeMemory Protocol"
-        assert data["version"] == "0.5.1"
+        from tradememory import __version__
+        assert data["version"] == __version__
 
 
 class TestTradeEndpoints:
