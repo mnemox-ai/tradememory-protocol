@@ -153,6 +153,22 @@ class TestMCPAuth:
         )
         assert resp.status_code != 401
 
+    def test_every_tool_declares_annotations(self, client_and_key):
+        """Clients auto-approve read-only tools from these hints, and
+        registries score them. Every tool must declare all four."""
+        import json as _json
+        import re as _re
+
+        client, _ = client_and_key
+        resp = client.post("/mcp", json=self.LIST_BODY, headers=self.MCP_ACCEPT)
+        tools = _json.loads(_re.search(r"data: (.*)", resp.text).group(1))["result"]["tools"]
+        required = {"readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint"}
+        missing = [
+            t["name"] for t in tools
+            if not required.issubset((t.get("annotations") or {}).keys())
+        ]
+        assert not missing, f"tools without full annotations: {missing}"
+
     def test_tool_call_accepts_key_via_query_param(self, client_and_key):
         """Registry gateways forward user config as a query param, not a
         header — a gateway user with a valid key must not get 401."""

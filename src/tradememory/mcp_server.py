@@ -130,7 +130,12 @@ def _build_memory_context(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def get_strategy_performance(
     strategy_name: Optional[str] = None,
     symbol: Optional[str] = None,
@@ -198,7 +203,12 @@ async def get_strategy_performance(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def get_trade_reflection(
     trade_id: str,
 ) -> dict:
@@ -237,7 +247,12 @@ async def get_trade_reflection(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": False,
+})
 async def remember_trade(
     symbol: str,
     direction: str,
@@ -423,7 +438,12 @@ async def remember_trade(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def recall_memories(
     symbol: str,
     market_context: str,
@@ -675,7 +695,12 @@ async def recall_memories(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def get_behavioral_analysis(
     strategy_name: Optional[str] = None,
     symbol: Optional[str] = None,
@@ -720,7 +745,12 @@ async def get_behavioral_analysis(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def get_agent_state() -> dict:
     """Get the current agent affective state (confidence, risk, drawdown).
 
@@ -759,7 +789,12 @@ async def get_agent_state() -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": False,
+})
 async def create_trading_plan(
     trigger_type: str,
     trigger_condition: str,
@@ -827,7 +862,12 @@ async def create_trading_plan(
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def check_active_plans(
     context_regime: Optional[str] = None,
     context_atr_d1: Optional[float] = None,
@@ -962,7 +1002,12 @@ async def check_active_plans(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": True,
+})
 async def evolution_fetch_market_data(
     symbol: str,
     timeframe: str = "1h",
@@ -986,7 +1031,12 @@ async def evolution_fetch_market_data(
     return result_copy
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": False,
+})
 async def evolution_discover_patterns(
     symbol: str,
     timeframe: str = "1h",
@@ -1016,7 +1066,12 @@ async def evolution_discover_patterns(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def evolution_run_backtest(
     pattern_dict: dict,
     symbol: str = "BTCUSDT",
@@ -1040,7 +1095,12 @@ async def evolution_run_backtest(
     return await run_backtest(pattern_dict, symbol, timeframe, days)
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": False,
+    "openWorldHint": False,
+})
 async def evolution_evolve_strategy(
     symbol: str,
     timeframe: str = "1h",
@@ -1071,7 +1131,12 @@ async def evolution_evolve_strategy(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def evolution_get_log() -> dict:
     """Get the log of past evolution runs from this session.
 
@@ -1088,7 +1153,12 @@ async def evolution_get_log() -> dict:
 # Audit tools — Trading Decision Records (Phase 2)
 # =====================================================================
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def export_audit_trail(
     trade_id: Optional[str] = None,
     strategy: Optional[str] = None,
@@ -1164,7 +1234,12 @@ async def export_audit_trail(
     return {"records": tdrs, "count": len(tdrs)}
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def verify_audit_hash(trade_id: str) -> dict:
     """Verify the integrity of a Trading Decision Record.
 
@@ -1251,7 +1326,12 @@ async def verify_audit_hash(trade_id: str) -> dict:
     }
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def verify_audit_chain(
     from_seq: Optional[int] = None,
     to_seq: Optional[int] = None,
@@ -1279,7 +1359,12 @@ async def verify_audit_chain(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": True,
+})
 async def get_daily_root(
     date: str,
     rebuild: bool = False,
@@ -1357,7 +1442,12 @@ async def get_daily_root(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": True,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def validate_strategy(
     file_path: str,
     format: str = "quantconnect",
@@ -1417,7 +1507,12 @@ async def validate_strategy(
 # ---------------------------------------------------------------------------
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def check_trade_legitimacy(
     strategy_name: str,
     symbol: str = "XAUUSD",
@@ -1515,7 +1610,12 @@ async def check_trade_legitimacy(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations={
+    "readOnlyHint": False,
+    "destructiveHint": False,
+    "idempotentHint": True,
+    "openWorldHint": False,
+})
 async def compute_dqs(
     symbol: str,
     strategy_name: str,
