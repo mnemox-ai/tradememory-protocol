@@ -153,6 +153,24 @@ class TestMCPAuth:
         )
         assert resp.status_code != 401
 
+    def test_tool_call_accepts_key_via_query_param(self, client_and_key):
+        """Registry gateways forward user config as a query param, not a
+        header — a gateway user with a valid key must not get 401."""
+        client, api_key = client_and_key
+        resp = client.post(
+            f"/mcp?apiKey={api_key}", json=self.CALL_BODY, headers=self.MCP_ACCEPT
+        )
+        assert resp.status_code != 401
+
+    def test_tool_call_rejects_bad_query_param_key(self, client_and_key):
+        client, _ = client_and_key
+        resp = client.post(
+            "/mcp?apiKey=tm_live_nonexistent",
+            json=self.CALL_BODY,
+            headers=self.MCP_ACCEPT,
+        )
+        assert resp.status_code == 401
+
     def test_sse_stream_open_is_public(self, client_and_key):
         """Gateways open the GET stream before calling anything — a 401 here
         makes the server look dead to registries."""

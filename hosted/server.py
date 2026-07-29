@@ -19,6 +19,7 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from urllib.parse import parse_qs
 
 from fastapi import Depends, FastAPI, HTTPException, Header, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -126,6 +127,13 @@ class MCPAuthMiddleware:
                 if auth.lower().startswith("bearer ")
                 else ""
             )
+            if not api_key:
+                # Registry gateways (Smithery) forward user config as query
+                # params rather than headers. Accepted for compatibility;
+                # the Authorization header is preferred because query
+                # strings land in access logs.
+                query = parse_qs(scope.get("query_string", b"").decode("latin-1"))
+                api_key = (query.get("apiKey") or query.get("api_key") or [""])[0].strip()
             if not api_key.startswith(("tm_live_", "tm_test_")) or not get_db().validate_key(api_key):
                 payload = json.dumps({
                     "error": "unauthorized",
