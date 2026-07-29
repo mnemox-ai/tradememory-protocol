@@ -8,8 +8,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/tradememory-protocol?style=flat-square&color=blue)](https://pypi.org/project/tradememory-protocol/)
 [![Tests](https://img.shields.io/github/actions/workflow/status/mnemox-ai/tradememory-protocol/ci.yml?branch=master&style=flat-square&label=tests)](https://github.com/mnemox-ai/tradememory-protocol/actions/workflows/ci.yml)
-[![MCP Tools](https://img.shields.io/badge/MCP_tools-20-blueviolet?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
-[![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/io.github.mnemox-ai/tradememory-protocol)
+[![MCP Tools](https://img.shields.io/badge/MCP_tools-20-blueviolet?style=flat-square)](https://smithery.ai/server/mnemox-ai/tradememory-protocol)
+[![Smithery](https://img.shields.io/badge/Smithery-listed-orange?style=flat-square)](https://smithery.ai/server/mnemox-ai/tradememory-protocol)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
 
 [Getting Started](docs/GETTING_STARTED.md) | [Use Cases](docs/USE_CASES.md) | [API Reference](docs/API.md) | [OWM Framework](docs/OWM_FRAMEWORK.md) | [Limitations](LIMITATIONS.md) | [中文版](docs/README_ZH.md)
