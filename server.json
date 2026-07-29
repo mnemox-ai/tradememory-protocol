@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.mnemox-ai/tradememory-protocol",
-  "description": "MCP memory for AI trading agents. Store trades, recall similar setups, track strategy performance.",
+  "description": "Decision audit trail + persistent memory for AI trading agents. Recall past trades weighted by outcome before you trade; leave a tamper-evident, RFC 3161 anchored record after.",
   "repository": {
     "url": "https://github.com/mnemox-ai/tradememory-protocol",
     "source": "github"

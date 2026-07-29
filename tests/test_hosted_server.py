@@ -137,6 +137,13 @@ class TestMCPAuth:
         )
         assert resp.status_code != 401
 
+    def test_sse_stream_open_is_public(self, client_and_key):
+        """Gateways open the GET stream before calling anything — a 401 here
+        makes the server look dead to registries."""
+        client, _ = client_and_key
+        resp = client.get("/mcp", headers={"Accept": "text/event-stream"})
+        assert resp.status_code != 401
+
     def test_unknown_method_still_gated(self, client_and_key):
         """Anything not on the public allowlist must still require a key."""
         client, _ = client_and_key

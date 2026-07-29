@@ -93,8 +93,12 @@ async def mcp_require_api_key(request: Request, call_next):
     # same Bearer tm_live_*/tm_test_* contract as the REST endpoints.
     # Discovery methods (initialize, tools/list, ...) stay open; anything
     # that can touch data requires a key.
-    if request.url.path.startswith("/mcp"):
-        method = await _mcp_method(request) if request.method == "POST" else None
+    if request.url.path.startswith("/mcp") and request.method == "POST":
+        # Only POST carries JSON-RPC calls. GET opens the SSE stream and
+        # DELETE ends a session — in stateless mode neither can return
+        # stored data on its own, and blocking GET breaks every gateway
+        # that establishes the stream before calling anything.
+        method = await _mcp_method(request)
         if method not in MCP_PUBLIC_METHODS:
             auth = request.headers.get("authorization", "")
             api_key = auth.split(" ", 1)[1].strip() if auth.lower().startswith("bearer ") else ""
