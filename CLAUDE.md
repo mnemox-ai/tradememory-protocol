@@ -83,10 +83,10 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
   - Phase E: 4 ADR + OWM 技術文章草稿
 
 ## Current Status
-- **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
+- **v0.5.4** — PyPI + GitHub Release 已發（2026-07-30）
 - **1,453 tests passing, CI green on 3.10/3.11/3.12**（2026-07-30；以 CI badge 為準）
 - **SSRT Module**: `src/tradememory/ssrt/` — mSPRT engine (tau=0.3 default), shift_null, regime-aware null, simulator, baselines. Phase 1+2 results in `validation/ssrt/`. Best method: mSPRT_t03 (81.4% power, Type I=0.008). Regime-aware approaches both fail.
-- **18 MCP tools** (+compute_dqs), 35+ REST endpoints
+- **20 MCP tools**（全部帶 annotations + outputSchema）, 35+ REST endpoints
 - **Phase 5 Rigorous Validation Complete**: 100 experiments (2 symbols × 1h × 50 grid strategies × 5 agents)
   - Result: **INVALID** — CalibratedAgent skips 97% trades (48/100 zero-trade), DD "reduction" from NOT TRADING
   - DQS skip tier too aggressive on cold-start DB, BOCPD changepoint effect unmeasurable
@@ -107,7 +107,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - **CHANGELOG** — 0.5.1 與 0.5.2 sections 已補齊（2026-07-29）
 - **Waiting on**: NG_Gold demo 交易數據、anti-resonance PyPI publish
 - **方向**: Trading AI Service 接案→數據驗證→SaaS
-- **行銷啟動（2026-04-05）**：README CTA、Reddit 草稿、Demo Video 腳本、Awesome-list 指南
+- **分發現況（2026-07-30）**：MCP Registry v0.5.4（release 自動同步）／Smithery 98 分・20 工具（listing 描述仍是舊定位待改）／PyPI v0.5.4／首發文章 DEV.to + HN 已上線。mcp.so 未提交（$39）。行銷草稿已移出公開 repo。
 
 ## Compact Instructions
 
