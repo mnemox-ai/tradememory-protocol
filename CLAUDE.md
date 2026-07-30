@@ -64,6 +64,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 - Use UTC for all timestamps
 
 ## Recent Changes (latest 10)
+- [2026-07-30] **分發修真 + v0.5.3/v0.5.4 + 首發內容**：MCP Registry 0.3.1→0.5.4（新增 `.github/workflows/registry-publish.yml`，Actions OIDC，**以後每次 release 自動同步**；device flow 發 org namespace 會 403，別再走那條）；Smithery listing 15 工具/60 分 → **20 工具/98 分**（Metadata 35/35、Config UX 25/25、Capability 36/40，只差 Naming 4.44 分——刻意不追，改名會打斷既有 751 calls/30d 的使用者）。修掉四個真 bug：①`@app.middleware("http")`（BaseHTTPMiddleware）會吃掉 SSE 串流，回 200 但 body 全空，registry 探測一律 timeout → 改寫成純 ASGI middleware ②hosted `/mcp` 端點無認證裸奔 → 依 JSON-RPC method 分流（discovery 公開、tools/call 要 key）③gateway 用 `?apiKey=` query param 傳金鑰收不到 ④server metadata 空白，對外回報 FastMCP 自己的版本 3.4.5 → 改為單一來源 `__version__` + website_url + instructions。另補 20 個工具的 MCP annotations（readOnly/destructive/idempotent/openWorld，按實際行為標，非按名稱）。v0.5.3 = TSA 錨定預設開 + `decision_events` 儀器化；v0.5.4 = 對抗式 review 抓到的三個 P1 當夜 hotfix（rebuild 抹掉 tsa_token、PKIStatus 未驗證讓 TSA 拒絕變假錨定、`/audit/root` 端點無防護）。首發文章：DEV.to + HN（見 memory: tradememory-fundraise-2026-07）。
 - [2026-07-29] **DD 大掃除 + v0.5.2 發版**（募資盡調驅動，8 任務）：level2 主實驗補公開（RESULTS/run_matrix/results.json，對外「公開在 repo」承諾修真）；內部檔清除（tasks.txt untracked、ssrt specs→docs/specs、刪 remote branch copytrading-drift-demo+fix/ci-httpx）；**CI 兩個月首綠**（補 numpy/hypothesis 宣告）+README 動態 badge；tamper-proof→**tamper-evident** 全站+local-first 措辭；版本三處統一 0.5.2+CHANGELOG 補 0.5.1/0.5.2；research/README rolling-reproduction 段+補 research/requirements.txt；issue #8 修復（symbol_fit gate 50→5.0 typo+regression test）；**PR #6 merged=首位外部貢獻者**、PR #7 給 vendor-neutral 方向、PR #3 關；**v0.5.2 GitHub Release→PyPI（trusted publishing），終結 4 個月停更**。募資備戰包：`~/projects/tradememory-fundraise-dd-prep.md`
 - [2026-04-10] **SSRT Phase 2** — shift_null (preserve evidence on regime change) + tau sweep (0.3/0.5/1.0). 22,500 MC runs. Key findings: shift_null WORSE than reset (50.2% vs 57.0% det rate on regime_specific); tau=0.3 is best (+5pp power, Type I=0.008); mSPRT_t03 = best statistically-valid method (81.4% power, only method with Type I < 0.05). Regime-aware approaches both fail — fixed null dominates.
 - [2026-04-10] **SSRT Phase 1** — mSPRT engine (Johari et al.) + regime-aware null + 15k Monte Carlo experiments. mSPRT Type I=0.012 (only method < 0.05). Regime-aware null worse than fixed null (evidence loss on reset). 14 new tests, 12 files.
@@ -83,7 +84,7 @@ TradeMemory Protocol 是 Mnemox AI 的核心產品。MT5/forex 交易記憶層�
 
 ## Current Status
 - **v0.5.1** — PyPI + GitHub Release 已發（2026-03-27）
-- **1,459 tests collected, CI green on 3.10/3.11/3.12**（2026-07-29；以 CI badge 為準）
+- **1,453 tests passing, CI green on 3.10/3.11/3.12**（2026-07-30；以 CI badge 為準）
 - **SSRT Module**: `src/tradememory/ssrt/` — mSPRT engine (tau=0.3 default), shift_null, regime-aware null, simulator, baselines. Phase 1+2 results in `validation/ssrt/`. Best method: mSPRT_t03 (81.4% power, Type I=0.008). Regime-aware approaches both fail.
 - **18 MCP tools** (+compute_dqs), 35+ REST endpoints
 - **Phase 5 Rigorous Validation Complete**: 100 experiments (2 symbols × 1h × 50 grid strategies × 5 agents)
