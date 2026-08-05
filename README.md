@@ -1,3 +1,5 @@
+[![MCP Toplist](https://mcptoplist.com/badge/io.github.mnemox-ai%2Ftradememory-protocol.svg)](https://mcptoplist.com/server/io.github.mnemox-ai%2Ftradememory-protocol)
+
 <!-- mcp-name: io.github.mnemox-ai/tradememory-protocol -->
 
 <p align="center">
