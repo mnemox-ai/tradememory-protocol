@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from dataclasses import dataclass
 from typing import Any, Optional, Protocol, runtime_checkable
 
@@ -265,3 +266,122 @@ class MockLLMClient:
 
     async def close(self) -> None:
         pass
+
+
+class LiteLLMClient:
+    """LLM client via LiteLLM — one interface to 100+ providers.
+
+    `LiteLLM <https://github.com/BerriAI/litellm>`_ exposes an OpenAI-style API in
+    front of Anthropic, OpenAI, Azure, Bedrock, Vertex, Gemini, Ollama, and any
+    self-hosted LiteLLM proxy. Model strings follow LiteLLM's ``provider/model``
+    convention, e.g. ``anthropic/claude-sonnet-4-20250514``, ``openai/gpt-4o``,
+    ``gemini/gemini-2.5-pro``, or a bare alias served by a proxy.
+
+    Credentials come from the standard provider env vars (``ANTHROPIC_API_KEY``,
+    ``OPENAI_API_KEY``, …) when ``api_key`` is not passed. Point ``base_url`` at a
+    LiteLLM proxy to centralize routing, spend caps, and keys.
+    """
+
+    DEFAULT_MODEL = "anthropic/claude-sonnet-4-20250514"
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        default_model: Optional[str] = None,
+        base_url: Optional[str] = None,
+        drop_params: bool = True,
+        **extra_kwargs: Any,
+    ):
+        self._default_model = default_model or self.DEFAULT_MODEL
+        self._api_key = api_key
+        self._base_url = base_url
+        # drop_params lets LiteLLM silently drop kwargs a given provider does not
+        # support (e.g. temperature on reasoning models), so the same call works
+        # across providers. User can override via extra_kwargs.
+        self._extra_kwargs: dict[str, Any] = {"drop_params": drop_params, **extra_kwargs}
+
+    @property
+    def name(self) -> str:
+        return "litellm"
+
+    async def complete(
+        self,
+        messages: list[LLMMessage],
+        model: Optional[str] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+        system: Optional[str] = None,
+    ) -> LLMResponse:
+        try:
+            import litellm
+        except ImportError:
+            raise LLMError(
+                "litellm",
+                "litellm package not installed. Run: pip install litellm",
+            )
+
+        model_id = model or self._default_model
+
+        # LiteLLM speaks the OpenAI chat format: system goes in as a message.
+        api_messages: list[dict[str, Any]] = []
+        if system:
+            api_messages.append({"role": "system", "content": system})
+        api_messages.extend({"role": m.role, "content": m.content} for m in messages)
+
+        kwargs: dict[str, Any] = {
+            "model": model_id,
+            "messages": api_messages,
+            "max_tokens": max_tokens,
+            "temperature": temperature,
+            **self._extra_kwargs,
+        }
+        if self._api_key:
+            kwargs["api_key"] = self._api_key
+        if self._base_url:
+            kwargs["base_url"] = self._base_url
+
+        try:
+            response = await litellm.acompletion(**kwargs)
+        except Exception as e:
+            qualname = f"{type(e).__module__}.{type(e).__name__}"
+            if "RateLimit" in qualname or "429" in str(e):
+                raise LLMRateLimitError("litellm") from e
+            raise LLMError("litellm", f"API error: {e}") from e
+
+        # Non-streaming acompletion returns a ModelResponse with choices.
+        choice = getattr(response, "choices", [])[0]
+        content = choice.message.content or ""
+        usage = getattr(response, "usage", None)
+
+        return LLMResponse(
+            content=content,
+            model=getattr(response, "model", model_id) or model_id,
+            input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
+            output_tokens=getattr(usage, "completion_tokens", 0) or 0,
+            stop_reason=getattr(choice, "finish_reason", None),
+        )
+
+    async def close(self) -> None:
+        return None
+
+
+def create_llm_client(provider: Optional[str] = None, **kwargs: Any) -> LLMClient:
+    """Create an LLM client by provider name.
+
+    Selection order: the explicit ``provider`` argument, then the
+    ``TRADEMEMORY_LLM_PROVIDER`` environment variable, defaulting to
+    ``"anthropic"`` (unchanged behaviour). Set it to ``"litellm"`` to route
+    Evolution's LLM calls through a LiteLLM gateway/proxy instead.
+
+    Extra kwargs are forwarded to the client constructor (e.g. ``default_model``,
+    ``base_url``, ``api_key``).
+    """
+    provider = (provider or os.environ.get("TRADEMEMORY_LLM_PROVIDER", "anthropic")).lower()
+    if provider in ("anthropic", "claude"):
+        return AnthropicClient(**kwargs)
+    if provider == "litellm":
+        return LiteLLMClient(**kwargs)
+    raise LLMError(
+        provider,
+        f"Unknown LLM provider: {provider!r}. Supported: 'anthropic', 'litellm'.",
+    )

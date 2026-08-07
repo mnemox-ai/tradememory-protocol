@@ -1238,10 +1238,10 @@ class EvolutionEvolveRequest(BaseModel):
 async def evolution_discover(req: EvolutionDiscoverRequest):
     """Discover trading patterns from market data using LLM analysis."""
     try:
-        from .evolution.llm import AnthropicClient
+        from .evolution.llm import create_llm_client
         from .evolution.mcp_tools import discover_patterns
 
-        llm = AnthropicClient()
+        llm = create_llm_client()
         return await discover_patterns(
             req.symbol, req.timeframe, req.count, req.temperature,
             llm=llm, days=req.days,
@@ -1269,10 +1269,10 @@ async def evolution_backtest(req: EvolutionBacktestRequest):
 async def evolution_evolve(req: EvolutionEvolveRequest):
     """Run full evolution loop — generate, backtest, select, eliminate."""
     try:
-        from .evolution.llm import AnthropicClient
+        from .evolution.llm import create_llm_client
         from .evolution.mcp_tools import evolve_strategy
 
-        llm = AnthropicClient()
+        llm = create_llm_client()
         return await evolve_strategy(
             req.symbol, req.timeframe, req.generations, req.population_size,
             llm=llm, days=req.days,
