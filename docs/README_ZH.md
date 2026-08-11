@@ -18,6 +18,8 @@
 
 ---
 
+> **專案狀態（2026 年 8 月）：** 功能已完備，目前為**維護模式**：bug 與安全性回報仍會處理，不再規劃新功能與 hosted 服務。付費服務見[交易紀錄統計分析](#交易紀錄統計分析)。
+
 **你的交易 AI 有失憶症。監管機構開始注意到了。**
 
 它每個 session 都在重複同樣的錯誤。它無法解釋為什麼下單。context window 結束後它忘了一切。與此同時，MiFID II 正在提高演算法決策文件的標準（[第 17 條](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32014L0065)）。EU AI Act 要求系統性記錄 AI 行動（[第 14 條](https://eur-lex.europa.eu/eli/reg/2024/1689)）。你競爭對手的 agent 正在從每筆交易中學習。
@@ -123,27 +125,13 @@ docker compose up -d
 
 </details>
 
-## 定價
+## 交易紀錄統計分析
 
-| | Community | Pro | Enterprise |
-|---|---|---|---|
-| **價格** | **免費** | **$29/月**（即將推出） | **洽詢我們** |
-| MCP 工具 | 20 個工具 | 20 個工具 | 20 個工具 |
-| 儲存 | SQLite，自架 | Hosted API | 私有部署 |
-| Dashboard | — | Web dashboard | 客製化 dashboard |
-| 合規 | 審計軌跡含括 | 審計軌跡含括 | 合規報告 + SLA |
-| 支援 | GitHub Issues | 優先支援 | 專屬支援 |
-| | [立即開始 →](GETTING_STARTED.md) | *即將推出* | [dev@mnemox.ai](mailto:dev@mnemox.ai) |
+TradeMemory 本身免費、自行架設。維護者提供的付費服務是**針對你自己交易紀錄的統計分析**：匯出 MT4/MT5 歷史紀錄，取得一份描述性統計報告（虧損集中在哪幾筆、虧損後部位如何變化、強制平倉結構、每筆實際承擔的風險），加上一次語音講解。
 
-### 需要整合協助？
-
-正在建立交易 AI agent，想要經過實戰驗證的記憶架構？
-
-**免費 30 分鐘策略諮詢** — 我們會為你的 agent 規劃記憶需求，設計適合你工作流程的護欄。
+只描述已發生的交易：不提供進出場訊號、不提供投資建議、不做任何獲利承諾。檔案交付後即刪除。
 
 [dev@mnemox.ai](mailto:dev@mnemox.ai) | [預約通話](https://calendly.com/johnson90207/30min)
-
-> *我們已協助交易者建立交易前檢查清單、串接 MT5/Binance，並為外匯、美股、加密貨幣設計客製化護欄。*
 
 ## Enterprise 與合規
 

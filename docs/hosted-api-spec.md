@@ -1,5 +1,7 @@
 # TradeMemory Hosted API Specification
 
+> **Status (August 2026):** Historical design document. The hosted API described below was never launched and is not offered for sale; TradeMemory is self-hosted only. Kept for reference.
+
 Base URL: `https://mcp.mnemox.ai/api/v1`
 
 ## Authentication

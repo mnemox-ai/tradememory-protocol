@@ -1,5 +1,6 @@
 # TradeMemory Protocol — 開發路線圖
 
+> **Status (2026-08-12)：維護模式。** 不再規劃新功能開發，本檔轉為歷史紀錄。下方的 pricing／landing page／hosted 任務屬早期設計，未曾商業上線，也不再執行。
 > Last reviewed: 2026-07-29. Sections below may reference older sprint dates; the Pending table is refreshed as of this date.
 
 ## 執行說明

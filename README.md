@@ -18,6 +18,8 @@
 
 ---
 
+> **Project status (August 2026):** Feature-complete, in **maintenance mode** — bug and security reports are still reviewed; no new features or hosted service are planned. For paid work, see [Trading Record Analysis](#trading-record-analysis).
+
 **Your trading AI has amnesia. And regulators are starting to notice.**
 
 It makes the same mistakes every session. It can't explain why it traded. It forgets everything when the context window ends. Meanwhile, MiFID II is raising the bar for algorithmic decision documentation ([Article 17](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32014L0065)). The EU AI Act demands systematic logging of AI actions ([Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689)). Your competitors' agents are learning from every trade.
@@ -123,27 +125,13 @@ docker compose up -d
 
 </details>
 
-## Pricing
+## Trading Record Analysis
 
-| | Community | Pro | Enterprise |
-|---|---|---|---|
-| **Price** | **Free** | **$29/mo** (Coming Soon) | **Contact Us** |
-| MCP tools | 20 tools | 20 tools | 20 tools |
-| Storage | SQLite, self-hosted | Hosted API | Private deployment |
-| Dashboard | — | Web dashboard | Custom dashboard |
-| Compliance | Audit trail included | Audit trail included | Compliance reports + SLA |
-| Support | GitHub Issues | Priority support | Dedicated support |
-| | [Get Started →](docs/GETTING_STARTED.md) | *Coming soon* | [dev@mnemox.ai](mailto:dev@mnemox.ai) |
+TradeMemory itself is free and self-hosted. What the maintainer offers as a paid service is **statistical analysis of your own trading records**: export your MT4/MT5 history and get a descriptive-statistics report — where your losses concentrate, how your position sizing changes after losses, forced-liquidation structure, and the actual risk you took per trade — followed by a walkthrough call.
 
-### Need Help Integrating?
-
-Building a trading AI agent and want battle-tested memory architecture?
-
-**Free 30-min strategy call** — we'll map your agent's memory needs and design guardrails for your specific workflow.
+Descriptive statistics of past trades only: no trade signals, no investment advice, no performance promises. Your files are deleted after delivery.
 
 [dev@mnemox.ai](mailto:dev@mnemox.ai) | [Book a call](https://calendly.com/johnson90207/30min)
-
-> *We've helped traders build pre-flight checklists, connect MT5/Binance, and design custom guardrails for forex, equities, and crypto.*
 
 ## Enterprise & Compliance
 
