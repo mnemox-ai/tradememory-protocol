@@ -54,6 +54,9 @@ replay = [
     "anthropic>=0.39.0",
     "pyyaml>=6.0",
 ]
+litellm = [
+    "litellm>=1.87,<2.0",
+]
 validate = [
     "deflated-sharpe>=0.1.0",
 ]

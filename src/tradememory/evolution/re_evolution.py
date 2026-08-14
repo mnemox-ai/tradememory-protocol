@@ -377,9 +377,9 @@ class LLMReEvolutionPipeline:
 
     Usage:
         from tradememory.evolution.engine import EngineConfig, EvolutionEngine
-        from tradememory.evolution.llm import AnthropicClient
+        from tradememory.evolution.llm import create_llm_client
 
-        llm = AnthropicClient()
+        llm = create_llm_client()  # or create_llm_client("litellm")
         engine_config = EngineConfig(...)
         pipeline = LLMReEvolutionPipeline(llm, engine_config, backtest_fn=fast_backtest)
         result = await pipeline.run(is_series, oos_bars, oos_contexts, oos_atrs, registry)
