@@ -192,10 +192,10 @@ TradeMemory 的 OWM 框架基於認知科學（Tulving 1972）和強化學習（
 
 詳見 [Contributing Guide](../.github/CONTRIBUTING.md) · [Security Policy](../.github/SECURITY.md)
 
-<a href="https://star-history.com/#mnemox-ai/tradememory-protocol&Date">
+<a href="https://star-history.dera.page/#mnemox-ai/tradememory-protocol&Date">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=mnemox-ai/tradememory-protocol&type=Date&theme=dark" />
-   <img alt="Star History" src="https://api.star-history.com/svg?repos=mnemox-ai/tradememory-protocol&type=Date" width="600" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=mnemox-ai/tradememory-protocol&type=Date&theme=dark" />
+   <img alt="Star History" src="https://star-history.dera.page/svg?repos=mnemox-ai/tradememory-protocol&type=Date" width="600" />
  </picture>
 </a>
 
