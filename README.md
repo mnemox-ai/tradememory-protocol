@@ -30,7 +30,7 @@ Your agent can buy 100 shares of AAPL but can't answer: *"What happened last tim
 
 **TradeMemory is the memory layer.** One `pip install`, and your AI agent remembers every trade, every outcome, every mistake — with a SHA-256 tamper-evident audit trail.
 
-Used in production by traders running pre-flight checklists before every position, and by EA systems logging thousands of decisions daily.
+Used by an independent trader running a pre-flight checklist before every position, and first-party against an MT5 account that logs blocked signals as well as executed ones. See USE_CASES.md for which is which.
 
 ## What it does
 
@@ -188,14 +188,14 @@ and reinforcement learning (Schaul et al. 2015). Current status:
 - **Audit trail:** SHA-256 tamper-evident TDR
 - **Evolution engine:** research phase (strategy generation works, statistical gate pass rate under optimization)
 - **Hybrid recall:** OWM-only mode active, vector fusion available when embeddings configured
-- **Empirical validation:** ongoing (n=40 trades, target n>=100 for statistical significance)
+- **Empirical validation:** ongoing (n=14 trades, target n>=100 for statistical significance; at n=14 the confidence intervals are too wide to conclude anything - see validation/final_verdict.md)
 
 ## Documentation
 
 | Doc | Description |
 |-----|-------------|
 | [Getting Started](docs/GETTING_STARTED.md) | Install → first trade → pre-flight checklist |
-| [Use Cases](docs/USE_CASES.md) | 3 real-world production scenarios |
+| [Use Cases](docs/USE_CASES.md) | 3 usage scenarios, each labelled first-party or independent |
 | [API Reference](docs/API.md) | All REST endpoints |
 | [OWM Framework](docs/OWM_FRAMEWORK.md) | Outcome-Weighted Memory theory |
 | [Architecture](docs/ARCHITECTURE.md) | System design & layer separation |
