@@ -45,7 +45,7 @@ MIT licensed, 1,500+ tests, CI on Python 3.10 to 3.12.
 ```bash
 pip install tradememory-protocol
 # brake preview (Python 3.12+), until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"
 ```
 
 Verify: `tradememory doctor`.

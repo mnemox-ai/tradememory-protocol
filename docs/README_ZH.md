@@ -46,7 +46,7 @@ AI 交易堆疊缺少一層。每個 MCP server 都處理執行——下單、�
 
 ```bash
 # 下一版發布前先從分支安裝：
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"   # Python 3.12+
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
 tradememory proxy init --account-id <你的 Alpaca 帳號 id> --symbols AAPL,MSFT
 tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # 核對上游工具名稱與帳號 id
 tradememory proxy config                                           # 印出要換掉的那一行 MCP 設定

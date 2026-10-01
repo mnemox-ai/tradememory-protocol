@@ -46,7 +46,7 @@ The `proxy` extra runs TradeMemory *between* your agent and your broker's MCP se
 
 ```bash
 # until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"   # Python 3.12+
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
 tradememory proxy init --account-id <your Alpaca account id> --symbols AAPL,MSFT
 tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the live tool names and the account id
 tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one

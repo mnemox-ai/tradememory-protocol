@@ -29,7 +29,7 @@ ALPACA_SECRET_KEY=...
 
 ```bash
 # until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"
 ```
 
 ## 2. Find your account id and write a policy
