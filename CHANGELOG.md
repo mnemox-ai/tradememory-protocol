@@ -45,10 +45,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   stale after-hours book (the real AAPL book was 320.91 / 354.20 against a
   last trade of 333.05).
 
+### Hardened after an adversarial review (2026-10-01)
+- Owner approvals are bound to the escalated order's terms; a different order
+  under the same `client_order_id` is refused, and a `client_order_id` reused
+  with different terms is refused instead of replayed.
+- `stop_loss_stop_price` counts as a protective stop only inside a bracket or
+  OTO class on the stock tool; anywhere else it is decoration.
+- Tools the brake has not classified are refused (72 live tools classified;
+  `doctor` lists any new ones). `cancel_all_orders` is refused while positions
+  are open and stops are required; cancelling the protective stop leg of an
+  open position is refused; other cancels are forwarded and recorded.
+- The state file is re-read on every operation, so `tradememory proxy halt`
+  and `approve` from another shell take effect on the running proxy instead
+  of being overwritten by it.
+- Order evaluations are serialised; two concurrent orders cannot both pass a
+  limit only one of them fits under.
+- A broker call that fails after ALLOW is recorded as `FORWARD_FAILED`; the
+  retry asks the broker by `client_order_id` before placing anything.
+- The decision event and its chain link are written in one transaction.
+- `client_order_id` is required; `qty` and `notional` together are refused;
+  an unrecognised positions/orders shape fails closed; the market snapshot
+  carries the oldest quote timestamp while the market is open, so a dead
+  feed trips `MARKET_STATE_STALE`; the equity peak is updated from every
+  account read; the broker process receives a minimal environment, not the
+  proxy's.
+
 ### Not yet
 - `mnemox-control` is pinned as a git dependency; it must be published to
   PyPI before this extra can ship in a PyPI release.
-- CI does not install the `proxy` extra, so `tests/proxy` runs locally only.
+- The policy seal, state file and ledger are unkeyed files: an agent with
+  shell access on the same host could rewrite them. Run the proxy as a
+  different OS user than an agent that has a shell.
 
 ## [0.5.5] - 2026-09-09
 

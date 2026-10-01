@@ -1,15 +1,24 @@
 """The brake: a fastmcp middleware that evaluates order tools before they reach the broker.
 
-Invariants (tests pin each one):
-- An order tool is never forwarded without a sealed, in-window evaluation that said ALLOW.
-- Any failure to build that evaluation is a DENY, never a pass-through.
+Invariants (tests/proxy pins each one):
+- An order tool is never forwarded without a sealed, in-window evaluation that said ALLOW,
+  or ESCALATE lifted by a fresh owner approval of the exact same terms.
+- Any failure to build that evaluation is a DENY, never a pass-through. Tools the brake
+  does not classify are refused too.
 - Exit tools are never blocked; they are recorded.
-- The same deterministic intent is forwarded at most once; a retry returns the first result.
-- Every decision, including replays and fail-closed denies, is a chained decision event.
+- Cancelling the protective stop of an open position is refused while the policy
+  requires stops; other cancels are forwarded and recorded.
+- The same client_order_id is forwarded at most once; a retry returns the first result,
+  and a retry after a failed forward reconciles with the broker before placing anything.
+- Every decision, including replays, failed forwards and fail-closed denies, is a
+  decision_events row and its audit-chain link, written in one transaction.
+- Order evaluations are serialised, so two concurrent orders cannot both pass a limit
+  that only one of them fits under.
 """
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -35,9 +44,17 @@ from .state import ProxyState
 log = logging.getLogger("tradememory.proxy")
 
 UpstreamCall = Callable[[str, dict[str, Any]], Awaitable[Any]]
-INSTRUMENT_CACHE_TTL = timedelta(hours=1)
+INSTRUMENT_CACHE_TTL = timedelta(minutes=5)
 FAIL_CLOSED_CODE = "PROXY_FAIL_CLOSED"
 UNSUPPORTED_CODE = "PROXY_UNSUPPORTED_TOOL"
+CLIENT_ORDER_ID_REQUIRED_CODE = "PROXY_CLIENT_ORDER_ID_REQUIRED"
+CLIENT_ORDER_ID_REUSED_CODE = "PROXY_CLIENT_ORDER_ID_REUSED"
+STOP_CANCEL_CODE = "PROXY_PROTECTIVE_STOP_CANCEL_FORBIDDEN"
+ARGS_STORED_LIMIT = 4096
+
+
+class ForwardError(RuntimeError):
+    """The broker call failed after an ALLOW was recorded; the order's fate is unknown."""
 
 
 def _json_safe(value: Any) -> Any:
@@ -54,6 +71,15 @@ def _json_safe(value: Any) -> Any:
     if isinstance(value, (str, int, float, bool)) or value is None:
         return value
     return str(value)
+
+
+def _stored_args(args: dict[str, Any]) -> Any:
+    """Arguments as recorded on a decision: bounded so an agent cannot bloat the ledger."""
+    safe = _json_safe(args)
+    text = json.dumps(safe, sort_keys=True, separators=(",", ":"))
+    if len(text) <= ARGS_STORED_LIMIT:
+        return safe
+    return {"_truncated": True, "_sha256": hashlib.sha256(text.encode()).hexdigest(), "_head": text[:ARGS_STORED_LIMIT]}
 
 
 class Collected:
@@ -78,6 +104,7 @@ class BrakeMiddleware(Middleware):
         upstream: UpstreamCall | None = None,
         clock: Callable[[], datetime] | None = None,
         recall: Callable[..., Awaitable[dict[str, Any]]] | None = None,
+        local_tools: set[str] | frozenset[str] | None = None,
     ) -> None:
         self.policy = policy
         self.state = state
@@ -86,137 +113,220 @@ class BrakeMiddleware(Middleware):
         self._upstream_override = upstream
         self.clock = clock or (lambda: datetime.now(UTC))
         self.recall = recall
-        self._spec_cache: dict[str, tuple[datetime, InstrumentSpec]] = {}
+        # Tools the proxy itself serves (memory, status). They never reach the broker.
+        self.local_tools = frozenset(local_tools or ())
+        self._spec_cache: dict[str, tuple[datetime, dict[str, Any]]] = {}
+        self._lock = asyncio.Lock()
         self.last_decision: dict[str, Any] | None = None
 
     # ------------------------------------------------------------------ routing
     async def on_call_tool(self, context: MiddlewareContext, call_next: CallNext) -> ToolResult:
         name = context.message.name
         args = dict(context.message.arguments or {})
-        if name in alpaca.EXIT_TOOLS:
+        kind = "read" if name in self.local_tools else alpaca.classify_tool(name)
+        if kind == "read":
             result = await call_next(context)
-            self._record(
-                tool=name, decision="ALLOW_EXIT", intent=None, evaluation=None,
-                extra={"args": _json_safe(args)}, note="exit tools are never blocked",
-            )
+            if name == "get_account_info":
+                self._observe_equity_from(result)
             return result
-        if name in alpaca.UNSUPPORTED_ORDER_TOOLS:
-            reason = alpaca.UNSUPPORTED_ORDER_TOOLS[name]
-            return self._deny(
-                tool=name, intent=None, evaluation=None,
-                rules=[{"code": UNSUPPORTED_CODE, "actual": reason}],
-                extra={"args": _json_safe(args)}, message=reason,
+        if kind == "benign":
+            result = await call_next(context)
+            self._record_safe(tool=name, decision="PASS_THROUGH", intent=None, evaluation=None,
+                              extra={"args": _stored_args(args)},
+                              note="account-config or watchlist change; forwarded, not evaluated")
+            return result
+        if kind == "exit":
+            result = await call_next(context)
+            self._record_safe(tool=name, decision="ALLOW_EXIT", intent=None, evaluation=None,
+                              extra={"args": _stored_args(args)}, note="exit tools are never blocked")
+            return result
+        if kind in ("unsupported", "unknown"):
+            reason = alpaca.UNSUPPORTED_ORDER_TOOLS.get(
+                name, "tool is not classified by the brake and is refused until it is"
             )
-        if name not in alpaca.ORDER_TOOLS:
-            return await call_next(context)
-        return await self._guard(context, call_next, name, args)
+            return self._deny(tool=name, intent=None, evaluation=None,
+                              rules=[{"code": UNSUPPORTED_CODE, "actual": reason}],
+                              extra={"args": _stored_args(args)}, message=reason)
+        async with self._lock:
+            if kind == "cancel":
+                return await self._cancel_guard(context, call_next, name, args)
+            return await self._guard(context, call_next, name, args)
 
     # ------------------------------------------------------------------ the gate
     async def _guard(
         self, context: MiddlewareContext, call_next: CallNext, tool: str, args: dict[str, Any]
     ) -> ToolResult:
         now = self.clock()
+        stored = _stored_args(args)
+
+        client_order_id = str(args.get("client_order_id") or "").strip()
+        if not client_order_id:
+            return self._deny(
+                tool=tool, intent=None, evaluation=None,
+                rules=[{"code": CLIENT_ORDER_ID_REQUIRED_CODE,
+                        "actual": "orders need a client_order_id so they can be retried, approved and reconciled safely"}],
+                extra={"args": stored}, message="client_order_id is required",
+            )
+        intent_key = str(alpaca.intent_id_for(self.policy.account_id, client_order_id))
+        fingerprint = alpaca.request_fingerprint(tool, args)
+
         try:
             upstream = self._upstream_for(context)
+
+            # Replay and reconciliation come before any market read.
+            entry = self.state.forwarded_result(intent_key, now)
+            if entry is not None:
+                if entry.get("fingerprint") != fingerprint:
+                    return self._deny(
+                        tool=tool, intent=None, evaluation=None,
+                        rules=[{"code": CLIENT_ORDER_ID_REUSED_CODE,
+                                "actual": "this client_order_id was already used for an order with different terms"}],
+                        extra={"args": stored, "intent_id": intent_key},
+                        message="client_order_id reused with different terms",
+                    )
+                if entry.get("status") == "unknown":
+                    found = await self._lookup_by_client_id(upstream, client_order_id)
+                    if found is None:
+                        self.state.forget_forwarded(intent_key)
+                        entry = None
+                    else:
+                        self.state.remember_forwarded(intent_key, fingerprint, found, now)
+                        entry = {"status": "placed", "result": found}
+                if entry is not None:
+                    self._record(tool=tool, decision="REPLAY", intent=None, evaluation=None,
+                                 extra={"args": stored, "intent_id": intent_key, "replayed": True},
+                                 note="same client_order_id already forwarded")
+                    structured = {"decision": "ALLOW", "replayed": True, "order_placed": True,
+                                  "intent_id": intent_key, "upstream": entry.get("result")}
+                    return ToolResult(content=json.dumps(structured), structured_content=structured)
+
             collected = await self._collect(upstream, tool, args, now)
             evaluation = evaluate(
-                policy=self.policy,
-                intent=collected.intent,
-                account=collected.account,
-                market=collected.market,
-                instruments=collected.instruments,
-                evaluated_at=now,
+                policy=self.policy, intent=collected.intent, account=collected.account,
+                market=collected.market, instruments=collected.instruments, evaluated_at=now,
             )
+            intent = collected.intent
+
+            decision = evaluation.decision
+            approved = False
+            if decision is Decision.ESCALATE and self.state.consume_approval(intent_key, fingerprint, now):
+                decision, approved = Decision.ALLOW, True
+            flagged = [
+                {"code": r.code.value, "actual": _json_safe(r.actual), "limit": _json_safe(r.limit),
+                 "subjects": list(r.subjects)}
+                for r in evaluation.rules if r.outcome in (RuleOutcome.DENY, RuleOutcome.ESCALATE)
+            ]
+            if decision is Decision.DENY:
+                return self._deny(tool=tool, intent=intent, evaluation=evaluation, rules=flagged,
+                                  extra={"args": stored}, message="order refused by policy")
+            if decision is Decision.ESCALATE:
+                self.state.escalate(intent_key, fingerprint, now)
+                event_id = self._record(tool=tool, decision="ESCALATE", intent=intent, evaluation=evaluation,
+                                        extra={"args": stored, "rules": flagged, "fingerprint": fingerprint},
+                                        note="human approval required")
+                structured = {
+                    "decision": "ESCALATE", "order_placed": False, "intent_id": intent_key,
+                    "decision_event": event_id, "policy_hash": evaluation.policy_hash,
+                    "evaluation_hash": content_sha256(evaluation), "rules": flagged,
+                    "terms_fingerprint": fingerprint,
+                    "how_to_approve": (
+                        f"owner runs: tradememory proxy approve {intent_key}; then retry this call "
+                        "with the same client_order_id and the same terms (any change is refused)"
+                    ),
+                }
+                return ToolResult(content=json.dumps(structured), structured_content=structured)
+
+            # ALLOW: record first, then forward exactly once.
+            event_id = self._record(tool=tool, decision="ALLOW", intent=intent, evaluation=evaluation,
+                                    extra={"args": stored, "approved_by_owner": approved, "fingerprint": fingerprint},
+                                    note="forwarded to broker")
         except Exception as exc:  # fail closed, whatever broke
             log.warning("brake fail-closed on %s: %s", tool, exc)
             return self._deny(
                 tool=tool, intent=None, evaluation=None,
-                rules=[{"code": FAIL_CLOSED_CODE, "actual": f"{type(exc).__name__}: {exc}"}],
-                extra={"args": _json_safe(args)},
-                message="the brake could not evaluate this order and refused it",
+                rules=[{"code": FAIL_CLOSED_CODE, "actual": f"{type(exc).__name__}: {exc}"[:300]}],
+                extra={"args": stored}, message="the brake could not evaluate this order and refused it",
             )
 
-        intent = collected.intent
-        intent_id = str(intent.intent_id)
-        _, deterministic = alpaca.intent_id_for(intent.account_id, args.get("client_order_id"))
-
-        if deterministic:
-            cached = self.state.forwarded_result(intent_id, now)
-            if cached is not None:
-                self._record(
-                    tool=tool, decision="REPLAY", intent=intent, evaluation=evaluation,
-                    extra={"replayed": True}, note="same client_order_id already forwarded",
-                )
-                structured = {
-                    "decision": "ALLOW", "replayed": True, "order_placed": True,
-                    "intent_id": intent_id, "upstream": cached,
-                }
-                return ToolResult(content=json.dumps(structured), structured_content=structured)
-
-        decision = evaluation.decision
-        approved = False
-        if decision is Decision.ESCALATE and deterministic and self.state.consume_approval(intent_id, now):
-            decision, approved = Decision.ALLOW, True
-
-        flagged_rules = [
-            {
-                "code": r.code.value,
-                "actual": _json_safe(r.actual),
-                "limit": _json_safe(r.limit),
-                "subjects": list(r.subjects),
+        try:
+            upstream_result = await call_next(context)
+            if getattr(upstream_result, "is_error", False):
+                # fastmcp hands upstream failures back as error results, not exceptions.
+                texts = [getattr(b, "text", "") for b in (getattr(upstream_result, "content", None) or [])]
+                raise ForwardError(" ".join(t for t in texts if t) or "upstream returned an error")
+        except Exception as exc:
+            # The broker may or may not have the order. Say so, remember it, reconcile on retry.
+            error = f"{type(exc).__name__}: {exc}"[:300]
+            self.state.mark_unknown(intent_key, fingerprint, error, now)
+            self._record_safe(tool=tool, decision="FORWARD_FAILED", intent=intent, evaluation=evaluation,
+                              extra={"args": stored, "error": error, "decision_event_allow": event_id},
+                              note="broker call failed after ALLOW; outcome unknown until reconciled")
+            structured = {
+                "decision": "ALLOW", "order_placed": "unknown", "intent_id": intent_key,
+                "decision_event": event_id, "error": error,
+                "message": ("the broker call failed after the order was approved; retry with the same "
+                            "client_order_id and the brake will check the broker before placing anything"),
             }
-            for r in evaluation.rules
-            if r.outcome in (RuleOutcome.DENY, RuleOutcome.ESCALATE)
-        ]
-
-        if decision is Decision.DENY:
-            return self._deny(
-                tool=tool, intent=intent, evaluation=evaluation, rules=flagged_rules,
-                extra={"args": _json_safe(args)}, message="order refused by policy",
-            )
-        if decision is Decision.ESCALATE:
-            event_id = self._record(
-                tool=tool, decision="ESCALATE", intent=intent, evaluation=evaluation,
-                extra={"args": _json_safe(args), "rules": flagged_rules}, note="human approval required",
-            )
-            structured: dict[str, Any] = {
-                "decision": "ESCALATE", "order_placed": False, "intent_id": intent_id,
-                "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-                "evaluation_hash": content_sha256(evaluation), "rules": flagged_rules,
-                "how_to_approve": (
-                    f"owner runs: tradememory proxy approve {intent_id}; "
-                    "then retry this call with the same client_order_id"
-                ),
-            }
-            if not deterministic:
-                structured["how_to_approve"] = (
-                    "this call had no client_order_id so it cannot be approved and retried; "
-                    "resend with a client_order_id to get an approvable intent"
-                )
             return ToolResult(content=json.dumps(structured), structured_content=structured)
 
-        # ALLOW: record first, then forward exactly once.
-        event_id = self._record(
-            tool=tool, decision="ALLOW", intent=intent, evaluation=evaluation,
-            extra={"args": _json_safe(args), "approved_by_owner": approved}, note="forwarded to broker",
-        )
-        upstream_result = await call_next(context)
         payload = _json_safe(alpaca.unwrap(upstream_result))
-        if deterministic:
-            cache_value = payload if isinstance(payload, dict) else {"result": payload}
-            self.state.remember_forwarded(intent_id, cache_value, now)
+        cache_value = payload if isinstance(payload, dict) else {"result": payload}
+        self.state.remember_forwarded(intent_key, fingerprint, cache_value, now)
         self._record_trade(tool, intent, evaluation, payload, event_id, now)
         prior = await self._prior_outcomes(tool, intent)
 
         structured = {
-            "decision": "ALLOW", "order_placed": True, "intent_id": intent_id,
+            "decision": "ALLOW", "order_placed": True, "intent_id": intent_key,
             "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-            "evaluation_hash": content_sha256(evaluation),
-            "approved_by_owner": approved,
+            "evaluation_hash": content_sha256(evaluation), "approved_by_owner": approved,
             "prior_outcomes": prior,
             "upstream": getattr(upstream_result, "structured_content", None) or payload,
         }
         return ToolResult(content=upstream_result.content, structured_content=structured)
+
+    async def _cancel_guard(
+        self, context: MiddlewareContext, call_next: CallNext, tool: str, args: dict[str, Any]
+    ) -> ToolResult:
+        stored = _stored_args(args)
+        try:
+            if self.policy.require_protective_stop:
+                upstream = self._upstream_for(context)
+                raw_positions = alpaca.as_list(alpaca.unwrap(await upstream("get_all_positions", {})))
+                held: dict[str, Decimal] = {}
+                for p in raw_positions:
+                    if not isinstance(p, dict):
+                        raise alpaca.AdapterError("position payload is not an object")
+                    sign = Decimal("-1") if str(p.get("side", "long")).lower() == "short" else Decimal("1")
+                    held[str(p["symbol"]).upper()] = alpaca.D(p.get("qty")) * sign
+                if tool == "cancel_all_orders" and any(q != 0 for q in held.values()):
+                    return self._deny(
+                        tool=tool, intent=None, evaluation=None,
+                        rules=[{"code": STOP_CANCEL_CODE, "actual": "open positions would lose their protective stops"}],
+                        extra={"args": stored},
+                        message="cancel_all_orders is refused while positions are open and stops are required",
+                    )
+                if tool == "cancel_order_by_id":
+                    name, arguments = alpaca.order_by_id_call(str(args.get("order_id", "")))
+                    order = alpaca.unwrap(await upstream(name, arguments))
+                    if alpaca.is_protective_leg(order, held):
+                        return self._deny(
+                            tool=tool, intent=None, evaluation=None,
+                            rules=[{"code": STOP_CANCEL_CODE,
+                                    "actual": f"order {args.get('order_id')} is the protective stop of an open position"}],
+                            extra={"args": stored},
+                            message="cancelling a protective stop is refused while the position is open",
+                        )
+        except Exception as exc:
+            log.warning("cancel guard fail-closed on %s: %s", tool, exc)
+            return self._deny(
+                tool=tool, intent=None, evaluation=None,
+                rules=[{"code": FAIL_CLOSED_CODE, "actual": f"{type(exc).__name__}: {exc}"[:300]}],
+                extra={"args": stored}, message="the brake could not check this cancel and refused it",
+            )
+        result = await call_next(context)
+        self._record_safe(tool=tool, decision="ALLOW_CANCEL", intent=None, evaluation=None,
+                          extra={"args": stored}, note="cancel forwarded")
+        return result
 
     # ------------------------------------------------------------------ collection
     def _upstream_for(self, context: MiddlewareContext) -> UpstreamCall:
@@ -236,6 +346,32 @@ class BrakeMiddleware(Middleware):
 
         return call
 
+    async def _lookup_by_client_id(self, upstream: UpstreamCall, client_order_id: str) -> dict[str, Any] | None:
+        """The broker's view of a client_order_id: an order dict, or None when it has none."""
+        name, arguments = alpaca.order_by_client_id_call(client_order_id)
+        try:
+            order = alpaca.unwrap(await upstream(name, arguments))
+        except Exception as exc:
+            text = str(exc).lower()
+            if "404" in text or "not found" in text:
+                return None
+            raise  # cannot tell whether the broker has it: fail closed upstairs
+        if isinstance(order, dict) and order.get("id"):
+            return _json_safe(order)
+        return None
+
+    async def _asset(self, upstream: UpstreamCall, raw_symbol: str, now: datetime) -> dict[str, Any]:
+        key = raw_symbol.upper().strip()
+        cached = self._spec_cache.get(key)
+        if cached and now - cached[0] < INSTRUMENT_CACHE_TTL:
+            return cached[1]
+        name, arguments = alpaca.asset_call(key)
+        asset = alpaca.unwrap(await upstream(name, arguments))
+        if not isinstance(asset, dict) or not ({"symbol", "tradable", "id"} & set(asset)):
+            raise alpaca.AdapterError(f"no asset facts for {key}: {str(asset)[:120]!r}")
+        self._spec_cache[key] = (now, asset)
+        return asset
+
     async def _collect(
         self, upstream: UpstreamCall, tool: str, args: dict[str, Any], now: datetime
     ) -> Collected:
@@ -251,28 +387,55 @@ class BrakeMiddleware(Middleware):
         positions = alpaca.as_list(alpaca.unwrap(await upstream("get_all_positions", {})))
         orders_tool, orders_args = alpaca.orders_call()
         orders = alpaca.as_list(alpaca.unwrap(await upstream(orders_tool, orders_args)))
-
-        symbols = {str(args.get("symbol", "")).upper().strip()}
-        symbols |= {str(p["symbol"]).upper() for p in positions if isinstance(p, dict) and p.get("symbol")}
-        symbols |= {
-            str(o["symbol"]).upper()
-            for o in orders
-            if isinstance(o, dict)
-            and o.get("symbol")
-            and str(o.get("status", "")).lower() not in alpaca.TERMINAL_ORDER_STATUSES
-        }
-        symbols.discard("")
-
+        if len(orders) >= alpaca.ORDERS_PAGE_LIMIT:
+            raise alpaca.AdapterError("open-order list hit the page limit; exposure cannot be trusted")
         clock = alpaca.unwrap(await upstream("get_clock", {}))
         market_open = bool(clock.get("is_open")) if isinstance(clock, dict) else False
 
+        raw_symbol = str(args.get("symbol", "")).upper().strip()
+        if not raw_symbol:
+            raise alpaca.AdapterError("order has no symbol")
+        raw_symbols = {raw_symbol}
+        raw_symbols |= {str(p["symbol"]).upper() for p in positions if isinstance(p, dict) and p.get("symbol")}
+        raw_symbols |= {
+            str(o["symbol"]).upper() for o in orders
+            if isinstance(o, dict) and o.get("symbol")
+            and str(o.get("status", "")).lower() not in alpaca.TERMINAL_ORDER_STATUSES
+        }
+
+        # Canonical symbols come from the broker's asset record (BTCUSD -> BTC/USD), never from string games.
+        assets: dict[str, dict[str, Any]] = {}
+        canonical: dict[str, str] = {}
+        for raw in sorted(raw_symbols):
+            asset = await self._asset(upstream, raw, now)
+            canonical[raw] = alpaca.canonical_symbol(asset, raw)
+            assets[canonical[raw]] = asset
+        for p in positions:
+            if isinstance(p, dict) and p.get("symbol"):
+                p["symbol"] = canonical[str(p["symbol"]).upper()]
+        for o in orders:
+            if isinstance(o, dict) and o.get("symbol") and str(o["symbol"]).upper() in canonical:
+                o["symbol"] = canonical[str(o["symbol"]).upper()]
+        symbol = canonical[raw_symbol]
+
         specs: dict[str, InstrumentSpec] = {}
-        for symbol in sorted(symbols):
-            specs[symbol] = await self._spec(upstream, symbol, now)
         quotes: dict[str, MarketQuote] = {}
-        for symbol in sorted(symbols):
-            quotes[symbol] = await self._quote(upstream, symbol, specs[symbol].price_tick, market_open)
+        quote_times: list[datetime] = []
+        for canon in sorted(assets):
+            asset = assets[canon]
+            specs[canon] = alpaca.instrument_spec(canon, asset)
+            quote, ts = await self._quote(upstream, canon, specs[canon].price_tick,
+                                          market_open, alpaca.is_crypto_asset(asset))
+            quotes[canon] = quote
+            if ts is not None:
+                quote_times.append(ts)
         c.quotes = quotes
+        # While the market is open the snapshot is as old as its oldest quote, so a dead
+        # feed trips MARKET_STATE_STALE. Closed-market pricing comes from the last trade and
+        # is stamped now by design; the policy's trading windows decide whether that is allowed.
+        market_observed_at = min(quote_times) if (market_open and quote_times) else now
+        if market_observed_at > now:
+            market_observed_at = now
 
         equity = alpaca.D(account.get("equity"))
         drawdown = self.state.observe_equity(equity)
@@ -282,27 +445,17 @@ class BrakeMiddleware(Middleware):
             pnl_period=pnl_window(self.policy.risk_day_start_hour_utc, now),
             observed_at=now, state_version=self.state.next_state_version(),
         )
-        c.market = alpaca.market_snapshot(quotes, now)
+        c.market = alpaca.market_snapshot(quotes, market_observed_at)
         c.instruments = alpaca.instrument_catalog(list(specs.values()), now)
         c.intent = alpaca.intent_from_call(
-            tool, args, account_id=account_id, agent_id=self.agent_id,
-            quotes=quotes, specs=specs, market_data_as_of=now, now=now,
+            tool, args, account_id=account_id, agent_id=self.agent_id, symbol=symbol,
+            quotes=quotes, specs=specs, market_data_as_of=market_observed_at, now=now,
         )
         return c
 
-    async def _spec(self, upstream: UpstreamCall, symbol: str, now: datetime) -> InstrumentSpec:
-        cached = self._spec_cache.get(symbol)
-        if cached and now - cached[0] < INSTRUMENT_CACHE_TTL:
-            return cached[1]
-        asset_tool, asset_args = alpaca.asset_call(symbol)
-        asset = alpaca.unwrap(await upstream(asset_tool, asset_args))
-        spec = alpaca.instrument_spec(symbol, asset)
-        self._spec_cache[symbol] = (now, spec)
-        return spec
-
     async def _quote(
-        self, upstream: UpstreamCall, symbol: str, tick: Decimal, market_open: bool
-    ) -> MarketQuote:
+        self, upstream: UpstreamCall, symbol: str, tick: Decimal, market_open: bool, crypto: bool
+    ) -> tuple[MarketQuote, datetime | None]:
         """Live two-sided book while the market is open; last trade otherwise.
 
         A closed book is stale and wide (the real after-hours AAPL book was
@@ -310,14 +463,23 @@ class BrakeMiddleware(Middleware):
         midpoint would misstate every notional. Crypto trades around the clock
         and always uses its book.
         """
-        if market_open or alpaca.is_crypto_symbol(symbol):
-            name, arguments = alpaca.quote_call(symbol)
+        if market_open or crypto:
+            name, arguments = alpaca.quote_call(symbol, crypto)
             try:
                 return alpaca.quote_from(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
             except alpaca.AdapterError:
                 pass  # one-sided or empty book: fall through to the last trade
-        name, arguments = alpaca.trade_call(symbol)
+        name, arguments = alpaca.trade_call(symbol, crypto)
         return alpaca.quote_from_trade(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
+
+    def _observe_equity_from(self, result: Any) -> None:
+        """Keep the running equity peak honest between orders, from pass-through account reads."""
+        try:
+            account = alpaca.unwrap(result)
+            if isinstance(account, dict) and str(account.get("id")) == self.policy.account_id:
+                self.state.observe_equity(alpaca.D(account.get("equity")))
+        except Exception as exc:
+            log.debug("equity observation skipped: %s", exc)
 
     # ------------------------------------------------------------------ results
     def _deny(
@@ -330,10 +492,8 @@ class BrakeMiddleware(Middleware):
         extra: dict[str, Any],
         message: str,
     ) -> ToolResult:
-        event_id = self._record(
-            tool=tool, decision="DENY", intent=intent, evaluation=evaluation,
-            extra={**extra, "rules": rules}, note=message,
-        )
+        event_id = self._record_safe(tool=tool, decision="DENY", intent=intent, evaluation=evaluation,
+                                     extra={**extra, "rules": rules}, note=message)
         structured: dict[str, Any] = {
             "decision": "DENY", "order_placed": False, "decision_event": event_id,
             "policy_hash": self.policy.content_hash, "denied_rules": rules, "message": message,
@@ -362,29 +522,36 @@ class BrakeMiddleware(Middleware):
             "evaluation": _json_safe(evaluation.model_dump(mode="json")) if evaluation is not None else None,
             **_json_safe(extra),
         }
-        if evaluation is not None:
+        if evaluation is not None and decision in ("ALLOW", "DENY", "ESCALATE"):
             content_hash = content_sha256(evaluation)
         else:
             content_hash = hashlib.sha256(
                 json.dumps(factors, sort_keys=True, separators=(",", ":")).encode()
             ).hexdigest()
         factors["content_hash"] = content_hash
-        event_id = self.db.insert_decision_event(
-            tool=tool,
-            strategy=intent.strategy_id if intent is not None else None,
-            symbol=intent.symbol if intent is not None else None,
-            tier=decision,
-            score=None,
-            factors=factors,
-            recommendation=note,
-            linked_trade_id=str(intent.intent_id) if intent is not None else None,
-        )
-        with self.db.get_connection() as conn:
+        with self.db.get_connection() as conn:  # event row and chain link in one transaction
+            event_id = self.db.insert_decision_event(
+                tool=tool,
+                strategy=intent.strategy_id if intent is not None else None,
+                symbol=intent.symbol if intent is not None else None,
+                tier=decision,
+                score=None,
+                factors=factors,
+                recommendation=note,
+                linked_trade_id=str(intent.intent_id) if intent is not None else None,
+                conn=conn,
+            )
             ChainBuilder(conn).append(record_id=f"decision:{event_id}", content_hash=content_hash)
-        self.last_decision = {
-            "event_id": event_id, "tool": tool, "decision": decision, "content_hash": content_hash,
-        }
+        self.last_decision = {"event_id": event_id, "tool": tool, "decision": decision, "content_hash": content_hash}
         return event_id
+
+    def _record_safe(self, **kwargs: Any) -> str | None:
+        """Record without ever failing the agent's call; used after a forward already happened."""
+        try:
+            return self._record(**kwargs)
+        except Exception as exc:
+            log.error("could not record %s decision for %s: %s", kwargs.get("decision"), kwargs.get("tool"), exc)
+            return None
 
     def _record_trade(
         self,

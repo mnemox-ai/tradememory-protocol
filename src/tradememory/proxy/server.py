@@ -15,8 +15,17 @@ from .policy import DEFAULT_POLICY_PATH, load_policy
 from .state import DEFAULT_STATE_PATH, ProxyState
 
 REQUIRED_UPSTREAM_TOOLS = (
-    "get_account_info", "get_all_positions", "get_orders", "get_asset", "get_clock",
-    "get_stock_latest_quote", "get_stock_latest_trade", "place_stock_order",
+    "get_account_info", "get_all_positions", "get_orders", "get_order_by_id",
+    "get_order_by_client_id", "get_asset", "get_clock", "get_stock_latest_quote",
+    "get_stock_latest_trade", "place_stock_order",
+)
+
+# Only what a child process needs to start: the broker keys plus the handful of
+# variables Python and uv need to run. Never the proxy's whole environment.
+_PASSTHROUGH_ENV = (
+    "PATH", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP", "SYSTEMROOT",
+    "COMSPEC", "PATHEXT", "LANG", "LC_ALL", "UV_CACHE_DIR", "XDG_CACHE_HOME", "XDG_DATA_HOME",
+    "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY",
 )
 
 
@@ -39,7 +48,9 @@ def alpaca_backend(
     args: list[str] | None = None,
 ) -> StdioTransport:
     """Spawn Alpaca's official MCP server as the upstream; keys go only to that process."""
-    merged = {**os.environ, **env, "ALPACA_PAPER_TRADE": "true" if paper else "false"}
+    merged = {name: os.environ[name] for name in _PASSTHROUGH_ENV if name in os.environ}
+    merged.update(env)
+    merged["ALPACA_PAPER_TRADE"] = "true" if paper else "false"
     return StdioTransport(command=command, args=list(args or ["alpaca-mcp-server"]), env=merged)
 
 
@@ -61,8 +72,10 @@ def build_proxy(
     import tradememory.mcp_server as _mcp_module
     _mcp_module._db = database  # the memory tools and the brake share one database
 
+    local_tools = {"recall_memories", "get_behavioral_analysis", "get_agent_state", "brake_status"}
     brake = BrakeMiddleware(
-        policy=policy, state=ProxyState(state_path), db=database, agent_id=agent_id, recall=recall_memories,
+        policy=policy, state=ProxyState(state_path), db=database, agent_id=agent_id,
+        recall=recall_memories, local_tools=local_tools,
     )
     proxy.add_middleware(brake)
 

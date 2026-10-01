@@ -188,13 +188,17 @@ def proxy_doctor(policy, env_file, upstream) -> None:
             names = {t.name for t in await c.list_tools()}
             missing = [n for n in REQUIRED_UPSTREAM_TOOLS if n not in names]
             click.echo(f"upstream tools: {len(names)}; missing required: {missing or 'none'}")
+            unknown = sorted(n for n in names if alpaca.classify_tool(n) == "unknown")
+            new = sorted(names - alpaca.KNOWN_LIVE_TOOLS)
+            click.echo(f"tools the brake refuses as unclassified: {unknown or 'none'}")
+            click.echo(f"tools not in the list captured on 2026-10-01: {new or 'none'}")
             res = await c.call_tool("get_account_info", {})
             raw = res.structured_content if res.structured_content is not None else res.content
             account = alpaca.unwrap(raw)
             acct = account.get("id") if isinstance(account, dict) else None
             verdict = "MATCH" if acct == p.account_id else "MISMATCH (every order would be refused)"
             click.echo(f"upstream account id: {acct}; policy account id: {p.account_id}; {verdict}")
-            return not missing and acct == p.account_id
+            return not missing and not unknown and acct == p.account_id
 
     ok = asyncio.run(check())
     raise SystemExit(0 if ok else 1)

@@ -135,13 +135,23 @@ ESCALATE cannot be approved and retried.
 
 - An order at or above `approval_notional` returns `ESCALATE` with the
   intent id. Run `tradememory proxy approve <intent_id>`; the agent retries
-  with the same `client_order_id` and the brake forwards it once. Approvals
-  expire after 15 minutes.
+  with the same `client_order_id` and the same terms, and the brake forwards
+  it once. An approval is bound to the terms that escalated: change the
+  symbol, side, size or price and it does not apply. Approvals expire after
+  15 minutes.
 - `tradememory proxy halt FULL_HALT` refuses every new order until you run
   `tradememory proxy halt NORMAL`. `REDUCE_ONLY` lets through only orders that
-  shrink a position.
+  shrink a position. The running proxy reads the state file on every order,
+  so the halt takes effect immediately.
 - `close_position` and `close_all_positions` are never blocked, in any state.
   They are recorded.
+- `cancel_order_by_id` and `cancel_all_orders` are forwarded and recorded,
+  except that while the policy requires stops, cancelling the stop leg of an
+  open position is refused, and `cancel_all_orders` is refused while any
+  position is open.
+- If the broker call fails after the brake said ALLOW, the response says
+  `order_placed: "unknown"`. Retry with the same `client_order_id`: the brake
+  asks the broker whether it has that order before placing anything.
 
 ## 6. Where the evidence lives
 
