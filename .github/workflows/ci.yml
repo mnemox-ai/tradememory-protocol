@@ -27,6 +27,12 @@ jobs:
           pip install -r requirements.txt
           pip install -e .
 
+      # The broker proxy needs mnemox-control (Python >= 3.12). On 3.10/3.11
+      # tests/proxy skips itself via importorskip; on 3.12 it must run.
+      - name: Install broker-proxy extra
+        if: matrix.python-version == '3.12'
+        run: pip install -e ".[proxy]"
+
       - name: Run tests
         run: python -m pytest tests/ -v
 

@@ -1,0 +1,59 @@
+name: Put the brake in front of my broker
+description: You run an agent against a broker MCP server and want TradeMemory's brake and memory in between. Every one of these gets an answer.
+title: "[brake] "
+labels: ["brake-integration"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tell us what you run and we will help you put the brake in front of it. No payment, no pitch:
+        we are looking for the first ten real setups, and they decide what gets built next.
+  - type: dropdown
+    id: broker
+    attributes:
+      label: Broker or exchange
+      options:
+        - Alpaca
+        - Interactive Brokers
+        - Robinhood
+        - Binance
+        - Other (say which below)
+    validations:
+      required: true
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Where does your agent run?
+      options:
+        - Claude Desktop
+        - Claude Code
+        - OpenClaw
+        - Cursor
+        - Vibe-Trading
+        - TradingAgents
+        - My own code
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: money
+    attributes:
+      label: What is the account?
+      options:
+        - Paper or testnet
+        - Real money, personal
+        - Real money, team or firm
+    validations:
+      required: true
+  - type: textarea
+    id: want
+    attributes:
+      label: What should the brake refuse, and what must it never block?
+      placeholder: "e.g. nothing above $500 per order, every entry needs a stop, never block a close"
+    validations:
+      required: true
+  - type: textarea
+    id: blocker
+    attributes:
+      label: What stopped you so far? (optional)
+      placeholder: "e.g. my agent calls the broker directly and I cannot see why it traded"

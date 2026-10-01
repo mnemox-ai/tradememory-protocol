@@ -56,6 +56,8 @@ Refused by default: symbols outside your list, orders above your notional and po
 
 Status: tested end-to-end against a stateful fake of Alpaca's MCP server (`tests/proxy/`), and run once against a real Alpaca paper account on 2026-10-01: three refusals (symbol not on the list, entry without a stop, notional over the limit), one allowed one-share bracket order that reached the broker, and one retry with the same `client_order_id` that was answered from the record without a second order. The fake's argument names and payload shapes were corrected from that live run; `doctor` re-checks them against your account. Options, order replacement, stop-limit and trailing orders are refused rather than evaluated. Broker keys go only to the broker process the proxy starts; the proxy never stores them.
 
+Walkthrough with the real outputs: [docs/recipes/alpaca-brake.md](docs/recipes/alpaca-brake.md). **Running an agent against a broker and want this in front of it?** [Open a brake-integration issue](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml) or [book 30 minutes](https://calendly.com/johnson90207/30min). The first ten setups get hands-on help at no charge, and they decide what gets built next.
+
 ## See the interface
 
 **[tradememory-dashboard.onrender.com](https://tradememory-dashboard.onrender.com)** — the dashboard running on an illustrative demo dataset. Nothing to install.

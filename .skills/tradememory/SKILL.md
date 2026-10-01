@@ -1,10 +1,12 @@
 ---
 name: tradememory
 slug: tradememory
-version: 0.5.1
+version: 0.5.5
 description: >-
-  AI trading memory with outcome-weighted recall and autonomous strategy evolution.
-  17 MCP tools, 1,233 tests, works with any trading platform.
+  Memory and a brake for AI trading agents. 20 MCP tools: outcome-weighted
+  recall, behavioral drift alerts, tamper-evident audit chain. Optional proxy
+  that sits between your agent and your broker's MCP server (Alpaca today) and
+  refuses orders outside a policy you own.
 source: https://github.com/mnemox-ai/tradememory-protocol
 repository: https://github.com/mnemox-ai/tradememory-protocol
 homepage: https://github.com/mnemox-ai/tradememory-protocol
@@ -15,47 +17,47 @@ metadata:
     requires:
       bins: ["python3", "pip"]
       env:
-        ANTHROPIC_API_KEY: "Required for LLM reflections and Evolution Engine (optional, rule-based fallback without it)"
-        TRADEMEMORY_API: "API endpoint, defaults to http://localhost:8000 (optional)"
+        ANTHROPIC_API_KEY: "Optional. Enables LLM reflections and the Evolution Engine; rule-based fallback without it."
+        TRADEMEMORY_DB: "Optional. Path of the SQLite database, defaults to ~/.tradememory/tradememory.db"
     os: ["linux", "darwin", "win32"]
     homepage: https://github.com/mnemox-ai/tradememory-protocol
 ---
 
 # TradeMemory Protocol
 
-Give your AI agent persistent trading memory. TradeMemory records every trade, recalls past decisions weighted by outcome quality, discovers behavioral patterns, and autonomously evolves new strategies from raw price data.
+Two things for an agent that trades:
 
-**Outcome-Weighted Memory (OWM)** — 5 memory types (episodic, semantic, procedural, affective, prospective) that score recall by P&L outcome, context similarity, recency, and confidence. Winning trades surface first.
+1. **Memory.** Record every trade with one call, recall past trades weighted by
+   how they turned out, and get told when you are tilting: losing streaks,
+   oversized positions after a loss, drawdown past your own line. Every
+   record is SHA-256 chained and anchored daily to an RFC 3161 timestamp
+   authority, so a changed record is detectable without trusting our clock.
+2. **A brake (preview).** Run the proxy between your agent and your broker's
+   MCP server. Orders are evaluated against your policy before they reach the
+   broker; refusals, approvals and replays are all recorded. Alpaca is the
+   first broker. See "Brake" below.
 
-**Evolution Engine** — LLM-powered strategy discovery. Feed it OHLCV data from any exchange, it generates candidate patterns, backtests them vectorized, validates out-of-sample, and graduates survivors. No manual rule writing.
-
-**Platform-agnostic** — works with MT5, Binance, Alpaca, or any broker that outputs trade data. 1,233 tests passing. MIT licensed.
+Local-first: SQLite on your machine, no telemetry, no hosted account needed.
+MIT licensed, 1,500+ tests, CI on Python 3.10 to 3.12.
 
 ## Installation
 
 ```bash
 pip install tradememory-protocol
+# brake preview (Python 3.12+), until the next release ships the extra:
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"
 ```
 
-Verify:
-
-```bash
-python -c "import tradememory; print('TradeMemory ready')"
-```
+Verify: `tradememory doctor`.
 
 ## Setup
 
-### Claude Desktop (via uvx)
-
-Add to your Claude Desktop MCP config:
+### Claude Desktop
 
 ```json
 {
   "mcpServers": {
-    "tradememory": {
-      "command": "uvx",
-      "args": ["tradememory-protocol"]
-    }
+    "tradememory": { "command": "uvx", "args": ["tradememory-protocol"] }
   }
 }
 ```
@@ -66,140 +68,82 @@ Add to your Claude Desktop MCP config:
 claude mcp add tradememory -- uvx tradememory-protocol
 ```
 
-### Manual (local server)
+### OpenClaw
+
+Use this skill; the server command is `uvx tradememory-protocol` (stdio).
+
+## Brake: put it in front of Alpaca
 
 ```bash
-python -m tradememory
+tradememory proxy init --account-id <alpaca account id> --symbols AAPL,MSFT
+tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks tool names and the account id
+tradememory proxy config                                           # the MCP entry that replaces the direct Alpaca one
 ```
 
-Runs the MCP server on stdio. For the REST API server:
+Then point the agent at `tradememory proxy run --policy ... --env-file ...`
+instead of `uvx alpaca-mcp-server`. The agent sees all of Alpaca's tools plus
+`recall_memories`, `get_behavioral_analysis`, `get_agent_state`, `brake_status`.
 
-```bash
-python -m tradememory.server
-# Runs on http://localhost:8000
-```
+Refused by default: symbols outside your list, orders above your notional or
+position limits, entries without a bracket stop, new orders after your daily
+loss or drawdown limit, and everything after `tradememory proxy halt FULL_HALT`.
+Never blocked: closing a position. Orders at or above `approval_notional`
+wait for `tradememory proxy approve <intent_id>`; the agent retries with the
+same `client_order_id` and the proxy forwards it exactly once. Anything the
+brake cannot evaluate is refused, not passed through. Full walkthrough with
+real outputs: `docs/recipes/alpaca-brake.md`.
 
-## MCP Tools Reference
+## MCP tools (20)
 
-### Core Memory (2 tools)
+| Group | Tools |
+|---|---|
+| Memory | `remember_trade`, `recall_memories`, `get_trade_reflection`, `get_strategy_performance` |
+| State and behaviour | `get_agent_state`, `get_behavioral_analysis`, `check_trade_legitimacy`, `compute_dqs` |
+| Plans | `create_trading_plan`, `check_active_plans` |
+| Audit | `export_audit_trail`, `verify_audit_hash`, `verify_audit_chain`, `get_daily_root` |
+| Validation | `validate_strategy` (deflated Sharpe, walk-forward, regime, CPCV) |
+| Evolution (research-stage) | `evolution_fetch_market_data`, `evolution_discover_patterns`, `evolution_run_backtest`, `evolution_evolve_strategy`, `evolution_get_log` |
 
-| Tool | Purpose |
-|------|---------|
-| `get_strategy_performance` | Aggregate stats per strategy: win rate, PnL, profit factor, best/worst trades |
-| `get_trade_reflection` | Deep-dive into a specific trade's reasoning and lessons learned |
+The Evolution Engine and the DQS gate are research-stage: see
+`LIMITATIONS.md` for what has and has not survived validation before you trust
+either for a trading decision.
 
-### OWM Cognitive Memory (6 tools)
+## Things to say to your agent
 
-| Tool | Purpose |
-|------|---------|
-| `remember_trade` | Store a trade into all 5 OWM memory layers with automatic behavioral updates |
-| `recall_memories` | Outcome-weighted recall — scores memories by P&L, context similarity, recency, confidence |
-| `get_behavioral_analysis` | Procedural memory stats: hold times, disposition ratio, lot variance, Kelly criterion |
-| `get_agent_state` | Current affective state: confidence level, drawdown %, win/loss streaks, risk appetite |
-| `create_trading_plan` | Create a prospective trading plan with entry/exit conditions and risk parameters |
-| `check_active_plans` | Check status of active trading plans, evaluate against current market conditions |
+> "Record my AAPL long at 195, earnings beat, high confidence."
 
-### Evolution Engine (5 tools)
+> "Before I buy AAPL again: what happened last time in this condition?"
 
-| Tool | Purpose |
-|------|---------|
-| `evolution_fetch_market_data` | Fetch OHLCV data from Binance for backtesting and pattern discovery |
-| `evolution_discover_patterns` | LLM-powered pattern discovery from price data — generates candidate trading rules |
-| `evolution_run_backtest` | Vectorized backtest of a candidate pattern — returns Sharpe, win rate, max drawdown |
-| `evolution_evolve_strategy` | Full evolution loop: generate → backtest → select → eliminate across generations |
-| `evolution_get_log` | Get log of past evolution runs with graduated strategies and graveyard |
+> "Am I on tilt? Check my state and my sizing after losses."
 
-### Decision Audit Trail (2 tools)
+> "Verify the audit chain."
 
-| Tool | Purpose |
-|------|---------|
-| `export_audit_trail` | Export trading decision records with SHA-256 tamper detection for compliance review |
-| `verify_audit_hash` | Verify integrity of a trading decision record by recomputing its SHA-256 hash |
+> "What does the brake refuse right now?" (`brake_status`, proxy only)
 
-## Available Commands
+## Security and permissions
 
-Tell your agent these things in natural language.
-
-### Record a Trade
-
-> "Record my trade: XAUUSD long 0.05 lots, entry 5180, exit 5210, profit $150"
-
-> "Remember my XAUUSD short trade, entry 5200, exit 5165, profit $175. London session breakout, high volume, confidence 0.8."
-
-### Recall with OWM
-
-> "What trades have I taken in similar market conditions? Current context: ranging market, low volatility, Asian session."
-
-Returns memories ranked by outcome-weighted score — winning trades in similar contexts surface first.
-
-### Check Performance
-
-> "Show my trading performance this week"
-
-> "Compare my VolBreakout vs IntradayMomentum strategy performance"
-
-### Behavioral Analysis
-
-> "Show my behavioral analysis — am I cutting winners short?"
-
-Returns disposition ratio, hold time asymmetry, lot sizing variance vs Kelly criterion.
-
-### Agent State
-
-> "What's my current confidence level and drawdown?"
-
-> "Am I on tilt? Check my affective state."
-
-### Trading Plans
-
-> "Create a trading plan for XAUUSD long if price breaks above 5200 with ATR confirmation"
-
-> "Check my active trading plans against current market conditions"
-
-### Evolution Engine
-
-> "Evolve a strategy for BTCUSDT on the 1h timeframe — 3 generations, 10 candidates each"
-
-> "Discover 5 trading patterns from ETHUSDT 4h data over the last 90 days"
-
-> "Backtest this pattern against BTCUSDT 1h data"
-
-> "Show me the evolution log — which strategies graduated?"
-
-### AI Reflection
-
-> "Run a reflection on my last 20 trades"
-
-> "What patterns have you found in my London session trades?"
-
-## Security & Permissions
-
-**Network access during install:** `pip install` downloads from PyPI. Standard Python package installation.
-
-**Network access at runtime:** The MCP server runs on stdio by default — no network access. The REST server runs on `localhost:8000` and does not make outbound requests. If `ANTHROPIC_API_KEY` is set, the reflection engine and Evolution Engine send data to the Claude API. Evolution Engine fetches OHLCV data from the Binance public API.
-
-**Environment variables:** All environment variables are optional. They are stored in your local `.env` file and never logged or sent to external services (except `ANTHROPIC_API_KEY` which authenticates with the Anthropic API).
-
-**File system access:** TradeMemory writes to a single SQLite database file (`tradememory.db`) in the project directory. No files are created or modified outside the project.
-
-**No implicit permissions:** This skill does not auto-install dependencies, modify system files, or require elevated privileges.
-
-## Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `ANTHROPIC_API_KEY` | No | Enables LLM reflections and Evolution Engine. Without it, reflections use rule-based analysis; Evolution is unavailable. |
-| `TRADEMEMORY_API` | No | REST API endpoint, defaults to `http://localhost:8000` |
+- **Network at runtime:** the MCP server runs on stdio with no outbound calls
+  except the daily RFC 3161 timestamp request (configurable) and, if you set
+  `ANTHROPIC_API_KEY`, reflection calls to the Anthropic API. The Evolution
+  Engine fetches OHLCV from Binance's public API when you use it.
+- **Broker keys:** the brake reads the env file you name and passes it only
+  to the broker process it starts (`uvx alpaca-mcp-server`). It never writes
+  keys to disk or to the database.
+- **Files:** one SQLite database (`TRADEMEMORY_DB`), a policy file and a small
+  state file under `~/.tradememory/`.
+- **No implicit permissions:** no dependency auto-install, no system files,
+  no elevation.
 
 ## Links
 
 - GitHub: https://github.com/mnemox-ai/tradememory-protocol
 - PyPI: https://pypi.org/project/tradememory-protocol/
-- Tutorial: https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/TUTORIAL.md
-- Demo: `python scripts/demo.py` (30 simulated trades, full L1→L2→L3 pipeline)
+- Brake recipe: https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/recipes/alpaca-brake.md
+- Limitations: https://github.com/mnemox-ai/tradememory-protocol/blob/master/LIMITATIONS.md
+- Help putting it in front of your broker: https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml
 
-## Related Skills
+## Related skills
 
 | Skill | Path | Description |
 |-------|------|-------------|
-| Strategy Validator | `.skills/strategy-validator/SKILL.md` | Validate trading strategies for overfitting using 4 statistical tests (DSR, Walk-Forward, Regime, CPCV). Use when the user says "validate my strategy", "check my backtest", or "is this overfitting?". |
+| Strategy Validator | `.skills/strategy-validator/SKILL.md` | Validate a backtest for overfitting with four statistical tests. Use when the user says "validate my strategy" or "is this overfitting?". |

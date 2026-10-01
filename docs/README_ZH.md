@@ -56,6 +56,8 @@ tradememory proxy config                                           # 印出要�
 
 目前狀態：已對一個有狀態的 Alpaca MCP 假上游跑完端到端測試（`tests/proxy/`），並在 2026 年 10 月 1 日對真實的 Alpaca paper 帳戶跑過一次：三筆拒絕（清單外標的、沒帶停損、超過單筆上限）、一筆放行的一股 bracket 單真的送到券商、一筆用同一個 `client_order_id` 重送的單由紀錄回覆、沒有產生第二張單。假上游的參數名稱與回傳形狀已依那次真實執行修正；`doctor` 會對你的帳戶再核對一次。選擇權、改單、stop-limit 與 trailing 單是拒絕不是評估。券商金鑰只交給 proxy 啟動的券商程序，proxy 本身不保存。
 
+附真實輸出的完整步驟：[docs/recipes/alpaca-brake.md](recipes/alpaca-brake.md)。**你的 agent 已經在對券商下單，想把這道煞車裝在前面？** [開一個 brake-integration issue](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml) 或 [約 30 分鐘](https://calendly.com/johnson90207/30min)。前十個真實環境我們親手幫忙接、不收費，之後要做什麼由他們決定。
+
 ## 看看介面長什麼樣
 
 **[tradememory-dashboard.onrender.com](https://tradememory-dashboard.onrender.com)** 是跑在示範資料集上的儀表板，不用安裝任何東西。
