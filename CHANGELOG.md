@@ -5,6 +5,40 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Broker proxy (preview), `proxy` extra.** `tradememory proxy run` puts the
+  memory layer between an MCP agent and Alpaca's official MCP server. Read
+  tools pass through unchanged; `place_stock_order` / `place_crypto_order`
+  are evaluated by Mnemox Control (policy v0.3) against live account,
+  position, open-order and quote state before they are forwarded. Every
+  evaluation, including refusals and replays, is a `decision_events` row
+  chained into the audit ledger; allowed entries open a `trade_records` row.
+  `init`/`seal` manage a sealed policy file, `approve` releases one ESCALATE,
+  `halt` sets an owner halt, `doctor` checks the live upstream tool names
+  and account id, `config` prints the client entry.
+- Invariants pinned by `tests/proxy/` (24 tests against a stateful fake of
+  Alpaca's server, trust envelope included): nothing is forwarded without an
+  ALLOW; any failure to evaluate is a refusal; exits are never blocked; the
+  same `client_order_id` is forwarded at most once; options, order
+  replacement, stop-limit and trailing orders are refused.
+
+### Changed
+- README (en, zh): the regulatory framing now states that MiFID II / RTS 6
+  bind investment firms, that the AI Act's Annex III logging obligations were
+  postponed to 2 December 2027, and that ESMA's February 2026 briefing
+  excludes AI algorithmic trading from the high-risk scope. The table is
+  labelled as a feature map, not a compliance claim.
+
+### Not yet
+- The proxy has not been run against a real Alpaca paper account; the
+  upstream argument names (`get_orders` status filter, crypto quote
+  `symbols`) follow the published server source and are checked by
+  `doctor`, not yet exercised live.
+- `mnemox-control` is pinned as a git dependency; it must be published to
+  PyPI before this extra can ship in a PyPI release.
+
 ## [0.5.5] - 2026-09-09
 
 Security hotfix.

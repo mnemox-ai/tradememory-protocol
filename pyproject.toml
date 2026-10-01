@@ -29,6 +29,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+proxy = [
+    # Brake in front of a broker MCP server. Needs Python >= 3.12 for mnemox-control.
+    # TODO before a PyPI release: publish mnemox-control to PyPI; PyPI rejects direct git references.
+    "fastmcp>=3.2.0,<4",
+    "mnemox-control @ git+https://github.com/mnemox-ai/mnemox-control.git@f7d9953 ; python_version >= '3.12'",
+]
 test = [
     "pytest>=9.0.3",
     "pytest-asyncio>=0.23.3",

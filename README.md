@@ -18,11 +18,11 @@
 
 ---
 
-> **Project status (August 2026):** Feature-complete, in **maintenance mode** — bug and security reports are still reviewed; no new features or hosted service are planned. For paid work, see [Trading Record Analysis](#trading-record-analysis).
+> **Project status (October 2026):** the memory layer is in **maintenance mode** — bug and security reports are reviewed, no new memory features are planned. Active work is the [broker proxy](#put-a-brake-in-front-of-your-broker-preview) below. For paid work, see [Trading Record Analysis](#trading-record-analysis).
 
-**Your trading AI has amnesia. And regulators are starting to notice.**
+**Your trading AI has amnesia. Brokers just opened the door to it anyway.**
 
-It makes the same mistakes every session. It can't explain why it traded. It forgets everything when the context window ends. Meanwhile, MiFID II is raising the bar for algorithmic decision documentation ([Article 17](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32014L0065)). The EU AI Act demands systematic logging of AI actions ([Article 14](https://eur-lex.europa.eu/eli/reg/2024/1689)). Your competitors' agents are learning from every trade.
+It makes the same mistakes every session. It can't explain why it traded. It forgets everything when the context window ends. In 2026 Robinhood, Alpaca and Interactive Brokers opened MCP endpoints for trading agents, and Robinhood's support page says it is not responsible for losses from agent-generated decisions. Each broker shows you its own activity feed. None gives your agent a memory, none puts a brake you control in front of the order, and none of those records travel with you to the next broker or the next framework.
 
 The AI trading stack is missing a layer. Every MCP server handles execution — placing orders, fetching prices, reading charts. **None handle memory.**
 
@@ -39,6 +39,22 @@ Used by an independent trader running a pre-flight checklist before every positi
 - **Safety rails:** confidence tracking, drawdown alerts, losing streak detection — the system tells you when to stop
 
 Works with any market (stocks, forex, crypto, futures), any broker, any AI platform. TradeMemory doesn't execute trades or touch your money — it only records and recalls.
+
+## Put a brake in front of your broker (preview)
+
+The `proxy` extra runs TradeMemory *between* your agent and your broker's MCP server. Every tool is forwarded unchanged, except order-placing tools, which are evaluated by [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) against a policy you own before they reach the broker. Every evaluation, allowed or refused, is recorded and chained into the audit log, and the memory fills itself from the orders that pass. The agent you already have keeps working; only one line of its MCP config changes.
+
+```bash
+# until the next release ships the extra:
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@feat/broker-proxy"   # Python 3.12+
+tradememory proxy init --account-id <your Alpaca account id> --symbols AAPL,MSFT
+tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the live tool names and the account id
+tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one
+```
+
+Refused by default: symbols outside your list, orders above your notional and position limits, entries without a bracket stop, any new order after your daily-loss or drawdown limit, and everything while you have run `tradememory proxy halt FULL_HALT`. Never blocked: closing a position. Orders at or above `approval_notional` wait for `tradememory proxy approve <intent_id>`; the agent retries with the same `client_order_id` and the proxy forwards it exactly once. Anything the brake cannot evaluate (a dead quote feed, an unknown asset, an order type policy v0 does not cover) is refused, not passed through.
+
+Status: tested end-to-end against a stateful fake of Alpaca's MCP server (`tests/proxy/`). It has not yet been run against a real Alpaca paper account, which is why `doctor` exists. Options, order replacement, stop-limit and trailing orders are refused rather than evaluated. Broker keys go only to the broker process the proxy starts; the proxy never stores them.
 
 ## See the interface
 
@@ -143,11 +159,13 @@ Descriptive statistics of past trades only: no trade signals, no investment advi
 
 Every trading decision your agent makes — including decisions **not** to trade — is recorded as a Trading Decision Record (TDR). Per-record SHA-256 content hashes are linked into a forward-chained audit ledger; every UTC day is summarised by a Merkle root which itself chains across days. Tampering with any historical record invalidates every subsequent link.
 
+These obligations bind investment firms, not retail users. Under the EU AI Act, the Annex III high-risk logging obligations were postponed to 2 December 2027, and ESMA's February 2026 supervisory briefing on algorithmic trading states that AI-based algorithmic trading is currently excluded from the high-risk scope. The table shows which TradeMemory features map to those texts if and when they apply to you. It is not a compliance claim.
+
 | Regulation | Requirement | TradeMemory Coverage |
 |------------|-------------|---------------------|
 | MiFID II Article 17 | Record every algorithmic trading decision factor | Full decision chain: conditions, filters, indicators, execution |
 | EU AI Act Article 14 | Human oversight of high-risk AI systems | Explainable reasoning + memory context for every decision |
-| EU AI Act Article 12 | Automatic, tamper-resistant logs over system lifetime | Linked SHA-256 chain + daily Merkle roots (RFC 3161 TSA in Phase 1.5) |
+| EU AI Act Article 12 | Automatic, tamper-resistant logs over system lifetime | Linked SHA-256 chain + daily Merkle roots (RFC 3161 TSA anchoring, on by default since 0.5.3) |
 
 ```bash
 # Verify a single record hasn't been tampered with
