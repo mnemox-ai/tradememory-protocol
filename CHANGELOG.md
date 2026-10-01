@@ -70,6 +70,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   account read; the broker process receives a minimal environment, not the
   proxy's.
 
+- State file (second review pass): a file that exists but cannot be read,
+  parsed or validated is corrupt, reads as FULL_HALT and is never written
+  over (`proxy halt` moves it aside and starts fresh); every operation holds
+  an OS file lock across read-modify-write with a unique temp file and
+  fsync; approvals store the fingerprint they approved and new terms void a
+  pending approval; escalations and approvals expire; the broker child
+  environment is an allowlist that keeps `UV_*`, `ALPACA_*`, proxy and CA
+  variables in either case.
+
 ### Not yet
 - `mnemox-control` is pinned as a git dependency; it must be published to
   PyPI before this extra can ship in a PyPI release.

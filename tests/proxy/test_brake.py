@@ -423,6 +423,15 @@ async def test_unknown_asset_fails_closed(tmp_path):
     assert w.fake.placed == []
 
 
+async def test_corrupt_state_file_fails_closed_and_is_left_alone(tmp_path):
+    w = World(tmp_path)
+    w.state_path.write_text('{"halt": null}', encoding="utf-8")
+    res = await w.call("place_stock_order", order(cid="corrupt", **BRACKET))
+    assert codes(res) == {"PROXY_FAIL_CLOSED"}
+    assert w.fake.placed == []
+    assert w.state_path.read_text(encoding="utf-8") == '{"halt": null}'
+
+
 async def test_unrecognised_positions_shape_fails_closed(tmp_path):
     w = World(tmp_path)
     w.fake.positions_payload_override = {"symbol": "AAPL", "qty": "20", "side": "long"}  # an object, not a list

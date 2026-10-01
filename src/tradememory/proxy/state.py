@@ -1,27 +1,53 @@
 """Owner-side state the brake needs between calls: peak equity, halt, escalations, approvals, replay cache.
 
-Kept in a plain JSON file so the owner can read it and the CLI can change it
-while the proxy is running. Every operation re-reads the file first and
-writes it back atomically, so `tradememory proxy halt` in one shell is seen
-by the next order in the other. Nothing here is trusted evidence; the
-evidence is the chained decision events in TradeMemory.
+A plain JSON file so the owner can read it and the CLI can change it while the
+proxy is running. Every operation takes an OS file lock, re-reads the file,
+applies one change and writes it back atomically, so `tradememory proxy halt`
+in one shell is seen by the next order in the other and nobody's write is
+lost. A file that exists but cannot be read, parsed or validated is treated as
+corrupt: the halt reads as FULL_HALT and nothing is written over it until the
+owner sets the halt explicitly (the corrupt file is kept aside). Nothing here
+is trusted evidence; the evidence is the chained decision events in TradeMemory.
 """
 
 from __future__ import annotations
 
+import contextlib
 import json
+import os
+import sys
+import tempfile
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
+if sys.platform == "win32":
+    import msvcrt
+else:
+    import fcntl
+
 DEFAULT_STATE_PATH = Path.home() / ".tradememory" / "proxy-state.json"
 APPROVAL_TTL = timedelta(minutes=15)
+ESCALATION_TTL = timedelta(hours=24)
 REPLAY_TTL = timedelta(hours=24)
 
 HALT_STATES = ("NORMAL", "SOFT_HALT", "REDUCE_ONLY", "FULL_HALT", "RECONCILE_REQUIRED")
+LOCK_TIMEOUT_SECONDS = 10.0
+
+
+class StateCorrupt(RuntimeError):
+    """The state file exists but cannot be trusted. The brake fails closed on it."""
+
+
+def _aware(now: datetime | None) -> datetime:
+    if now is None:
+        return datetime.now(UTC)
+    if now.tzinfo is None:
+        return now.replace(tzinfo=UTC)
+    return now.astimezone(UTC)
 
 
 def _parse(stamp: Any) -> datetime | None:
@@ -35,91 +61,226 @@ def _parse(stamp: Any) -> datetime | None:
 class ProxyState:
     def __init__(self, path: Path | str = DEFAULT_STATE_PATH):
         self.path = Path(path)
-        self._data = self._read()
+        self.lock_path = self.path.with_name(self.path.name + ".lock")
+        self._data: dict[str, Any] = self._empty()
+        self.corrupt_reason: str | None = None
+        with self._locked():
+            self._load()
 
     # ---------------------------------------------------------------- file
     @staticmethod
     def _empty() -> dict[str, Any]:
         return {"peak_equity": None, "halt": "NORMAL", "escalated": {}, "approvals": {}, "forwarded": {}}
 
-    def _read(self) -> dict[str, Any]:
-        data = self._empty()
-        if self.path.exists():
+    @contextlib.contextmanager
+    def _locked(self) -> Iterator[None]:
+        """Exclusive OS lock shared by every process touching this state file."""
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        handle = open(self.lock_path, "a+b")  # noqa: SIM115 - closed in finally
+        try:
+            if sys.platform == "win32":
+                # LK_LOCK retries once a second and gives up after ten; poll LK_NBLCK instead.
+                handle.seek(0)
+                deadline = time.monotonic() + LOCK_TIMEOUT_SECONDS
+                while True:
+                    try:
+                        msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+                        break
+                    except OSError:
+                        if time.monotonic() > deadline:
+                            raise
+                        time.sleep(0.005)
+            else:
+                fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+            yield
+        finally:
             try:
-                loaded = json.loads(self.path.read_text(encoding="utf-8"))
-            except (OSError, json.JSONDecodeError):
-                loaded = {}
-            if isinstance(loaded, dict):
-                for key in data:
-                    if key in loaded and isinstance(loaded[key], type(data[key]) if data[key] is not None else object):
-                        data[key] = loaded[key]
-                    elif key in loaded and data[key] is None:
-                        data[key] = loaded[key]
-        return data
+                if sys.platform == "win32":
+                    handle.seek(0)
+                    msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+                else:
+                    fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+            finally:
+                handle.close()
+
+    def _mark_corrupt(self, reason: str) -> None:
+        self.corrupt_reason = reason
+        self._data = self._empty()
+        self._data["halt"] = "FULL_HALT"
+
+    def _load(self) -> None:
+        """Read and validate the file. Missing file: defaults. Unreadable or invalid file: corrupt."""
+        self.corrupt_reason = None
+        data = self._empty()
+        if not self.path.exists():
+            self._data = data
+            return
+        raw: str | None = None
+        last_error: Exception | None = None
+        for _ in range(3):  # a rename in flight on Windows can refuse the read for a moment
+            try:
+                raw = self.path.read_text(encoding="utf-8-sig")
+                break
+            except ValueError as exc:  # UnicodeDecodeError: wrong encoding, not transient
+                self._mark_corrupt(f"state file is not UTF-8: {exc}")
+                return
+            except OSError as exc:
+                last_error = exc
+                time.sleep(0.05)
+        if raw is None:
+            self._mark_corrupt(f"state file unreadable: {last_error}")
+            return
+        try:
+            loaded = json.loads(raw)
+        except ValueError as exc:  # JSONDecodeError and UnicodeDecodeError both derive from ValueError
+            self._mark_corrupt(f"state file is not valid JSON: {exc}")
+            return
+        if not isinstance(loaded, dict):
+            self._mark_corrupt("state file is not a JSON object")
+            return
+
+        halt = loaded.get("halt", "NORMAL")
+        if not isinstance(halt, str) or halt.strip().upper() not in HALT_STATES:
+            self._mark_corrupt(f"halt is not a known state: {halt!r}")
+            return
+        data["halt"] = halt.strip().upper()
+
+        peak = loaded.get("peak_equity")
+        if peak is not None:
+            try:
+                peak_d = Decimal(str(peak))
+                ok = peak_d.is_finite() and peak_d >= 0
+            except InvalidOperation:
+                ok = False
+            if not ok:
+                self._mark_corrupt(f"peak_equity is not a finite non-negative number: {peak!r}")
+                return
+            data["peak_equity"] = str(peak_d)
+
+        for key in ("escalated", "approvals", "forwarded"):
+            value = loaded.get(key, {})
+            if not isinstance(value, dict):
+                self._mark_corrupt(f"{key} is not an object")
+                return
+            data[key] = value
+        self._data = data
 
     def _write(self) -> None:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        tmp = self.path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self._data, indent=2, sort_keys=True), encoding="utf-8")
-        tmp.replace(self.path)
+        """Unique temp file, fsync, atomic replace. Never a shared temp name."""
+        fd, tmp_name = tempfile.mkstemp(prefix=self.path.name + ".", suffix=".tmp", dir=self.path.parent)
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as fh:
+                fh.write(json.dumps(self._data, indent=2, sort_keys=True))
+                fh.flush()
+                os.fsync(fh.fileno())
+            for attempt in range(20):  # Windows can refuse the replace for a moment after a close
+                try:
+                    os.replace(tmp_name, self.path)
+                    break
+                except PermissionError:
+                    if attempt == 19:
+                        raise
+                    time.sleep(0.01)
+        except BaseException:
+            with contextlib.suppress(OSError):
+                os.unlink(tmp_name)
+            raise
 
-    def _mutate(self, fn: Callable[[dict[str, Any]], Any]) -> Any:
-        """Re-read, apply one change, write atomically. Returns what fn returned."""
-        self._data = self._read()
-        result = fn(self._data)
-        self._write()
-        return result
+    def _mutate(self, fn: Callable[[dict[str, Any]], Any], *, now: datetime | None = None,
+                allow_when_corrupt: bool = False) -> Any:
+        """Lock, re-read, apply one change, write atomically. Returns what fn returned."""
+        with self._locked():
+            self._load()
+            if self.corrupt_reason is not None:
+                if not allow_when_corrupt:
+                    raise StateCorrupt(self.corrupt_reason)
+                aside = self.path.with_name(f"{self.path.name}.corrupt-{int(time.time())}")
+                with contextlib.suppress(OSError):
+                    os.replace(self.path, aside)
+                self._data = self._empty()
+                self.corrupt_reason = None
+            if now is not None:
+                self._prune(self._data, _aware(now))
+            result = fn(self._data)
+            self._write()
+            return result
+
+    def _snapshot(self) -> dict[str, Any]:
+        with self._locked():
+            self._load()
+            if self.corrupt_reason is not None:
+                raise StateCorrupt(self.corrupt_reason)
+            return self._data
 
     # ---------------------------------------------------------------- equity
     def observe_equity(self, equity: Decimal) -> Decimal:
-        """Record equity; return drawdown from the running peak (never negative)."""
-
-        def apply(data: dict[str, Any]) -> Decimal:
-            stored = data.get("peak_equity")
-            peak = Decimal(str(stored)) if stored else equity
-            if equity > peak:
-                peak = equity
-            data["peak_equity"] = str(peak)
+        """Record equity; return drawdown from the running peak (never negative). Writes only when the peak moves."""
+        with self._locked():
+            self._load()
+            if self.corrupt_reason is not None:
+                raise StateCorrupt(self.corrupt_reason)
+            stored = self._data.get("peak_equity")
+            peak = Decimal(stored) if stored else equity
+            if equity > peak or stored is None:
+                self._data["peak_equity"] = str(max(peak, equity))
+                self._write()
+                peak = max(peak, equity)
             return max(Decimal("0"), peak - equity)
-
-        return self._mutate(apply)
 
     # ---------------------------------------------------------------- halt
     @property
     def halt(self) -> str:
-        self._data = self._read()
-        value = str(self._data.get("halt") or "NORMAL").upper()
-        return value if value in HALT_STATES else "FULL_HALT"  # a garbled halt reads as the safe one
+        """The owner's halt; FULL_HALT whenever the file cannot be trusted."""
+        with self._locked():
+            self._load()
+        if self.corrupt_reason is not None:
+            return "FULL_HALT"
+        return str(self._data.get("halt") or "FULL_HALT")
 
     def set_halt(self, value: str) -> None:
         value = value.upper()
         if value not in HALT_STATES:
             raise ValueError(f"halt must be one of {HALT_STATES}")
-        self._mutate(lambda data: data.__setitem__("halt", value))
+        self._mutate(lambda data: data.__setitem__("halt", value), allow_when_corrupt=True)
 
     # ---------------------------------------------------------------- escalation and approval
     def escalate(self, intent_id: str, fingerprint: str, now: datetime | None = None) -> None:
-        now = now or datetime.now(UTC)
+        """Remember the exact terms that escalated. New terms for the same intent void any pending approval."""
+        at = _aware(now)
 
         def apply(data: dict[str, Any]) -> None:
-            data["escalated"][intent_id] = {"fingerprint": fingerprint, "at": now.isoformat()}
+            previous = data["escalated"].get(intent_id)
+            if isinstance(previous, dict) and previous.get("fingerprint") != fingerprint:
+                data["approvals"].pop(intent_id, None)
+            data["escalated"][intent_id] = {"fingerprint": fingerprint, "at": at.isoformat()}
 
-        self._mutate(apply)
+        self._mutate(apply, now=at)
 
-    def approve(self, intent_id: str, now: datetime | None = None) -> None:
-        now = now or datetime.now(UTC)
-        self._mutate(lambda data: data["approvals"].__setitem__(intent_id, now.isoformat()))
+    def approve(self, intent_id: str, now: datetime | None = None) -> str:
+        """Approve the terms that escalated for this intent. Returns the fingerprint approved."""
+        at = _aware(now)
+
+        def apply(data: dict[str, Any]) -> str:
+            escalated = data["escalated"].get(intent_id)
+            if not isinstance(escalated, dict) or not escalated.get("fingerprint"):
+                raise ValueError(f"nothing escalated for intent {intent_id}; approve after the agent's ESCALATE")
+            data["approvals"][intent_id] = {"at": at.isoformat(), "fingerprint": escalated["fingerprint"]}
+            return str(escalated["fingerprint"])
+
+        return str(self._mutate(apply, now=at))
 
     def consume_approval(self, intent_id: str, fingerprint: str, now: datetime | None = None) -> bool:
-        """Single use. Succeeds only for a fresh approval of the exact terms that escalated."""
-        now = now or datetime.now(UTC)
+        """Single use. True only for a fresh approval whose stored terms equal these terms."""
+        at = _aware(now)
 
         def apply(data: dict[str, Any]) -> bool:
-            stamp = data["approvals"].pop(intent_id, None)
-            if stamp is None:
+            approval = data["approvals"].pop(intent_id, None)
+            if not isinstance(approval, dict):
                 return False
-            approved_at = _parse(stamp)
-            if approved_at is None or approved_at < now - APPROVAL_TTL:
+            approved_at = _parse(approval.get("at"))
+            if approved_at is None or approved_at < at - APPROVAL_TTL:
+                return False
+            if approval.get("fingerprint") != fingerprint:
                 return False
             escalated = data["escalated"].get(intent_id)
             if not isinstance(escalated, dict) or escalated.get("fingerprint") != fingerprint:
@@ -127,7 +288,7 @@ class ProxyState:
             data["escalated"].pop(intent_id, None)
             return True
 
-        return bool(self._mutate(apply))
+        return bool(self._mutate(apply, now=at))
 
     # ---------------------------------------------------------------- at-most-once
     def remember_forwarded(
@@ -139,15 +300,14 @@ class ProxyState:
         *,
         status: str = "placed",
     ) -> None:
-        now = now or datetime.now(UTC)
+        at = _aware(now)
 
         def apply(data: dict[str, Any]) -> None:
-            self._prune(data, now)
             data["forwarded"][intent_id] = {
-                "at": now.isoformat(), "fingerprint": fingerprint, "status": status, "result": result,
+                "at": at.isoformat(), "fingerprint": fingerprint, "status": status, "result": result,
             }
 
-        self._mutate(apply)
+        self._mutate(apply, now=at)
 
     def mark_unknown(self, intent_id: str, fingerprint: str, error: str, now: datetime | None = None) -> None:
         self.remember_forwarded(intent_id, fingerprint, {"error": error[:300]}, now, status="unknown")
@@ -156,24 +316,36 @@ class ProxyState:
         self._mutate(lambda data: data["forwarded"].pop(intent_id, None))
 
     def forwarded_result(self, intent_id: str, now: datetime | None = None) -> dict[str, Any] | None:
-        now = now or datetime.now(UTC)
-        self._data = self._read()
-        entry = self._data["forwarded"].get(intent_id)
+        """The remembered forward for this intent, or None. A record with an unreadable
+        timestamp is returned as status 'unknown' so the brake reconciles instead of re-sending."""
+        at = _aware(now)
+        data = self._snapshot()
+        entry = data["forwarded"].get(intent_id)
         if not isinstance(entry, dict):
             return None
-        at = _parse(entry.get("at"))
-        if at is None or at < now - REPLAY_TTL:
+        stamp = _parse(entry.get("at"))
+        if stamp is None:
+            return {**entry, "status": "unknown"}
+        if stamp < at - REPLAY_TTL:
             return None
         return dict(entry)
 
     @staticmethod
     def _prune(data: dict[str, Any], now: datetime) -> None:
-        cutoff = now - REPLAY_TTL
-        data["forwarded"] = {
-            key: value
-            for key, value in data["forwarded"].items()
-            if isinstance(value, dict) and (_parse(value.get("at")) or cutoff) >= cutoff
-        }
+        def keep(bucket: str, ttl: timedelta) -> None:
+            cutoff = now - ttl
+            fresh: dict[str, Any] = {}
+            for key, value in data.get(bucket, {}).items():
+                if not isinstance(value, dict):
+                    continue
+                stamp = _parse(value.get("at"))
+                if stamp is not None and stamp >= cutoff:
+                    fresh[key] = value
+            data[bucket] = fresh
+
+        keep("forwarded", REPLAY_TTL)
+        keep("escalated", ESCALATION_TTL)
+        keep("approvals", APPROVAL_TTL)
 
     @staticmethod
     def next_state_version() -> int:

@@ -20,13 +20,32 @@ REQUIRED_UPSTREAM_TOOLS = (
     "get_stock_latest_trade", "place_stock_order",
 )
 
-# Only what a child process needs to start: the broker keys plus the handful of
-# variables Python and uv need to run. Never the proxy's whole environment.
-_PASSTHROUGH_ENV = (
-    "PATH", "HOME", "USERPROFILE", "APPDATA", "LOCALAPPDATA", "TEMP", "TMP", "SYSTEMROOT",
-    "COMSPEC", "PATHEXT", "LANG", "LC_ALL", "UV_CACHE_DIR", "XDG_CACHE_HOME", "XDG_DATA_HOME",
-    "SSL_CERT_FILE", "REQUESTS_CA_BUNDLE", "HTTPS_PROXY", "HTTP_PROXY", "NO_PROXY",
+# Only what a child process needs to start: the broker keys plus the variables
+# Python, uv and the network stack need. Never the proxy's whole environment.
+_PASSTHROUGH_ENV = frozenset(
+    name.upper()
+    for name in (
+        "PATH", "HOME", "USERPROFILE", "USERNAME", "USER", "LOGNAME", "SHELL", "TERM",
+        "APPDATA", "LOCALAPPDATA", "TEMP", "TMP", "TMPDIR", "SYSTEMROOT", "SYSTEMDRIVE",
+        "HOMEDRIVE", "HOMEPATH", "COMSPEC", "PATHEXT", "PROCESSOR_ARCHITECTURE",
+        "LANG", "LC_ALL", "LC_CTYPE", "XDG_CACHE_HOME", "XDG_DATA_HOME", "XDG_CONFIG_HOME",
+        "SSL_CERT_FILE", "SSL_CERT_DIR", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE",
+        "HTTPS_PROXY", "HTTP_PROXY", "ALL_PROXY", "NO_PROXY",
+    )
 )
+_PASSTHROUGH_PREFIXES = ("UV_", "ALPACA_")
+
+
+def child_environment(parent: dict[str, str], env: dict[str, str], *, paper: bool) -> dict[str, str]:
+    """Environment for the broker process: allowlisted parent variables, then the env file, then the paper flag."""
+    merged = {
+        name: value
+        for name, value in parent.items()
+        if name.upper() in _PASSTHROUGH_ENV or name.upper().startswith(_PASSTHROUGH_PREFIXES)
+    }
+    merged.update(env)
+    merged["ALPACA_PAPER_TRADE"] = "true" if paper else "false"
+    return merged
 
 
 def read_env_file(path: Path | str) -> dict[str, str]:
@@ -48,9 +67,7 @@ def alpaca_backend(
     args: list[str] | None = None,
 ) -> StdioTransport:
     """Spawn Alpaca's official MCP server as the upstream; keys go only to that process."""
-    merged = {name: os.environ[name] for name in _PASSTHROUGH_ENV if name in os.environ}
-    merged.update(env)
-    merged["ALPACA_PAPER_TRADE"] = "true" if paper else "false"
+    merged = child_environment(dict(os.environ), env, paper=paper)
     return StdioTransport(command=command, args=list(args or ["alpaca-mcp-server"]), env=merged)
 
 
