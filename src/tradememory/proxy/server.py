@@ -112,7 +112,7 @@ def build_proxy(
     import tradememory.mcp_server as _mcp_module
     _mcp_module._db = database  # the memory tools and the brake share one database
 
-    local_tools = {"recall_memories", "get_behavioral_analysis", "get_agent_state", "brake_status"}
+    local_tools = {"recall_memories", "get_behavioral_analysis", "get_agent_state", "brake_status", "evaluate_order"}
     brake = BrakeMiddleware(
         policy=policy, state=ProxyState(state_path), db=database, agent_id=agent_id,
         recall=recall_memories, local_tools=local_tools,
@@ -122,6 +122,43 @@ def build_proxy(
     proxy.tool(recall_memories)
     proxy.tool(get_behavioral_analysis)
     proxy.tool(get_agent_state)
+
+    @proxy.tool
+    async def evaluate_order(
+        symbol: str,
+        side: str,
+        qty: str | None = None,
+        notional: str | None = None,
+        type: str = "market",
+        time_in_force: str = "day",
+        limit_price: str | None = None,
+        stop_price: str | None = None,
+        order_class: str | None = None,
+        stop_loss_stop_price: str | None = None,
+        take_profit_limit_price: str | None = None,
+        notional_usd: str | None = None,
+        account_equity: str | None = None,
+        utilization_ratio: str | None = None,
+        open_position_count: int | None = None,
+        total_exposure_usd: str | None = None,
+        funding_usd: str | None = None,
+    ) -> dict[str, Any]:
+        """Ask the brake what it would do with this order, without placing it.
+
+        Same live reads, same policy, same decision shape as a real order
+        (ALLOW / DENY / ESCALATE with the rule codes). Accepts the fields an
+        advisory layer such as Vibe-Trading's PreTradeAdvisoryInterface sends
+        (notional_usd and friends); the account figures are read live from the
+        broker, not trusted from the caller.
+        """
+        args: dict[str, Any] = {
+            "symbol": symbol, "side": side, "qty": qty, "notional": notional if notional is not None else notional_usd,
+            "type": type, "time_in_force": time_in_force, "limit_price": limit_price, "stop_price": stop_price,
+            "order_class": order_class, "stop_loss_stop_price": stop_loss_stop_price,
+            "take_profit_limit_price": take_profit_limit_price,
+        }
+        args = {k: v for k, v in args.items() if v is not None}
+        return await brake.dry_run(args, BrakeMiddleware.upstream_from_server(proxy))
 
     @proxy.tool
     def brake_status() -> dict[str, Any]:

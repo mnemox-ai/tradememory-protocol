@@ -79,6 +79,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   environment is an allowlist that keeps `UV_*`, `ALPACA_*`, proxy and CA
   variables in either case.
 
+- Second review pass: `proxy approve <intent> --terms <fingerprint>` approves
+  exactly the terms the owner read and refuses when the pending escalation
+  differs; a forward with an unreadable timestamp is kept as unknown rather
+  than pruned; corrupt-file recovery keeps the fields that still validate and
+  reports what was reset; `UV_*` pass-through is an explicit list, broker
+  keys come from the env file (the shell only when there is no file).
+- `evaluate_order`: the brake's decision for an order without placing it,
+  recorded as DRY_RUN. Accepts the fields an advisory layer sends.
+
 ### Not yet
 - `mnemox-control` is pinned as a git dependency; it must be published to
   PyPI before this extra can ship in a PyPI release.

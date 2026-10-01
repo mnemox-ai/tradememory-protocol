@@ -575,6 +575,26 @@ async def test_memory_tools_are_exposed_and_see_proxy_trades(tmp_path):
     assert w.tiers() == ["ALLOW"]  # local tools are neither evaluated nor recorded
 
 
+async def test_evaluate_order_decides_like_a_real_order_but_never_places_one(tmp_path):
+    w = World(tmp_path, approval_notional="500")
+    denied = await w.call("evaluate_order", {"symbol": "TSLA", "side": "buy", "qty": "1", **BRACKET})
+    d = alpaca.unwrap(denied.structured_content)
+    assert d["decision"] == "DENY" and d["dry_run"] is True and "SYMBOL_NOT_ALLOWED" in {r["code"] for r in d["denied_rules"]}
+    allowed = await w.call("evaluate_order", {"symbol": "AAPL", "side": "BUY", "qty": "1", **BRACKET})
+    a = alpaca.unwrap(allowed.structured_content)
+    assert a["decision"] == "ALLOW" and a["order_placed"] is False and a["evaluation_hash"]
+    advisory = await w.call("evaluate_order", {"symbol": "AAPL", "side": "buy", "notional_usd": "760",
+                                               "account_equity": "10000", "utilization_ratio": "0.1",
+                                               "open_position_count": 0, "total_exposure_usd": "0", "funding_usd": "0",
+                                               **BRACKET})
+    e = alpaca.unwrap(advisory.structured_content)
+    assert e["decision"] == "ESCALATE" and "HUMAN_APPROVAL_REQUIRED" in {r["code"] for r in e["rules"]}
+    assert w.fake.placed == []
+    assert w.tiers() == ["DRY_RUN", "DRY_RUN", "DRY_RUN"]
+    assert w.chain()["verified"] is True
+    assert json.loads((tmp_path / "state.json").read_text(encoding="utf-8"))["escalated"] == {}  # dry runs leave no approvals to claim
+
+
 async def test_account_reads_keep_the_equity_peak_honest(tmp_path):
     w = World(tmp_path, max_drawdown="100")
     w.fake.account["equity"] = "10500"

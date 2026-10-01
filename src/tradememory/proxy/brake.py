@@ -337,14 +337,55 @@ class BrakeMiddleware(Middleware):
                           extra={"args": stored}, note="cancel forwarded")
         return result
 
+    # ------------------------------------------------------------------ dry run
+    async def dry_run(self, args: dict[str, Any], upstream: UpstreamCall) -> dict[str, Any]:
+        """Evaluate an order against the policy and live state without placing it.
+
+        Same reads, same evaluation, same decision shape as a real order; nothing
+        is forwarded, no replay or approval state is touched, and the event is
+        recorded as DRY_RUN. This is what an advisory layer in another framework
+        calls, because an advisor must never place an order itself.
+        """
+        now = self.clock()
+        args = dict(args)
+        args.setdefault("client_order_id", "dry-run")
+        tool = "place_crypto_order" if "/" in str(args.get("symbol", "")) else "place_stock_order"
+        stored = _stored_args(args)
+        async with self._lock:
+            try:
+                collected = await self._collect(upstream, tool, args, now)
+                evaluation = evaluate(
+                    policy=self.policy, intent=collected.intent, account=collected.account,
+                    market=collected.market, instruments=collected.instruments, evaluated_at=now,
+                )
+            except Exception as exc:
+                rules = [{"code": FAIL_CLOSED_CODE, "actual": f"{type(exc).__name__}: {exc}"[:300]}]
+                event_id = self._record_safe(tool=tool, decision="DRY_RUN", intent=None, evaluation=None,
+                                             extra={"args": stored, "rules": rules, "result": "DENY"},
+                                             note="dry run could not evaluate; a real order would be refused")
+                return {"decision": "DENY", "dry_run": True, "order_placed": False, "denied_rules": rules,
+                        "rules": rules, "decision_event": event_id, "policy_hash": self.policy.content_hash,
+                        "message": "the brake could not evaluate this order; a real order would be refused"}
+            flagged = [
+                {"code": r.code.value, "actual": _json_safe(r.actual), "limit": _json_safe(r.limit),
+                 "subjects": list(r.subjects)}
+                for r in evaluation.rules if r.outcome in (RuleOutcome.DENY, RuleOutcome.ESCALATE)
+            ]
+            event_id = self._record_safe(tool=tool, decision="DRY_RUN", intent=collected.intent,
+                                         evaluation=evaluation,
+                                         extra={"args": stored, "rules": flagged, "result": evaluation.decision.value},
+                                         note="dry run; nothing forwarded")
+            return {
+                "decision": evaluation.decision.value, "dry_run": True, "order_placed": False,
+                "rules": flagged, "denied_rules": flagged if evaluation.decision is Decision.DENY else [],
+                "terms": alpaca.terms_summary(tool, args), "decision_event": event_id,
+                "policy_hash": evaluation.policy_hash, "evaluation_hash": content_sha256(evaluation),
+            }
+
     # ------------------------------------------------------------------ collection
-    def _upstream_for(self, context: MiddlewareContext) -> UpstreamCall:
-        if self._upstream_override is not None:
-            return self._upstream_override
-        fastmcp_ctx = context.fastmcp_context
-        server = getattr(fastmcp_ctx, "fastmcp", None)
-        if server is None:
-            raise RuntimeError("no upstream available: middleware has no fastmcp context")
+    @staticmethod
+    def upstream_from_server(server: Any) -> UpstreamCall:
+        """Call upstream tools on the proxy server itself, bypassing this middleware."""
 
         async def call(name: str, arguments: dict[str, Any]) -> Any:
             result = await server.call_tool(name, arguments, run_middleware=False)
@@ -354,6 +395,15 @@ class BrakeMiddleware(Middleware):
             return result
 
         return call
+
+    def _upstream_for(self, context: MiddlewareContext) -> UpstreamCall:
+        if self._upstream_override is not None:
+            return self._upstream_override
+        fastmcp_ctx = context.fastmcp_context
+        server = getattr(fastmcp_ctx, "fastmcp", None)
+        if server is None:
+            raise RuntimeError("no upstream available: middleware has no fastmcp context")
+        return self.upstream_from_server(server)
 
     async def _lookup_by_client_id(self, upstream: UpstreamCall, client_order_id: str) -> dict[str, Any] | None:
         """The broker's view of a client_order_id: an order dict, or None when it has none."""
