@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import sys
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import pytest
 
@@ -227,8 +228,30 @@ async def test_one_sided_book_falls_back_to_last_trade(tmp_path):
     w.fake.one_sided_quotes = True
     res = await w.call("place_stock_order", order(client_order_id="t", **BRACKET))
     assert res.structured_content["decision"] == "ALLOW"
-    assert ("get_stock_latest_trade", {"symbol": "AAPL"}) in w.fake.calls
+    assert ("get_stock_latest_trade", {"symbols": "AAPL"}) in w.fake.calls
     assert len(w.fake.placed) == 1
+
+
+async def test_closed_market_prices_from_last_trade_not_stale_book(tmp_path):
+    w = World(tmp_path)
+    w.fake.is_open = False
+    w.fake.quotes["AAPL"] = ("320.91", "354.20")  # the real after-hours book on 2026-09-30
+    w.fake.last_trade["AAPL"] = "333.05"
+    res = await w.call("place_stock_order", order(qty="3", client_order_id="closed", **{**BRACKET, "stop_loss_stop_price": "325"}))
+    assert res.structured_content["decision"] == "ALLOW"
+    assert ("get_stock_latest_trade", {"symbols": "AAPL"}) in w.fake.calls
+    assert ("get_stock_latest_quote", {"symbols": "AAPL"}) not in w.fake.calls
+    assert Decimal(w.events()[-1][2]["evaluation"]["reference_price"]) == Decimal("333.05")
+
+
+async def test_live_server_argument_names_are_used(tmp_path):
+    """Pins the argument names read from the live alpaca-mcp-server on 2026-10-01."""
+    w = World(tmp_path)
+    await w.call("place_stock_order", order(client_order_id="names", **BRACKET))
+    assert ("get_asset", {"symbol_or_asset_id": "AAPL"}) in w.fake.calls
+    assert ("get_stock_latest_quote", {"symbols": "AAPL"}) in w.fake.calls
+    assert ("get_orders", {"status": "open"}) in w.fake.calls
+    assert ("get_clock", {}) in w.fake.calls
 
 
 # --------------------------------------------------------------------------- escalate
@@ -320,7 +343,7 @@ async def test_full_halt_blocks_entries_but_never_exits(tmp_path):
     assert "FULL_HALT_ACTIVE" in codes(res)
     assert len(w.fake.placed) == 0
 
-    res2 = await w.call("close_position", {"symbol": "AAPL"})
+    res2 = await w.call("close_position", {"symbol_or_asset_id": "AAPL"})
     assert alpaca.unwrap(res2.structured_content)["status"] == "closed"
     assert w.fake.positions == []
     assert w.tiers() == ["DENY", "ALLOW_EXIT"]

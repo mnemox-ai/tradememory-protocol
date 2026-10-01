@@ -248,12 +248,9 @@ class BrakeMiddleware(Middleware):
             raise alpaca.AdapterError(
                 f"upstream account {account_id} is not the policy account {self.policy.account_id}"
             )
-        positions = alpaca.unwrap(await upstream("get_all_positions", {})) or []
-        orders = alpaca.unwrap(await upstream("get_orders", {"status": "open"})) or []
-        if isinstance(positions, dict):
-            positions = positions.get("positions") or positions.get("items") or []
-        if isinstance(orders, dict):
-            orders = orders.get("orders") or orders.get("items") or []
+        positions = alpaca.as_list(alpaca.unwrap(await upstream("get_all_positions", {})))
+        orders_tool, orders_args = alpaca.orders_call()
+        orders = alpaca.as_list(alpaca.unwrap(await upstream(orders_tool, orders_args)))
 
         symbols = {str(args.get("symbol", "")).upper().strip()}
         symbols |= {str(p["symbol"]).upper() for p in positions if isinstance(p, dict) and p.get("symbol")}
@@ -266,12 +263,15 @@ class BrakeMiddleware(Middleware):
         }
         symbols.discard("")
 
+        clock = alpaca.unwrap(await upstream("get_clock", {}))
+        market_open = bool(clock.get("is_open")) if isinstance(clock, dict) else False
+
         specs: dict[str, InstrumentSpec] = {}
         for symbol in sorted(symbols):
             specs[symbol] = await self._spec(upstream, symbol, now)
         quotes: dict[str, MarketQuote] = {}
         for symbol in sorted(symbols):
-            quotes[symbol] = await self._quote(upstream, symbol, specs[symbol].price_tick)
+            quotes[symbol] = await self._quote(upstream, symbol, specs[symbol].price_tick, market_open)
         c.quotes = quotes
 
         equity = alpaca.D(account.get("equity"))
@@ -294,18 +294,30 @@ class BrakeMiddleware(Middleware):
         cached = self._spec_cache.get(symbol)
         if cached and now - cached[0] < INSTRUMENT_CACHE_TTL:
             return cached[1]
-        asset = alpaca.unwrap(await upstream("get_asset", {"symbol": symbol}))
+        asset_tool, asset_args = alpaca.asset_call(symbol)
+        asset = alpaca.unwrap(await upstream(asset_tool, asset_args))
         spec = alpaca.instrument_spec(symbol, asset)
         self._spec_cache[symbol] = (now, spec)
         return spec
 
-    async def _quote(self, upstream: UpstreamCall, symbol: str, tick: Decimal) -> MarketQuote:
-        name, arguments = alpaca.quote_call(symbol)
-        try:
-            return alpaca.quote_from(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
-        except alpaca.AdapterError:
-            name, arguments = alpaca.trade_call(symbol)
-            return alpaca.quote_from_trade(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
+    async def _quote(
+        self, upstream: UpstreamCall, symbol: str, tick: Decimal, market_open: bool
+    ) -> MarketQuote:
+        """Live two-sided book while the market is open; last trade otherwise.
+
+        A closed book is stale and wide (the real after-hours AAPL book was
+        320.91 / 354.20 against a last trade of 333.05), so sizing from its
+        midpoint would misstate every notional. Crypto trades around the clock
+        and always uses its book.
+        """
+        if market_open or alpaca.is_crypto_symbol(symbol):
+            name, arguments = alpaca.quote_call(symbol)
+            try:
+                return alpaca.quote_from(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
+            except alpaca.AdapterError:
+                pass  # one-sided or empty book: fall through to the last trade
+        name, arguments = alpaca.trade_call(symbol)
+        return alpaca.quote_from_trade(symbol, alpaca.unwrap(await upstream(name, arguments)), tick)
 
     # ------------------------------------------------------------------ results
     def _deny(

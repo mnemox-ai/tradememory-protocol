@@ -15,8 +15,8 @@ from .policy import DEFAULT_POLICY_PATH, load_policy
 from .state import DEFAULT_STATE_PATH, ProxyState
 
 REQUIRED_UPSTREAM_TOOLS = (
-    "get_account_info", "get_all_positions", "get_orders", "get_asset",
-    "get_stock_latest_quote", "place_stock_order",
+    "get_account_info", "get_all_positions", "get_orders", "get_asset", "get_clock",
+    "get_stock_latest_quote", "get_stock_latest_trade", "place_stock_order",
 )
 
 

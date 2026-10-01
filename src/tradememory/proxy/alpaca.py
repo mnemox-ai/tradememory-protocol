@@ -91,19 +91,38 @@ def unwrap(result: Any) -> Any:
         content = getattr(result, "content", None) or []
         texts = [getattr(block, "text", None) for block in content]
         payload = next((t for t in texts if t), None)
-    if isinstance(payload, dict):
-        if "_alpaca_mcp_security" in payload and "data" in payload:
-            payload = payload["data"]
-        elif set(payload.keys()) == {"result"}:
-            payload = payload["result"]
-    if isinstance(payload, str):
-        try:
-            payload = json.loads(payload)
-        except json.JSONDecodeError:
-            return payload
-        if isinstance(payload, dict) and "_alpaca_mcp_security" in payload and "data" in payload:
-            payload = payload["data"]
+    # The live server nests wrappers: envelope -> {"result": [...]} for list-returning
+    # tools, and sometimes a JSON string inside. Peel until the shape is stable.
+    for _ in range(4):
+        before = payload
+        if isinstance(payload, str):
+            try:
+                payload = json.loads(payload)
+            except json.JSONDecodeError:
+                return payload
+        if isinstance(payload, dict):
+            if "_alpaca_mcp_security" in payload and "data" in payload:
+                payload = payload["data"]
+            elif set(payload.keys()) == {"result"}:
+                payload = payload["result"]
+        if payload is before:
+            break
     return payload
+
+
+def as_list(payload: Any) -> list[Any]:
+    """Coerce a positions/orders payload to a list whatever wrapper the server used."""
+    if payload is None:
+        return []
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("result", "positions", "orders", "items", "data"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+        return []
+    raise AdapterError(f"expected a list payload, got {type(payload).__name__}")
 
 
 def is_crypto_symbol(symbol: str) -> bool:
@@ -388,14 +407,29 @@ def intent_from_call(
     )
 
 
+# Argument names below were read from the live server's tool schemas on
+# 2026-10-01 (alpaca-mcp-server, 72 tools), not from its README: quotes and
+# trades take plural ``symbols``, crypto data also needs ``loc``, and assets
+# are looked up by ``symbol_or_asset_id``. ``tradememory proxy doctor`` re-checks them.
+CRYPTO_LOC = "us"
+
+
 def quote_call(symbol: str) -> tuple[str, dict[str, Any]]:
     """Which upstream tool and arguments fetch a latest quote for this symbol."""
     if is_crypto_symbol(symbol):
-        return "get_crypto_latest_quote", {"symbols": symbol}
-    return "get_stock_latest_quote", {"symbol": symbol}
+        return "get_crypto_latest_quote", {"loc": CRYPTO_LOC, "symbols": symbol}
+    return "get_stock_latest_quote", {"symbols": symbol}
 
 
 def trade_call(symbol: str) -> tuple[str, dict[str, Any]]:
     if is_crypto_symbol(symbol):
-        return "get_crypto_latest_trade", {"symbols": symbol}
-    return "get_stock_latest_trade", {"symbol": symbol}
+        return "get_crypto_latest_trade", {"loc": CRYPTO_LOC, "symbols": symbol}
+    return "get_stock_latest_trade", {"symbols": symbol}
+
+
+def asset_call(symbol: str) -> tuple[str, dict[str, Any]]:
+    return "get_asset", {"symbol_or_asset_id": symbol}
+
+
+def orders_call() -> tuple[str, dict[str, Any]]:
+    return "get_orders", {"status": "open"}

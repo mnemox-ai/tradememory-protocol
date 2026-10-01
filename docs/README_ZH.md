@@ -54,7 +54,7 @@ tradememory proxy config                                           # 印出要�
 
 預設拒絕：清單外的標的、超過單筆或總部位上限的單、沒帶 bracket 停損的進場、觸及當日虧損或回撤上限之後的任何新單、以及你下過 `tradememory proxy halt FULL_HALT` 之後的一切。永遠不擋：平倉。達到 `approval_notional` 的單會等 `tradememory proxy approve <intent_id>`，agent 用同一個 `client_order_id` 重送，proxy 只轉送一次。任何評估不了的情況，例如報價斷線、不認得的標的、政策 v0 不涵蓋的單型，一律拒絕而不是放行。
 
-目前狀態：已對一個有狀態的 Alpaca MCP 假上游跑完端到端測試（`tests/proxy/`），尚未對真實的 Alpaca paper 帳戶跑過，所以才有 `doctor`。選擇權、改單、stop-limit 與 trailing 單是拒絕不是評估。券商金鑰只交給 proxy 啟動的券商程序，proxy 本身不保存。
+目前狀態：已對一個有狀態的 Alpaca MCP 假上游跑完端到端測試（`tests/proxy/`），並在 2026 年 10 月 1 日對真實的 Alpaca paper 帳戶跑過一次：三筆拒絕（清單外標的、沒帶停損、超過單筆上限）、一筆放行的一股 bracket 單真的送到券商、一筆用同一個 `client_order_id` 重送的單由紀錄回覆、沒有產生第二張單。假上游的參數名稱與回傳形狀已依那次真實執行修正；`doctor` 會對你的帳戶再核對一次。選擇權、改單、stop-limit 與 trailing 單是拒絕不是評估。券商金鑰只交給 proxy 啟動的券商程序，proxy 本身不保存。
 
 ## 看看介面長什麼樣
 

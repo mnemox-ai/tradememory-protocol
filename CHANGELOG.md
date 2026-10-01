@@ -31,13 +31,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   excludes AI algorithmic trading from the high-risk scope. The table is
   labelled as a feature map, not a compliance claim.
 
+### Verified live
+- Run against a real Alpaca paper account on 2026-10-01 (alpaca-mcp-server,
+  72 tools): three refusals (SYMBOL_NOT_ALLOWED, PROTECTIVE_STOP_REQUIRED,
+  ORDER_NOTIONAL_EXCEEDED), one ALLOW that placed a one-share bracket order
+  (`pending_new` → `new` upstream), one REPLAY that placed nothing; the
+  decision chain verified with 6 links (5 decisions + 1 trade record).
+- Argument names corrected from the live tool schemas, which differ from the
+  server's README: quotes and trades take `symbols` (plural), crypto data
+  needs `loc`, assets are fetched by `symbol_or_asset_id`, and list tools
+  wrap results as `{"result": [...]}`. The test fake mirrors the live shapes.
+- While the market is closed the brake prices from the last trade, not the
+  stale after-hours book (the real AAPL book was 320.91 / 354.20 against a
+  last trade of 333.05).
+
 ### Not yet
-- The proxy has not been run against a real Alpaca paper account; the
-  upstream argument names (`get_orders` status filter, crypto quote
-  `symbols`) follow the published server source and are checked by
-  `doctor`, not yet exercised live.
 - `mnemox-control` is pinned as a git dependency; it must be published to
   PyPI before this extra can ship in a PyPI release.
+- CI does not install the `proxy` extra, so `tests/proxy` runs locally only.
 
 ## [0.5.5] - 2026-09-09
 

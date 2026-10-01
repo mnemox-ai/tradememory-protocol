@@ -1,4 +1,10 @@
-"""Stateful fake of Alpaca's MCP server, shaped like the real tool results (trust envelope included).
+"""Stateful fake of Alpaca's MCP server, shaped like the real one.
+
+Tool names, argument names and payload shapes mirror what the live
+alpaca-mcp-server (72 tools) returned on 2026-10-01, trust envelope included:
+quotes and trades take plural ``symbols`` and come back keyed by symbol, crypto
+data needs ``loc``, assets are looked up by ``symbol_or_asset_id``, and list
+tools wrap their result as ``{"result": [...]}``.
 
 It keeps an account, positions and orders in memory so a test can assert that
 an ALLOW really changed upstream state and a DENY really did not.
@@ -14,7 +20,11 @@ from fastmcp import FastMCP
 
 def envelope(data: Any) -> dict[str, Any]:
     return {
-        "_alpaca_mcp_security": {"trust": "api_structured", "warning": "fake upstream"},
+        "_alpaca_mcp_security": {
+            "trust": "untrusted_tool_output",
+            "risk": "api_structured",
+            "instructions": "fake upstream",
+        },
         "data": data,
     }
 
@@ -23,6 +33,8 @@ class FakeAlpaca:
     def __init__(self) -> None:
         self.account: dict[str, Any] = {
             "id": "acct-1",
+            "account_number": "PA0000000000",
+            "status": "ACTIVE",
             "equity": "10000",
             "cash": "10000",
             "last_equity": "10000",
@@ -36,11 +48,25 @@ class FakeAlpaca:
             "AAPL": ("189.98", "190.02"),
             "MSFT": ("409.90", "410.10"),
             "TSLA": ("249.90", "250.10"),
+            "BTC/USD": ("83659.42", "83682.99"),
         }
+        self.last_trade: dict[str, str] = {s: ask for s, (_, ask) in self.quotes.items()}
         self.assets: dict[str, dict[str, Any]] = {
-            s: {"id": f"asset-{s}", "symbol": s, "tradable": True, "shortable": True, "fractionable": True}
+            s: {
+                "id": f"asset-{s}",
+                "class": "crypto" if "/" in s else "us_equity",
+                "symbol": s,
+                "status": "active",
+                "tradable": True,
+                "shortable": "/" not in s,
+                "fractionable": True,
+            }
             for s in self.quotes
         }
+        self.assets["BTC/USD"].update(
+            {"min_order_size": "0.000011983", "min_trade_increment": "0.000000001", "price_increment": "0.000000001"}
+        )
+        self.is_open = True
         self.fail_quotes = False
         self.one_sided_quotes = False
         self.fail_trades = False
@@ -73,39 +99,64 @@ class FakeAlpaca:
         @mcp.tool
         def get_all_positions() -> dict:
             fake.calls.append(("get_all_positions", {}))
-            return envelope([dict(p) for p in fake.positions])
+            return envelope({"result": [dict(p) for p in fake.positions]})
 
         @mcp.tool
-        def get_orders(status: str = "open") -> dict:
+        def get_orders(status: str | None = None, limit: int | None = None) -> dict:
             fake.calls.append(("get_orders", {"status": status}))
             open_states = {"new", "accepted", "partially_filled", "pending_new"}
             rows = [o for o in fake.orders if status != "open" or o["status"] in open_states]
-            return envelope([dict(o) for o in rows])
+            return envelope({"result": [dict(o) for o in rows]})
 
         @mcp.tool
-        def get_asset(symbol: str) -> dict:
-            fake.calls.append(("get_asset", {"symbol": symbol}))
-            if symbol not in fake.assets:
-                raise ValueError(f"asset {symbol} not found")
-            return envelope(dict(fake.assets[symbol]))
+        def get_asset(symbol_or_asset_id: str) -> dict:
+            fake.calls.append(("get_asset", {"symbol_or_asset_id": symbol_or_asset_id}))
+            if symbol_or_asset_id not in fake.assets:
+                raise ValueError(f"HTTP error 404: asset not found for {symbol_or_asset_id}")
+            return envelope(dict(fake.assets[symbol_or_asset_id]))
 
         @mcp.tool
-        def get_stock_latest_quote(symbol: str) -> dict:
-            fake.calls.append(("get_stock_latest_quote", {"symbol": symbol}))
+        def get_clock() -> dict:
+            fake.calls.append(("get_clock", {}))
+            return envelope({"is_open": fake.is_open, "timestamp": "2026-10-01T09:45:00-04:00"})
+
+        def _quote_payload(symbols: str) -> dict:
+            out = {}
+            for s in symbols.split(","):
+                bid, ask = fake.quotes[s]
+                if fake.one_sided_quotes:
+                    bid = "0"
+                out[s] = {"ap": float(ask), "as": 1, "bp": float(bid), "bs": 1, "t": "2026-10-01T13:45:00Z"}
+            return envelope({"quotes": out})
+
+        def _trade_payload(symbols: str) -> dict:
+            return envelope({"trades": {s: {"p": float(fake.last_trade[s]), "s": 1} for s in symbols.split(",")}})
+
+        @mcp.tool
+        def get_stock_latest_quote(symbols: str, feed: str | None = None, currency: str | None = None) -> dict:
+            fake.calls.append(("get_stock_latest_quote", {"symbols": symbols}))
             if fake.fail_quotes:
-                raise RuntimeError("quote feed down")
-            bid, ask = fake.quotes[symbol]
-            if fake.one_sided_quotes:
-                bid = "0"
-            return envelope({"symbol": symbol, "quote": {"bp": bid, "ap": ask, "bs": 1, "as": 1}})
+                raise RuntimeError("HTTP error 503: quote feed down")
+            return _quote_payload(symbols)
 
         @mcp.tool
-        def get_stock_latest_trade(symbol: str) -> dict:
-            fake.calls.append(("get_stock_latest_trade", {"symbol": symbol}))
+        def get_stock_latest_trade(symbols: str, feed: str | None = None, currency: str | None = None) -> dict:
+            fake.calls.append(("get_stock_latest_trade", {"symbols": symbols}))
             if fake.fail_trades:
-                raise RuntimeError("trade feed down")
-            _, ask = fake.quotes[symbol]
-            return envelope({"symbol": symbol, "trade": {"p": ask, "s": 1}})
+                raise RuntimeError("HTTP error 503: trade feed down")
+            return _trade_payload(symbols)
+
+        @mcp.tool
+        def get_crypto_latest_quote(loc: str, symbols: str) -> dict:
+            fake.calls.append(("get_crypto_latest_quote", {"loc": loc, "symbols": symbols}))
+            if loc != "us":
+                raise ValueError("HTTP error 400: Invalid location")
+            return _quote_payload(symbols)
+
+        @mcp.tool
+        def get_crypto_latest_trade(loc: str, symbols: str) -> dict:
+            fake.calls.append(("get_crypto_latest_trade", {"loc": loc, "symbols": symbols}))
+            return _trade_payload(symbols)
 
         @mcp.tool
         def place_stock_order(
@@ -141,7 +192,7 @@ class FakeAlpaca:
             }
             fake.placed.append(order)
             fake.orders.append(order)
-            if type == "market":
+            if type == "market" and fake.is_open:
                 filled_qty = Decimal(qty) if qty else Decimal(notional) / Decimal(fake.quotes[symbol][1])
                 order["status"] = "filled"
                 order["filled_qty"] = str(filled_qty)
@@ -149,10 +200,31 @@ class FakeAlpaca:
             return envelope(dict(order))
 
         @mcp.tool
-        def close_position(symbol: str) -> dict:
-            fake.calls.append(("close_position", {"symbol": symbol}))
-            fake.positions = [p for p in fake.positions if p["symbol"] != symbol]
-            return envelope({"symbol": symbol, "status": "closed"})
+        def place_crypto_order(
+            symbol: str,
+            side: str,
+            qty: str | None = None,
+            notional: str | None = None,
+            type: str = "market",
+            time_in_force: str = "gtc",
+            limit_price: str | None = None,
+            stop_price: str | None = None,
+            client_order_id: str | None = None,
+        ) -> dict:
+            fake._n += 1
+            order = {
+                "id": f"ord-{fake._n}", "client_order_id": client_order_id, "symbol": symbol, "side": side,
+                "qty": qty, "notional": notional, "type": type, "status": "accepted", "filled_qty": "0",
+            }
+            fake.placed.append(order)
+            fake.orders.append(order)
+            return envelope(dict(order))
+
+        @mcp.tool
+        def close_position(symbol_or_asset_id: str, qty: str | None = None, percentage: str | None = None) -> dict:
+            fake.calls.append(("close_position", {"symbol_or_asset_id": symbol_or_asset_id}))
+            fake.positions = [p for p in fake.positions if p["symbol"] != symbol_or_asset_id]
+            return envelope({"symbol": symbol_or_asset_id, "status": "closed"})
 
         @mcp.tool
         def place_option_order(qty: str, symbol: str | None = None, side: str | None = None) -> dict:
