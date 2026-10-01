@@ -220,18 +220,21 @@ class BrakeMiddleware(Middleware):
                 return self._deny(tool=tool, intent=intent, evaluation=evaluation, rules=flagged,
                                   extra={"args": stored}, message="order refused by policy")
             if decision is Decision.ESCALATE:
-                self.state.escalate(intent_key, fingerprint, now)
+                summary = alpaca.terms_summary(tool, args)
+                self.state.escalate(intent_key, fingerprint, now, summary=summary)
                 event_id = self._record(tool=tool, decision="ESCALATE", intent=intent, evaluation=evaluation,
-                                        extra={"args": stored, "rules": flagged, "fingerprint": fingerprint},
+                                        extra={"args": stored, "rules": flagged, "fingerprint": fingerprint,
+                                               "terms": summary},
                                         note="human approval required")
                 structured = {
                     "decision": "ESCALATE", "order_placed": False, "intent_id": intent_key,
                     "decision_event": event_id, "policy_hash": evaluation.policy_hash,
                     "evaluation_hash": content_sha256(evaluation), "rules": flagged,
-                    "terms_fingerprint": fingerprint,
+                    "terms": summary, "terms_fingerprint": fingerprint,
                     "how_to_approve": (
-                        f"owner runs: tradememory proxy approve {intent_key}; then retry this call "
-                        "with the same client_order_id and the same terms (any change is refused)"
+                        f"owner runs: tradememory proxy approve {intent_key} --terms {fingerprint} "
+                        "(the CLI shows the terms it is approving); then retry this call with the same "
+                        "client_order_id and the same terms (any change is refused)"
                     ),
                 }
                 return ToolResult(content=json.dumps(structured), structured_content=structured)
@@ -257,7 +260,10 @@ class BrakeMiddleware(Middleware):
         except Exception as exc:
             # The broker may or may not have the order. Say so, remember it, reconcile on retry.
             error = f"{type(exc).__name__}: {exc}"[:300]
-            self.state.mark_unknown(intent_key, fingerprint, error, now)
+            try:
+                self.state.mark_unknown(intent_key, fingerprint, error, now)
+            except Exception as state_exc:  # the order may be live; never lose the response over bookkeeping
+                log.error("could not mark %s unknown: %s", intent_key, state_exc)
             self._record_safe(tool=tool, decision="FORWARD_FAILED", intent=intent, evaluation=evaluation,
                               extra={"args": stored, "error": error, "decision_event_allow": event_id},
                               note="broker call failed after ALLOW; outcome unknown until reconciled")
@@ -271,7 +277,10 @@ class BrakeMiddleware(Middleware):
 
         payload = _json_safe(alpaca.unwrap(upstream_result))
         cache_value = payload if isinstance(payload, dict) else {"result": payload}
-        self.state.remember_forwarded(intent_key, fingerprint, cache_value, now)
+        try:
+            self.state.remember_forwarded(intent_key, fingerprint, cache_value, now)
+        except Exception as state_exc:  # the order is placed; the agent must still get the result
+            log.error("could not remember forward %s: %s", intent_key, state_exc)
         self._record_trade(tool, intent, evaluation, payload, event_id, now)
         prior = await self._prior_outcomes(tool, intent)
 

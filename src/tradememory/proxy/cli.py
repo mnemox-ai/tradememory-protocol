@@ -97,14 +97,22 @@ def proxy_run(policy, state, env_file, upstream, agent_id, live, i_accept_live_t
 
 @proxy.command("approve")
 @click.argument("intent_id")
+@click.option("--terms", required=True, help="The terms_fingerprint from the ESCALATE response you reviewed.")
 @click.option("--state", default=None)
-def proxy_approve(intent_id, state) -> None:
-    """Approve one escalated intent; the agent then retries with the same client_order_id."""
+def proxy_approve(intent_id, terms, state) -> None:
+    """Approve one escalated intent for exactly the reviewed terms; the agent then retries."""
     from .state import ProxyState
 
     _, state_path = _paths(None, state)
-    ProxyState(state_path).approve(intent_id)
-    click.echo(f"approved {intent_id} for 15 minutes")
+    st = ProxyState(state_path)
+    pending = st.escalation(intent_id)
+    if pending is None:
+        raise click.ClickException(f"nothing is escalated for {intent_id}")
+    try:
+        summary = st.approve(intent_id, terms)
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
+    click.echo(f"approving: {summary}\napproved {intent_id} for 15 minutes; the agent must retry with the same terms")
 
 
 @proxy.command("halt")
@@ -115,8 +123,14 @@ def proxy_halt(value, state) -> None:
     from .state import ProxyState
 
     _, state_path = _paths(None, state)
-    ProxyState(state_path).set_halt(value)
+    st = ProxyState(state_path)
+    if st.corrupt_reason:
+        click.echo(f"state file was corrupt ({st.corrupt_reason}); it will be moved aside")
+    recovery = st.set_halt(value)
     click.echo(f"halt = {value.upper()}")
+    if recovery:
+        click.echo(f"corrupt file moved to {recovery['moved_to']}; kept {recovery['salvaged'] or 'nothing'}; "
+                   f"reset {recovery['reset'] or 'nothing'}")
 
 
 @proxy.command("status")
@@ -141,6 +155,8 @@ def proxy_status(policy, state) -> None:
         f"  expires {p.expires_at.isoformat()}\n"
         f"state {state_path}\n"
         f"  halt {s.halt}"
+        + (f"\n  CORRUPT: {s.corrupt_reason} (every order is refused until `tradememory proxy halt` resets it)"
+           if s.corrupt_reason else "")
     )
 
 

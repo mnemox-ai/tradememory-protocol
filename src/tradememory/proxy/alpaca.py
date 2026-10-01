@@ -212,6 +212,25 @@ def intent_id_for(account_id: str, client_order_id: str) -> uuid.UUID:
     return uuid.uuid5(INTENT_NAMESPACE, f"{account_id}:{client_order_id}")
 
 
+def terms_summary(tool: str, args: dict[str, Any]) -> str:
+    """One readable line of the order terms, shown to the owner at approval time."""
+    parts = [str(args.get("side", "?")).upper()]
+    if args.get("qty") not in (None, ""):
+        parts.append(f"{args['qty']} x")
+    elif args.get("notional") not in (None, ""):
+        parts.append(f"${args['notional']} of")
+    parts.append(str(args.get("symbol", "?")).upper())
+    parts.append(str(args.get("type", "market")).lower())
+    for key, label in (("limit_price", "limit"), ("stop_price", "stop"), ("stop_loss_stop_price", "stop-loss"),
+                       ("take_profit_limit_price", "take-profit")):
+        if args.get(key) not in (None, ""):
+            parts.append(f"{label} {args[key]}")
+    if args.get("order_class"):
+        parts.append(str(args["order_class"]))
+    parts.append(f"[{tool}]")
+    return " ".join(parts)
+
+
 def request_fingerprint(tool: str, args: dict[str, Any]) -> str:
     """Hash of the order terms as the agent sent them. Approvals and replays bind to this."""
     keys = (

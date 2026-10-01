@@ -350,7 +350,9 @@ async def test_escalate_then_owner_approval_is_single_use(tmp_path):
     assert s["intent_id"] in s["how_to_approve"]
     assert w.fake.placed == []
 
-    w.second_state().approve(s["intent_id"])  # the CLI path: a separate process, same file
+    assert "--terms " + s["terms_fingerprint"] in s["how_to_approve"]
+    assert s["terms"].startswith("BUY 4 x AAPL market")
+    w.second_state().approve(s["intent_id"], s["terms_fingerprint"])  # the CLI path: a separate process, same file
     res2 = await w.call("place_stock_order", args)
     s2 = res2.structured_content
     assert s2["decision"] == "ALLOW" and s2["approved_by_owner"] is True
@@ -367,7 +369,7 @@ async def test_approval_is_bound_to_the_escalated_terms(tmp_path):
     w = World(tmp_path, approval_notional="500")
     res = await w.call("place_stock_order", order(qty="3", cid="esc-1", **BRACKET))  # 570 escalates
     intent_id = res.structured_content["intent_id"]
-    w.second_state().approve(intent_id)
+    w.second_state().approve(intent_id, res.structured_content["terms_fingerprint"])
     # Same client_order_id, different order: the approval must not carry over.
     res2 = await w.call("place_stock_order", order("MSFT", side="sell", qty="2", cid="esc-1",
                                                    **{**BRACKET, "stop_loss_stop_price": "420", "take_profit_limit_price": "400"}))
@@ -384,7 +386,7 @@ async def test_stale_approval_does_not_count(tmp_path):
     args = order(qty="4", cid="old", **BRACKET)
     res = await w.call("place_stock_order", args)
     intent_id = res.structured_content["intent_id"]
-    w.brake.state.approve(intent_id, now=datetime(2026, 1, 1, tzinfo=UTC))
+    w.brake.state.approve(intent_id, res.structured_content["terms_fingerprint"], now=datetime(2026, 1, 1, tzinfo=UTC))
     res2 = await w.call("place_stock_order", args)
     assert res2.structured_content["decision"] == "ESCALATE"
     assert w.fake.placed == []

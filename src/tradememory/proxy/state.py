@@ -64,6 +64,7 @@ class ProxyState:
         self.lock_path = self.path.with_name(self.path.name + ".lock")
         self._data: dict[str, Any] = self._empty()
         self.corrupt_reason: str | None = None
+        self.last_recovery: dict[str, Any] | None = None
         with self._locked():
             self._load()
 
@@ -159,11 +160,37 @@ class ProxyState:
 
         for key in ("escalated", "approvals", "forwarded"):
             value = loaded.get(key, {})
-            if not isinstance(value, dict):
-                self._mark_corrupt(f"{key} is not an object")
+            if not isinstance(value, dict) or any(not isinstance(v, dict) for v in value.values()):
+                self._mark_corrupt(f"{key} is not an object of objects")
                 return
             data[key] = value
         self._data = data
+
+    def _salvage(self) -> tuple[dict[str, Any], list[str]]:
+        """What can be kept from a corrupt file: fields that validate on their own."""
+        kept: dict[str, Any] = self._empty()
+        salvaged: list[str] = []
+        try:
+            loaded = json.loads(self.path.read_text(encoding="utf-8-sig"))
+        except (OSError, ValueError):
+            return kept, salvaged
+        if not isinstance(loaded, dict):
+            return kept, salvaged
+        peak = loaded.get("peak_equity")
+        if peak is not None:
+            try:
+                peak_d = Decimal(str(peak))
+                if peak_d.is_finite() and peak_d >= 0:
+                    kept["peak_equity"] = str(peak_d)
+                    salvaged.append("peak_equity")
+            except InvalidOperation:
+                pass
+        for key in ("escalated", "approvals", "forwarded"):
+            value = loaded.get(key)
+            if isinstance(value, dict) and all(isinstance(v, dict) for v in value.values()):
+                kept[key] = value
+                salvaged.append(key)
+        return kept, salvaged
 
     def _write(self) -> None:
         """Unique temp file, fsync, atomic replace. Never a shared temp name."""
@@ -191,13 +218,18 @@ class ProxyState:
         """Lock, re-read, apply one change, write atomically. Returns what fn returned."""
         with self._locked():
             self._load()
+            self.last_recovery = None
             if self.corrupt_reason is not None:
                 if not allow_when_corrupt:
                     raise StateCorrupt(self.corrupt_reason)
+                kept, salvaged = self._salvage()
                 aside = self.path.with_name(f"{self.path.name}.corrupt-{int(time.time())}")
-                with contextlib.suppress(OSError):
-                    os.replace(self.path, aside)
-                self._data = self._empty()
+                os.replace(self.path, aside)  # if this fails the corrupt file stays untouched
+                self.last_recovery = {
+                    "reason": self.corrupt_reason, "moved_to": str(aside), "salvaged": salvaged,
+                    "reset": [k for k in ("peak_equity", "escalated", "approvals", "forwarded") if k not in salvaged],
+                }
+                self._data = kept
                 self.corrupt_reason = None
             if now is not None:
                 self._prune(self._data, _aware(now))
@@ -237,14 +269,18 @@ class ProxyState:
             return "FULL_HALT"
         return str(self._data.get("halt") or "FULL_HALT")
 
-    def set_halt(self, value: str) -> None:
+    def set_halt(self, value: str) -> dict[str, Any] | None:
+        """Set the owner halt. On a corrupt file this is the one write allowed: the corrupt
+        file is moved aside first and whatever validates on its own is kept. Returns the
+        recovery record when that happened, else None."""
         value = value.upper()
         if value not in HALT_STATES:
             raise ValueError(f"halt must be one of {HALT_STATES}")
         self._mutate(lambda data: data.__setitem__("halt", value), allow_when_corrupt=True)
+        return self.last_recovery
 
     # ---------------------------------------------------------------- escalation and approval
-    def escalate(self, intent_id: str, fingerprint: str, now: datetime | None = None) -> None:
+    def escalate(self, intent_id: str, fingerprint: str, now: datetime | None = None, *, summary: str = "") -> None:
         """Remember the exact terms that escalated. New terms for the same intent void any pending approval."""
         at = _aware(now)
 
@@ -252,20 +288,31 @@ class ProxyState:
             previous = data["escalated"].get(intent_id)
             if isinstance(previous, dict) and previous.get("fingerprint") != fingerprint:
                 data["approvals"].pop(intent_id, None)
-            data["escalated"][intent_id] = {"fingerprint": fingerprint, "at": at.isoformat()}
+            data["escalated"][intent_id] = {"fingerprint": fingerprint, "at": at.isoformat(), "summary": summary}
 
         self._mutate(apply, now=at)
 
-    def approve(self, intent_id: str, now: datetime | None = None) -> str:
-        """Approve the terms that escalated for this intent. Returns the fingerprint approved."""
+    def escalation(self, intent_id: str) -> dict[str, Any] | None:
+        """The pending escalation for an intent, for the CLI to show what is being approved."""
+        entry = self._snapshot()["escalated"].get(intent_id)
+        return dict(entry) if isinstance(entry, dict) else None
+
+    def approve(self, intent_id: str, fingerprint: str, now: datetime | None = None) -> str:
+        """Approve exactly the terms the owner reviewed. Refused when the pending escalation
+        carries different terms (the agent re-sent the order meanwhile). Returns the summary."""
         at = _aware(now)
 
         def apply(data: dict[str, Any]) -> str:
             escalated = data["escalated"].get(intent_id)
             if not isinstance(escalated, dict) or not escalated.get("fingerprint"):
                 raise ValueError(f"nothing escalated for intent {intent_id}; approve after the agent's ESCALATE")
-            data["approvals"][intent_id] = {"at": at.isoformat(), "fingerprint": escalated["fingerprint"]}
-            return str(escalated["fingerprint"])
+            if escalated["fingerprint"] != fingerprint:
+                raise ValueError(
+                    "the pending escalation carries different terms than the ones being approved: "
+                    f"{escalated.get('summary') or escalated['fingerprint']}"
+                )
+            data["approvals"][intent_id] = {"at": at.isoformat(), "fingerprint": fingerprint}
+            return str(escalated.get("summary") or fingerprint)
 
         return str(self._mutate(apply, now=at))
 
@@ -332,20 +379,26 @@ class ProxyState:
 
     @staticmethod
     def _prune(data: dict[str, Any], now: datetime) -> None:
-        def keep(bucket: str, ttl: timedelta) -> None:
+        def keep(bucket: str, ttl: timedelta, *, unreadable_becomes_unknown: bool) -> None:
             cutoff = now - ttl
             fresh: dict[str, Any] = {}
             for key, value in data.get(bucket, {}).items():
                 if not isinstance(value, dict):
                     continue
                 stamp = _parse(value.get("at"))
-                if stamp is not None and stamp >= cutoff:
+                if stamp is None:
+                    if unreadable_becomes_unknown:
+                        # A forward whose time we cannot read must still force reconciliation;
+                        # re-stamp it so it ages out normally instead of vanishing.
+                        fresh[key] = {**value, "at": now.isoformat(), "status": "unknown"}
+                    continue
+                if stamp >= cutoff:
                     fresh[key] = value
             data[bucket] = fresh
 
-        keep("forwarded", REPLAY_TTL)
-        keep("escalated", ESCALATION_TTL)
-        keep("approvals", APPROVAL_TTL)
+        keep("forwarded", REPLAY_TTL, unreadable_becomes_unknown=True)
+        keep("escalated", ESCALATION_TTL, unreadable_becomes_unknown=False)
+        keep("approvals", APPROVAL_TTL, unreadable_becomes_unknown=False)
 
     @staticmethod
     def next_state_version() -> int:
