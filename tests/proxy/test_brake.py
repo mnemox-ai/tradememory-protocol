@@ -8,15 +8,18 @@ nothing both fail this file.
 
 from __future__ import annotations
 
-import asyncio
-import json
 import sys
-from datetime import UTC, datetime
-from decimal import Decimal
 
 import pytest
 
+if sys.version_info < (3, 12):  # datetime.UTC and mnemox-control both need newer Pythons
+    pytest.skip("proxy extra needs Python 3.12+", allow_module_level=True)
 pytest.importorskip("mnemox_control")
+
+import asyncio  # noqa: E402
+import json  # noqa: E402
+from datetime import UTC, datetime  # noqa: E402
+from decimal import Decimal  # noqa: E402
 
 from fastmcp import Client  # noqa: E402
 
@@ -35,10 +38,7 @@ from tradememory.proxy.state import ProxyState  # noqa: E402
 
 from fake_alpaca import FakeAlpaca  # noqa: E402
 
-pytestmark = [
-    pytest.mark.asyncio,
-    pytest.mark.skipif(sys.version_info < (3, 12), reason="proxy extra needs Python 3.12+"),
-]
+pytestmark = pytest.mark.asyncio
 
 BRACKET = {"order_class": "bracket", "stop_loss_stop_price": "185", "take_profit_limit_price": "200"}
 

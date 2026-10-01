@@ -2,20 +2,21 @@
 
 from __future__ import annotations
 
-import json
 import sys
-import threading
-from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 
 import pytest
 
+if sys.version_info < (3, 12):  # datetime.UTC and mnemox-control both need newer Pythons
+    pytest.skip("proxy extra needs Python 3.12+", allow_module_level=True)
 pytest.importorskip("mnemox_control")
+
+import json  # noqa: E402
+import threading  # noqa: E402
+from datetime import UTC, datetime, timedelta  # noqa: E402
+from decimal import Decimal  # noqa: E402
 
 from tradememory.proxy.server import child_environment  # noqa: E402
 from tradememory.proxy.state import ProxyState, StateCorrupt  # noqa: E402
-
-pytestmark = pytest.mark.skipif(sys.version_info < (3, 12), reason="proxy extra needs Python 3.12+")
 
 
 def write(path, text: str, encoding: str = "utf-8") -> None:
