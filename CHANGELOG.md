@@ -5,6 +5,96 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- **Broker proxy (preview), `proxy` extra.** `tradememory proxy run` puts the
+  memory layer between an MCP agent and Alpaca's official MCP server. Read
+  tools pass through unchanged; `place_stock_order` / `place_crypto_order`
+  are evaluated by Mnemox Control (policy v0.3) against live account,
+  position, open-order and quote state before they are forwarded. Every
+  evaluation, including refusals and replays, is a `decision_events` row
+  chained into the audit ledger; allowed entries open a `trade_records` row.
+  `init`/`seal` manage a sealed policy file, `approve` releases one ESCALATE,
+  `halt` sets an owner halt, `doctor` checks the live upstream tool names
+  and account id, `config` prints the client entry.
+- Invariants pinned by `tests/proxy/` (24 tests against a stateful fake of
+  Alpaca's server, trust envelope included): nothing is forwarded without an
+  ALLOW; any failure to evaluate is a refusal; exits are never blocked; the
+  same `client_order_id` is forwarded at most once; options, order
+  replacement, stop-limit and trailing orders are refused.
+
+### Changed
+- README (en, zh): the regulatory framing now states that MiFID II / RTS 6
+  bind investment firms, that the AI Act's Annex III logging obligations were
+  postponed to 2 December 2027, and that ESMA's February 2026 briefing
+  excludes AI algorithmic trading from the high-risk scope. The table is
+  labelled as a feature map, not a compliance claim.
+
+### Verified live
+- Run against a real Alpaca paper account on 2026-10-01 (alpaca-mcp-server,
+  72 tools): three refusals (SYMBOL_NOT_ALLOWED, PROTECTIVE_STOP_REQUIRED,
+  ORDER_NOTIONAL_EXCEEDED), one ALLOW that placed a one-share bracket order
+  (`pending_new` → `new` upstream), one REPLAY that placed nothing; the
+  decision chain verified with 6 links (5 decisions + 1 trade record).
+- Argument names corrected from the live tool schemas, which differ from the
+  server's README: quotes and trades take `symbols` (plural), crypto data
+  needs `loc`, assets are fetched by `symbol_or_asset_id`, and list tools
+  wrap results as `{"result": [...]}`. The test fake mirrors the live shapes.
+- While the market is closed the brake prices from the last trade, not the
+  stale after-hours book (the real AAPL book was 320.91 / 354.20 against a
+  last trade of 333.05).
+
+### Hardened after an adversarial review (2026-10-01)
+- Owner approvals are bound to the escalated order's terms; a different order
+  under the same `client_order_id` is refused, and a `client_order_id` reused
+  with different terms is refused instead of replayed.
+- `stop_loss_stop_price` counts as a protective stop only inside a bracket or
+  OTO class on the stock tool; anywhere else it is decoration.
+- Tools the brake has not classified are refused (72 live tools classified;
+  `doctor` lists any new ones). `cancel_all_orders` is refused while positions
+  are open and stops are required; cancelling the protective stop leg of an
+  open position is refused; other cancels are forwarded and recorded.
+- The state file is re-read on every operation, so `tradememory proxy halt`
+  and `approve` from another shell take effect on the running proxy instead
+  of being overwritten by it.
+- Order evaluations are serialised; two concurrent orders cannot both pass a
+  limit only one of them fits under.
+- A broker call that fails after ALLOW is recorded as `FORWARD_FAILED`; the
+  retry asks the broker by `client_order_id` before placing anything.
+- The decision event and its chain link are written in one transaction.
+- `client_order_id` is required; `qty` and `notional` together are refused;
+  an unrecognised positions/orders shape fails closed; the market snapshot
+  carries the oldest quote timestamp while the market is open, so a dead
+  feed trips `MARKET_STATE_STALE`; the equity peak is updated from every
+  account read; the broker process receives a minimal environment, not the
+  proxy's.
+
+- State file (second review pass): a file that exists but cannot be read,
+  parsed or validated is corrupt, reads as FULL_HALT and is never written
+  over (`proxy halt` moves it aside and starts fresh); every operation holds
+  an OS file lock across read-modify-write with a unique temp file and
+  fsync; approvals store the fingerprint they approved and new terms void a
+  pending approval; escalations and approvals expire; the broker child
+  environment is an allowlist that keeps `UV_*`, `ALPACA_*`, proxy and CA
+  variables in either case.
+
+- Second review pass: `proxy approve <intent> --terms <fingerprint>` approves
+  exactly the terms the owner read and refuses when the pending escalation
+  differs; a forward with an unreadable timestamp is kept as unknown rather
+  than pruned; corrupt-file recovery keeps the fields that still validate and
+  reports what was reset; `UV_*` pass-through is an explicit list, broker
+  keys come from the env file (the shell only when there is no file).
+- `evaluate_order`: the brake's decision for an order without placing it,
+  recorded as DRY_RUN. Accepts the fields an advisory layer sends.
+
+### Not yet
+- `mnemox-control` is pinned as a git dependency; it must be published to
+  PyPI before this extra can ship in a PyPI release.
+- The policy seal, state file and ledger are unkeyed files: an agent with
+  shell access on the same host could rewrite them. Run the proxy as a
+  different OS user than an agent that has a shell.
+
 ## [0.5.5] - 2026-09-09
 
 Security hotfix.

@@ -18,11 +18,11 @@
 
 ---
 
-> **專案狀態（2026 年 8 月）：** 功能已完備，目前為**維護模式**：bug 與安全性回報仍會處理，不再規劃新功能與 hosted 服務。付費服務見[交易紀錄統計分析](#交易紀錄統計分析)。
+> **專案狀態（2026 年 10 月）：** 記憶層為**維護模式**：bug 與安全性回報仍會處理，不再規劃新的記憶功能。目前主動開發的是下方的券商 proxy。付費服務見[交易紀錄統計分析](#交易紀錄統計分析)。
 
-**你的交易 AI 有失憶症。監管機構開始注意到了。**
+**你的交易 AI 有失憶症。而券商已經把門打開了。**
 
-它每個 session 都在重複同樣的錯誤。它無法解釋為什麼下單。context window 結束後它忘了一切。與此同時，MiFID II 正在提高演算法決策文件的標準（[第 17 條](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32014L0065)）。EU AI Act 要求系統性記錄 AI 行動（[第 14 條](https://eur-lex.europa.eu/eli/reg/2024/1689)）。你競爭對手的 agent 正在從每筆交易中學習。
+它每個 session 都在重複同樣的錯誤。它無法解釋為什麼下單。context window 結束後它忘了一切。2026 年 Robinhood、Alpaca、Interactive Brokers 相繼對交易 agent 開放 MCP 端點，Robinhood 的支援頁面寫明：agent 做出的決策造成的損失，Robinhood 不負責。每家券商只給你它自己的活動紀錄。沒有一家給你的 agent 記憶，沒有一家在下單前放一道由你掌控的煞車，這些紀錄也不會跟著你到下一家券商或下一個框架。
 
 AI 交易堆疊缺少一層。每個 MCP server 都處理執行——下單、取得價格、讀取圖表。**沒有一個處理記憶。**
 
@@ -39,6 +39,24 @@ AI 交易堆疊缺少一層。每個 MCP server 都處理執行——下單、�
 - **安全護欄：** 信心追蹤、回撤告警、連敗偵測——系統告訴你什麼時候該停下來
 
 相容任何市場（股票、外匯、加密貨幣、期貨）、任何券商、任何 AI 平台。TradeMemory 不執行交易也不碰你的資金——它只負責記錄和回憶。
+
+## 在券商前面裝一道煞車（預覽）
+
+`proxy` extra 讓 TradeMemory 跑在你的 agent 和券商 MCP server 之間。所有工具原樣轉送，只有下單工具會先交給 [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) 用你自己的政策評估，通過才送到券商。每一次評估，不論放行或拒絕，都寫進稽核鏈；記憶由通過的單自動填滿。你原本的 agent 照常運作，只改 MCP 設定裡的一行。
+
+```bash
+# 下一版發布前先從分支安裝：
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
+tradememory proxy init --account-id <你的 Alpaca 帳號 id> --symbols AAPL,MSFT
+tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # 核對上游工具名稱與帳號 id
+tradememory proxy config                                           # 印出要換掉的那一行 MCP 設定
+```
+
+預設拒絕：清單外的標的、超過單筆或總部位上限的單、沒帶 bracket 停損的進場、觸及當日虧損或回撤上限之後的任何新單、以及你下過 `tradememory proxy halt FULL_HALT` 之後的一切。永遠不擋：平倉。達到 `approval_notional` 的單會等 `tradememory proxy approve <intent_id>`，agent 用同一個 `client_order_id` 重送，proxy 只轉送一次。任何評估不了的情況，例如報價斷線、不認得的標的、政策 v0 不涵蓋的單型，一律拒絕而不是放行。
+
+目前狀態：已對一個有狀態的 Alpaca MCP 假上游跑完端到端測試（`tests/proxy/`），並在 2026 年 10 月 1 日對真實的 Alpaca paper 帳戶跑過一次：三筆拒絕（清單外標的、沒帶停損、超過單筆上限）、一筆放行的一股 bracket 單真的送到券商、一筆用同一個 `client_order_id` 重送的單由紀錄回覆、沒有產生第二張單。假上游的參數名稱與回傳形狀已依那次真實執行修正；`doctor` 會對你的帳戶再核對一次。選擇權、改單、stop-limit 與 trailing 單是拒絕不是評估。券商金鑰只交給 proxy 啟動的券商程序，proxy 本身不保存。
+
+附真實輸出的完整步驟：[docs/recipes/alpaca-brake.md](recipes/alpaca-brake.md)。**你的 agent 已經在對券商下單，想把這道煞車裝在前面？** [開一個 brake-integration issue](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml) 或 [約 30 分鐘](https://calendly.com/johnson90207/30min)。前十個真實環境我們親手幫忙接、不收費，之後要做什麼由他們決定。
 
 ## 看看介面長什麼樣
 
@@ -142,6 +160,8 @@ TradeMemory 本身免費、自行架設。維護者提供的付費服務是**針
 ## Enterprise 與合規
 
 你的 agent 做的每一個交易決策——包括決定**不交易**——都會被記錄為 Trading Decision Record (TDR)，並在建立時計算 SHA-256 雜湊以進行竄改偵測。
+
+這些義務約束的是投資公司，不是散戶。EU AI Act 附件三的高風險日誌義務已延後至 2027 年 12 月 2 日；ESMA 2026 年 2 月的演算法交易監理簡報寫明，AI 演算法交易目前不在高風險範圍內。下表只說明當這些法規適用於你時，TradeMemory 的哪些功能對得上，不是合規宣稱。
 
 | 法規 | 要求 | TradeMemory 覆蓋範圍 |
 |------|------|---------------------|

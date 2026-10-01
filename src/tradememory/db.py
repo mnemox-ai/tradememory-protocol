@@ -425,17 +425,22 @@ class Database:
         factors: Optional[Dict[str, Any]] = None,
         recommendation: Optional[str] = None,
         linked_trade_id: Optional[str] = None,
+        conn: Optional[sqlite3.Connection] = None,
     ) -> str:
         """Persist a pre-trade gate / plan-trigger event.
 
         Feeds the post-alert behavior metrics (did sizing change after a
         caution/skip tier? did trading pause?). Callers should wrap this in
         try/except — metrics persistence must never block the gate itself.
+
+        Pass ``conn`` to write inside a caller-managed transaction (the broker
+        proxy inserts the event and its audit-chain link atomically).
         """
         import uuid
+        from contextlib import nullcontext
 
         event_id = f"de-{uuid.uuid4().hex[:12]}"
-        with self.get_connection() as conn:
+        with (nullcontext(conn) if conn is not None else self.get_connection()) as conn:
             conn.execute(
                 """INSERT INTO decision_events
                    (id, timestamp, tool, strategy, symbol, tier, score,

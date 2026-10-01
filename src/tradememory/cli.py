@@ -41,5 +41,13 @@ def demo(fast):
     demo_main(fast=fast)
 
 
+# Brake + memory in front of a broker MCP server: `tradememory proxy ...`
+# (pip install "tradememory-protocol[proxy]", Python 3.12+). The group itself
+# imports nothing heavy, so the base CLI keeps working without the extra.
+from .proxy.cli import proxy as _proxy_group  # noqa: E402
+
+cli.add_command(_proxy_group, name="proxy")
+
+
 if __name__ == "__main__":
     cli()
