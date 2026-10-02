@@ -130,13 +130,13 @@ pause
 
 bat 檔會從自己所在的位置找到 repo 根目錄，不用改路徑。`TradeMemory_AutoStart.xml` 裡的路徑寫成 `%USERPROFILE%\projects\tradememory-protocol`，repo 不在這個位置的話，註冊前先改 XML 的 `<Arguments>` 和 `<WorkingDirectory>` 兩行。
 
-用哪個 Python 也不用改檔案，`start_services.bat`、`watchdog_mt5_sync.bat`、`start_tradememory.pyw` 都照同一個順序找：
+用哪個 Python 也不用改檔案，`scripts\platform\` 裡的啟動器（`start_services.bat`、`watchdog_mt5_sync.bat`、`start_tradememory.pyw`、`start_mt5_sync_v3.bat`、`start_daily_reflection.bat`、`start_trade_adapter.bat`、`run_index_generator.bat`）都照同一個順序找：
 
 1. 有設環境變數 `PYTHON`，就用它（值是 `python.exe` 的完整路徑）
 2. 沒設的話，repo 根目錄有 `.venv\Scripts\python.exe` 就用它
 3. 都沒有，就用 PATH 上的 `python`
 
-實際用了哪一個，會寫在 `logs\startup.log` 和 `logs\watchdog.log`。沒設 `PYTHON` 的話，repo 裡只要有 `.venv` 就會用它，所以 `.venv` 要裝齊：
+實際用了哪一個，會寫在各自的 log（`logs\startup.log`、`logs\watchdog.log`、`logs\mt5_sync_v3_start.log`、`logs\reflection.log`、`logs\trade_adapter.log`）。沒設 `PYTHON` 的話，repo 裡只要有 `.venv` 就會用它，所以 `.venv` 要裝齊：
 
 ```batch
 .venv\Scripts\python -m pip install -e . MetaTrader5

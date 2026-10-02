@@ -68,6 +68,8 @@ uvicorn scripts.mt5_sync_v3:app --port 9001 --host 0.0.0.0
 scripts\platform\start_mt5_sync_v3.bat
 ```
 
+bat 檔不用先 activate，它自己挑 Python：環境變數 `PYTHON`、repo 的 `.venv`、PATH 上的 `python`，依序找，規則同 [MT5_SYNC_SETUP.md](MT5_SYNC_SETUP.md) 的方式 C。
+
 啟動後開瀏覽器 http://localhost:9001 看 dashboard。
 
 ---
