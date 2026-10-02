@@ -36,7 +36,7 @@ Discord webhook (open/close/advisor alerts)
 ```bash
 cd C:\Users\<你的使用者名稱>\projects\tradememory-protocol
 .venv\Scripts\activate
-pip install MetaTrader5 python-dotenv requests fastapi uvicorn
+pip install -e ".[mt5]"
 ```
 
 ## .env 設定

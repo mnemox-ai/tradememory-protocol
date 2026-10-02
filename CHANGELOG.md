@@ -5,6 +5,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- `mt5` extra: `pip install -e ".[mt5]"` installs MetaTrader5 (Windows only),
+  `schedule` and `pytz`, which the MT5 scripts and the Windows launchers in
+  `scripts/platform/` use.
+
+### Fixed
+- `scripts/mt5_sync.py` stopped at start with an ImportError: `trade_advisor`
+  moved to `scripts/research/` in the March reorganisation (#20).
+- The Windows launchers in `scripts/platform/` still used pre-reorganisation
+  paths and hard-coded absolute folders; they now find the repo from their own
+  location, and the Task Scheduler XMLs no longer declare an encoding that
+  `schtasks` rejects (#21).
+- Every launcher picks Python from `PYTHON`, else the repo's `.venv`, else
+  PATH, and logs the choice; `start_tradememory.pyw` keeps running without
+  `schedule` (#22, #23).
+- The MCP Registry publish step waits until PyPI serves the release (#19).
+
 ## [0.5.6] - 2026-10-02
 
 ### Added
