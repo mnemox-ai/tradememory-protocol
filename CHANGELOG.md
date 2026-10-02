@@ -27,6 +27,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 - `remember_trade(lot_size=...)` stores the position size. It was stored as
   0 before, so sizing up after losses could not be seen.
 
+### Changed
+- README (en, zh) rewritten around what the project does now: sync your
+  history, see where it loses money, recall losses before the next order,
+  and the optional brake. The maintenance-mode banner, the paid analysis
+  offer and the dashboard link are gone; the security section describes
+  the memory server, sync and the brake separately (the old one said
+  TradeMemory never touches keys or executes trades, which the brake does);
+  the AGPL licence of the brake's policy engine is stated; claims that no
+  other MCP server handles memory, that users run it in production, and
+  that regulators require it were removed from the README, llms.txt, the
+  Binance skill, the plugin manifest, GETTING_STARTED and the demo.
+
 ### Fixed
 - The server instructions said recall surfaces losses in similar conditions
   first; the default order ranks better outcomes higher and keeps at least

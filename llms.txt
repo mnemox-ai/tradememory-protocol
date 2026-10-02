@@ -1,19 +1,19 @@
 # TradeMemory Protocol
 
-> Platform-agnostic AI trading memory system with Outcome-Weighted Memory (OWM) architecture via MCP. Accepts standardized trade data from any source (MT5, Binance, Alpaca) and provides structured memory with LLM-powered reflection.
+> Open-source, local-first memory and brake for AI trading agents, over MCP. It syncs fills (Hyperliquid by address, Alpaca read-only), finds where a trader's own history loses money, returns losing trades from similar conditions before the next order, and can refuse orders that break the trader's rules before they reach the broker (Alpaca MCP proxy, preview).
 
-TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. It does NOT connect to trading platforms directly — it accepts standardized trade data and organizes it into three layers:
+TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. The memory server never places orders; `tradememory sync` reads fills from a venue, and the optional proxy sits in front of a broker's MCP server. Memory is organized in three layers:
 
 - L1 (Raw Trades): Every trade recorded automatically with full metadata
 - L2 (Patterns): AI discovers what works and what doesn't across trade history
 - L3 (Strategy): Memory becomes judgment — adaptive risk and strategy refinement
 
 Key capabilities:
-- 4 MCP tools: store_trade, recall_trades, get_performance, run_reflection
-- LLM-powered reflection engine (Claude API) for trade analysis
-- Adaptive risk management based on historical memory
-- Platform-agnostic: works with MT5, Binance, Alpaca, or any trading platform
-- MT5 auto-sync via mt5_sync.py (polls every 60 seconds)
+- 20 MCP tools, including remember_trade, recall_memories (order="losses_first" before a trade), get_behavioral_analysis, check_trade_legitimacy, and the audit-chain tools
+- tradememory sync hyperliquid / alpaca: fills to closed trades to memory, plus a descriptive loss report
+- tradememory proxy (preview): a policy brake in front of Alpaca's MCP server
+- MT5 and Binance spot sync scripts in scripts/
+- SHA-256 hash-chained, tamper-evident decision records with daily Merkle roots
 
 ## Install
 

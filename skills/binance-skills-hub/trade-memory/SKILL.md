@@ -14,11 +14,11 @@ license: MIT
 
 # TradeMemory — Decision Audit Trail for AI Trading Agents
 
-Every Binance skill executes trades. None of them record **why**.
+Binance skills execute trades. TradeMemory records **why**.
 
-TradeMemory is the compliance layer. When your AI agent opens a position using the Spot or Futures skill, TradeMemory captures the full decision context: what conditions triggered the signal, which filters passed or blocked, the market indicators at that moment, risk state, and execution details. Every record is SHA-256 hashed for tamper detection.
+TradeMemory keeps the decision record. When your AI agent opens a position using the Spot or Futures skill, TradeMemory captures the full decision context: what conditions triggered the signal, which filters passed or blocked, the market indicators at that moment, risk state, and execution details. Every record is SHA-256 hashed for tamper detection.
 
-**This matters because regulators now require it.** MiFID II Article 17 mandates algorithmic trading audit trails. The EU AI Act (August 2025) requires high-risk AI systems to maintain systematic logging of every action and decision path. ESMA's February 2026 supervisory briefing specifically targets AI-driven trading. Non-compliance fines reach up to 15M EUR or 3% of global turnover.
+**Why keep it.** So you, or anyone you report to, can see why each trade was taken and how it ended. Rules that require decision records (MiFID II Article 17) bind investment firms, not retail users; the EU AI Act's high-risk logging obligations were postponed to 2 December 2027, and ESMA's February 2026 briefing states that AI-based algorithmic trading is currently excluded from the high-risk scope. This is not a compliance claim.
 
 ## What TradeMemory Records
 

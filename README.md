@@ -18,53 +18,40 @@
 
 ---
 
-> **Project status (October 2026):** the memory layer is in **maintenance mode** — bug and security reports are reviewed, no new memory features are planned. Active work is the [broker proxy](#put-a-brake-in-front-of-your-broker-preview) below. For paid work, see [Trading Record Analysis](#trading-record-analysis).
+**TradeMemory remembers what it cost.** It is an open-source, local-first memory and brake for AI trading agents: it pulls in your fills, finds where your own history loses money, puts those losing trades in front of your agent before the next order, and can refuse an order that breaks rules you set, before it reaches the broker.
 
-**Your trading AI has amnesia. Brokers just opened the door to it anyway.**
+Brokers now let AI agents trade over MCP, with different guardrails: Webull and tastytrade set size or buying-power limits, Interactive Brokers only lets the agent draft an order for you to submit, and Robinhood and Public set no cap you can impose on an external agent ([StockBrokers, 2026-09-30](https://www.stockbrokers.com/guides/ai-agent-brokers)). The caps are fixed numbers. None of them looks at how your own past trades went.
 
-It makes the same mistakes every session. It can't explain why it traded. It forgets everything when the context window ends. In 2026 Robinhood, Alpaca and Interactive Brokers opened MCP endpoints for trading agents, and Robinhood's support page says it is not responsible for losses from agent-generated decisions. Each broker shows you its own activity feed. None gives your agent a memory, none puts a brake you control in front of the order, and none of those records travel with you to the next broker or the next framework.
-
-The AI trading stack is missing a layer. Every MCP server handles execution — placing orders, fetching prices, reading charts. **None handle memory.**
-
-Your agent can buy 100 shares of AAPL but can't answer: *"What happened last time I bought AAPL in this condition?"*
-
-**TradeMemory is the memory layer.** One `pip install`, and your AI agent remembers every trade, every outcome, every mistake — with a SHA-256 tamper-evident audit trail.
-
-Used by an independent trader running a pre-flight checklist before every position, and first-party against an MT5 account that logs blocked signals as well as executed ones. See USE_CASES.md for which is which.
-
-## What it does
-
-- **Before trading:** ask your memory — what happened last time in this market condition? How did it end?
-- **After trading:** one call records everything — five memory layers update automatically
-- **Safety rails:** confidence tracking, drawdown alerts, losing streak detection — the system tells you when to stop
-
-Works with any market (stocks, forex, crypto, futures), any broker, any AI platform. TradeMemory doesn't execute trades or touch your money — it only records and recalls.
-
-## Put a brake in front of your broker (preview)
-
-The `proxy` extra runs TradeMemory *between* your agent and your broker's MCP server. Every tool is forwarded unchanged, except order-placing tools, which are evaluated by [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) against a policy you own before they reach the broker. Every evaluation, allowed or refused, is recorded and chained into the audit log, and the memory fills itself from the orders that pass. The agent you already have keeps working; only one line of its MCP config changes.
+## Start with your own history
 
 ```bash
-# until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
-tradememory proxy init --account-id <your Alpaca account id> --symbols AAPL,MSFT
-tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the live tool names and the account id
-tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one
+pip install tradememory-protocol
+
+# Hyperliquid: public fills, no key needed
+tradememory sync hyperliquid --address 0xYourAddress
+
+# Alpaca: read-only calls with your own keys, kept in a local file
+tradememory sync alpaca --env-file ~/.secrets/alpaca.env
 ```
 
-Refused by default: symbols outside your list, orders above your notional and position limits, entries without a bracket stop, any new order after your daily-loss or drawdown limit, cancelling the protective stop of an open position, any tool the brake has not classified, and everything while you have run `tradememory proxy halt FULL_HALT`. Never blocked: closing a position. Orders at or above `approval_notional` wait for `tradememory proxy approve <intent_id> --terms <fingerprint>`, which approves exactly the terms you read; the agent retries with the same `client_order_id` and the same terms, and the proxy forwards it exactly once. `evaluate_order` returns the same decision without placing anything, for pre-checks and for advisory layers in other frameworks. Anything the brake cannot evaluate (a dead quote feed, an unknown asset, an order type policy v0 does not cover) is refused, not passed through.
+Each closed trade is stored in memory once; running it again stores only new trades. Then it prints where your history loses money. The format, with illustrative numbers:
 
-Status: tested end-to-end against a stateful fake of Alpaca's MCP server (`tests/proxy/`), and run once against a real Alpaca paper account on 2026-10-01: three refusals (symbol not on the list, entry without a stop, notional over the limit), one allowed one-share bracket order that reached the broker, and one retry with the same `client_order_id` that was answered from the record without a second order. The fake's argument names and payload shapes were corrected from that live run; `doctor` re-checks them against your account. Options, order replacement, stop-limit and trailing orders are refused rather than evaluated. Broker keys go only to the broker process the proxy starts; the proxy never stores them.
+```
+After 2 losses in a row (20 trades):
+  5 of them (25%) were 1.5x your usual size or more.
+  All 20 won 60% and made -$1,500.
+  The 5 sized-up trades won 20% and made -$1,700.
 
-Walkthrough with the real outputs: [docs/recipes/alpaca-brake.md](docs/recipes/alpaca-brake.md). **Running an agent against a broker and want this in front of it?** [Open a brake-integration issue](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml) or [book 30 minutes](https://calendly.com/johnson90207/30min). The first ten setups get hands-on help at no charge, and they decide what gets built next.
+Median hold: winners 1.5h, losers 9.0h.
+```
 
-## See the interface
+These are descriptive statistics of your own past trades, not advice about the next one. Hyperliquid keeps only an address's 10,000 most recent fills retrievable, so the sooner it is synced, the more history is kept. Other venues: MT5 and Binance spot sync scripts are in `scripts/`, and any agent can record a trade with `remember_trade`.
 
-**[tradememory-dashboard.onrender.com](https://tradememory-dashboard.onrender.com)** — the dashboard running on an illustrative demo dataset. Nothing to install.
+## Before the next order
 
-It is an interface preview, not a track record: the trades are synthetic and every figure on it is labelled as such. For what the memory layer actually does in a terminal, `pip install tradememory-protocol && tradememory demo --fast` replays 30 trades and shows the recall and parameter adjustment it derives from them.
+`recall_memories(order="losses_first")` returns the losing trades taken in similar conditions first, with their size and P&L. The server tells connected agents to call it before proposing a trade. The default order ranks better outcomes higher and keeps at least 20% losses in the list.
 
-## Quick Start
+## Connect your agent
 
 ```bash
 pip install tradememory-protocol
@@ -104,14 +91,32 @@ docker compose up -d
 
 **Full walkthrough:** [Getting Started](docs/GETTING_STARTED.md) (Trader Track + Developer Track)
 
-## Who uses TradeMemory
+## Put a brake in front of your broker (preview)
 
-| | US Equity Trader | Forex EA System | Compliance Team |
+The `proxy` extra runs TradeMemory between your agent and your broker's MCP server (Alpaca today). Every tool is forwarded unchanged except the order-placing ones, which [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) evaluates against a policy you own before they reach the broker. Every evaluation, allowed or refused, is recorded and chained into the audit log. An allowed order comes back with your losing trades from similar conditions first, and `tradememory sync alpaca` later fills in how each forwarded trade ended, in R when the entry carried a stop. The agent you already have keeps working; only one line of its MCP config changes.
+
+```bash
+# until the next release ships the extra:
+pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
+tradememory proxy init --account-id <your Alpaca account id> --symbols AAPL,MSFT
+tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the live tool names and the account id
+tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one
+```
+
+Refused by default: symbols outside your list, orders above your notional and position limits, entries without a bracket stop, any new order after your daily-loss or drawdown limit, cancelling the protective stop of an open position, any tool the brake has not classified, and everything while you have run `tradememory proxy halt FULL_HALT`. Never blocked: closing a position. Orders at or above `approval_notional` wait for `tradememory proxy approve <intent_id> --terms <fingerprint>`, which approves exactly the terms you read; the agent retries with the same `client_order_id` and the same terms, and the proxy forwards it at most once. `evaluate_order` returns the same decision without placing anything, for pre-checks and for advisory layers in other frameworks. Anything the brake cannot evaluate (a dead quote feed, an unknown asset, an order type the policy does not cover) is refused, not passed through.
+
+Status: tested end-to-end against a stateful fake of Alpaca's MCP server (`tests/proxy/`), and run against a real Alpaca paper account on 2026-10-01: three refusals (symbol not on the list, entry without a stop, notional over the limit), one allowed one-share bracket order that reached the broker, and one retry with the same `client_order_id` that was answered from the record without a second order. Options, order replacement, stop-limit and trailing orders are refused rather than evaluated. Your broker keys go only to the broker process the proxy starts; TradeMemory never stores them.
+
+Walkthrough with the real outputs: [docs/recipes/alpaca-brake.md](docs/recipes/alpaca-brake.md).
+
+## Three ways it is used
+
+| | US equity trader | Forex EA system | Audit trail (illustrative) |
 |---|---|---|---|
 | **Market** | Stocks (AAPL, TSLA, ...) | XAUUSD (Gold) | Multi-asset |
-| **How** | Pre-flight checklist before every trade | Automated sync from MT5 | Full decision audit trail |
-| **Key value** | Discipline system — memory before every decision | Record why signals were blocked, not just executed | SHA-256 tamper-evident records for regulators |
-| **Details** | [Read more →](docs/USE_CASES.md#case-1-us-equity-trader--pre-flight-workflow) | [Read more →](docs/USE_CASES.md#case-2-forex-ea-system--automated-memory-loop) | [Read more →](docs/USE_CASES.md#case-3-compliance-first-fund--audit-trail) |
+| **How** | Pre-flight checklist before every trade | Automated sync from MT5 | Decision records with a hash chain |
+| **Who** | One independent user (March 2026) | The maintainer's own MT5 account | An example, not a customer |
+| **Details** | [Read more](docs/USE_CASES.md#case-1-us-equity-trader--pre-flight-workflow) | [Read more](docs/USE_CASES.md#case-2-forex-ea-system--automated-memory-loop) | [Read more](docs/USE_CASES.md#case-3-compliance-first-fund--audit-trail) |
 
 ## How it works
 
@@ -122,7 +127,7 @@ docker compose up -d
 1. **Recall** — Before trading, retrieve past trades weighted by outcome quality, context similarity, recency, confidence, and emotional state ([OWM Framework](docs/OWM_FRAMEWORK.md))
 2. **Record** — After trading, one call to `remember_trade` writes to five memory layers: episodic, semantic, procedural, affective, and trade records
 3. **Reflect** — Daily/weekly/monthly reviews detect behavioral drift, strategy decay, and trading mistakes
-4. **Audit** — Every decision is SHA-256 hashed at creation. Export anytime for review or regulatory submission
+4. **Audit** — Every decision is SHA-256 hashed at creation and chained to the one before. Export anytime for review
 
 ### MCP Tools
 
@@ -149,19 +154,15 @@ docker compose up -d
 
 </details>
 
-## Trading Record Analysis
+## Get help connecting
 
-TradeMemory itself is free and self-hosted. What the maintainer offers as a paid service is **statistical analysis of your own trading records**: export your MT4/MT5 history and get a descriptive-statistics report — where your losses concentrate, how your position sizing changes after losses, forced-liquidation structure, and the actual risk you took per trade — followed by a walkthrough call.
+Running an agent against a broker, or want your history synced and read? [Open a brake-integration issue](https://github.com/mnemox-ai/tradememory-protocol/issues/new?template=brake_integration.yml) or [book 30 minutes](https://calendly.com/johnson90207/30min). Setup help is free, and the people who use it decide what gets built next.
 
-Descriptive statistics of past trades only: no trade signals, no investment advice, no performance promises. Your files are deleted after delivery.
-
-[dev@mnemox.ai](mailto:dev@mnemox.ai) | [Book a call](https://calendly.com/johnson90207/30min)
-
-## Enterprise & Compliance
+## Audit trail
 
 Every trading decision your agent makes — including decisions **not** to trade — is recorded as a Trading Decision Record (TDR). Per-record SHA-256 content hashes are linked into a forward-chained audit ledger; every UTC day is summarised by a Merkle root which itself chains across days. Tampering with any historical record invalidates every subsequent link.
 
-These obligations bind investment firms, not retail users. Under the EU AI Act, the Annex III high-risk logging obligations were postponed to 2 December 2027, and ESMA's February 2026 supervisory briefing on algorithmic trading states that AI-based algorithmic trading is currently excluded from the high-risk scope. The table shows which TradeMemory features map to those texts if and when they apply to you. It is not a compliance claim.
+Rules that require decision records bind investment firms, not retail users. Under the EU AI Act, the Annex III high-risk logging obligations were postponed to 2 December 2027, and ESMA's February 2026 supervisory briefing on algorithmic trading states that AI-based algorithmic trading is currently excluded from the high-risk scope. The table shows which TradeMemory features map to those texts if and when they apply to you. It is not a compliance claim.
 
 | Regulation | Requirement | TradeMemory Coverage |
 |------------|-------------|---------------------|
@@ -182,28 +183,26 @@ verify_audit_chain(from_seq=1, to_seq=None)
 get_daily_root(date="2026-05-14")
 # → {"verified": true, "root_hash": "a05544...", "record_count": 18}
 
-# Bulk export for regulatory submission
+# Bulk export
 GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 ```
 
-See [LIMITATIONS.md](LIMITATIONS.md) for the full audit-chain maturity statement, including what's not in v0.5.2 yet (TSA timestamping, external anchoring, zkML proof of inference).
-
-**Need a custom deployment for your fund?** → [dev@mnemox.ai](mailto:dev@mnemox.ai)
+Daily roots are timestamped by an RFC 3161 authority by default since 0.5.3. Not built: signing records with a private key, anchoring to a public log, proving that nothing was left out. See [LIMITATIONS.md](LIMITATIONS.md).
 
 ## Security
 
-- **Never touches API keys.** TradeMemory does not execute trades, move funds, or access wallets.
-- **Read and record only.** Your agent passes decision context to TradeMemory. It stores it. That's it.
-- **Local-first.** The only outbound call is RFC 3161 trusted timestamping of daily audit roots — a 32-byte hash, no trade data (on by default; disable with `TRADEMEMORY_TSA=off`). Nothing else leaves your machine.
-- **SHA-256 chained audit ledger.** Every record is hashed at creation and linked to the previous record. Daily Merkle roots anchor the chain. Verify integrity at the record, slice, or day level. Tampering is detectable at every level; external anchoring (TSA by default) is on the roadmap.
-- **1,400+ tests passing.** Full test suite with CI.
+- **Memory server (default).** Never places orders and never asks for broker keys. Records and recalls only, in a local SQLite file.
+- **Sync.** `tradememory sync hyperliquid` reads public data with no key. `tradememory sync alpaca` makes read-only calls with keys from a file on your machine. Synced trades stay in your local database.
+- **Brake (`proxy` extra).** Forwards the orders your policy allows to your broker's MCP server. Your broker keys are passed only to the broker process the proxy starts; TradeMemory never stores them.
+- **Outbound calls.** RFC 3161 timestamping of daily audit roots, a 32-byte hash with no trade data (on by default; `TRADEMEMORY_TSA=off` turns it off). The evolution and replay features call the Anthropic API only if you set `ANTHROPIC_API_KEY`. `tradememory sync` calls the venue you name.
+- **Tamper-evident, not tamper-proof.** Every record is hashed and linked to the one before, with daily Merkle roots. Changing a record breaks the chain; someone who can rewrite the whole database can rebuild it.
 
 ## Research Status
 
 TradeMemory's OWM framework is grounded in cognitive science (Tulving 1972)
 and reinforcement learning (Schaul et al. 2015). Current status:
 
-- **OWM five-factor scoring:** implemented, tested (1,400+ tests)
+- **OWM five-factor scoring:** implemented and tested (see the CI badge)
 - **Statistical validation:** DSR, MBL implemented (Bailey-de Prado 2014)
 - **Audit trail:** SHA-256 tamper-evident TDR
 - **Evolution engine:** research phase (strategy generation works, statistical gate pass rate under optimization)
@@ -238,6 +237,6 @@ See [Contributing Guide](.github/CONTRIBUTING.md) · [Security Policy](.github/S
 
 ---
 
-MIT — see [LICENSE](LICENSE). For educational/research purposes only. Not financial advice.
+MIT, see [LICENSE](LICENSE). The optional `proxy` extra installs [Mnemox Control](https://github.com/mnemox-ai/mnemox-control), whose engine is AGPL-3.0-only (a commercial license is available); TradeMemory itself stays MIT. For educational and research purposes only. Not financial advice.
 
 <div align="center">Built by <a href="https://mnemox.ai">Mnemox</a></div>

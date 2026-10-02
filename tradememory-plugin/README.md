@@ -1,6 +1,6 @@
 # TradeMemory Plugin
 
-Persistent memory + autonomous strategy evolution for AI traders. 200+ trading MCP servers execute. None remember. TradeMemory does.
+Persistent trade memory for AI trading agents: record trades, recall the losing ones from similar conditions before the next order, and review behaviour over time.
 
 ## Installation
 
