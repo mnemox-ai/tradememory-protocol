@@ -23,6 +23,6 @@ if %errorlevel%==0 (
     echo mt5_sync.py not found running.
 )
 
-echo [%date% %time%] Services stopped. >> "%~dp0..\logs\startup.log"
+echo [%date% %time%] Services stopped. >> "%~dp0..\..\logs\startup.log"
 echo Done.
 pause

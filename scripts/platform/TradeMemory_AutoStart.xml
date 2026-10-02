@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-16"?>
+<?xml version="1.0"?>
 <Task version="1.4" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">
   <RegistrationInfo>
     <Description>Auto-start TradeMemory services (tradememory server + mt5_sync.py) on user login</Description>
@@ -30,10 +30,11 @@
     <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
   </Settings>
   <Actions Context="Author">
+    <!-- Assumes the repo is cloned at %USERPROFILE%\projects\tradememory-protocol; if it is elsewhere, edit both paths below before importing. -->
     <Exec>
       <Command>cmd.exe</Command>
-      <Arguments>/c "C:\Users\johns\projects\tradememory-protocol\scripts\start_services.bat"</Arguments>
-      <WorkingDirectory>C:\Users\johns\projects\tradememory-protocol</WorkingDirectory>
+      <Arguments>/c "%USERPROFILE%\projects\tradememory-protocol\scripts\platform\start_services.bat"</Arguments>
+      <WorkingDirectory>%USERPROFILE%\projects\tradememory-protocol</WorkingDirectory>
     </Exec>
   </Actions>
 </Task>

@@ -1,6 +1,7 @@
 @echo off
 REM Start trade_adapter.py in background
-cd /d C:\Users\johns\projects\tradememory-protocol
+REM Repo root = two levels up from this script (scripts\platform\)
+cd /d "%~dp0..\.."
 
 REM Create logs directory
 if not exist logs mkdir logs

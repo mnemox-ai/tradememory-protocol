@@ -7,7 +7,8 @@ REM ============================================================
 
 setlocal
 
-set PROJECT_DIR=C:\Users\johns\projects\tradememory-protocol
+REM Repo root = two levels up from this script (scripts\platform\)
+for %%I in ("%~dp0..\..") do set "PROJECT_DIR=%%~fI"
 set VENV_DIR=%PROJECT_DIR%\.venv
 set LOG_DIR=%PROJECT_DIR%\logs
 

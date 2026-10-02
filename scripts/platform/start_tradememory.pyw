@@ -12,7 +12,9 @@ import schedule
 from pathlib import Path
 from datetime import datetime
 
-PROJECT = Path(r"C:\Users\johns\projects\tradememory-protocol")
+# Repo root: this file lives in <repo>/scripts/platform/. For the Startup folder,
+# add a shortcut to it there; a copy would resolve the wrong root.
+PROJECT = Path(__file__).resolve().parents[2]
 PYTHON = r"C:\Users\johns\AppData\Local\Python312\python.exe"
 LOGS = PROJECT / "logs"
 LOGS.mkdir(exist_ok=True)
@@ -39,7 +41,7 @@ def start_detached(cmd, log_name):
 
 def run_reflection(mode="daily"):
     """Run daily_reflection.py."""
-    args = [PYTHON, str(PROJECT / "daily_reflection.py")]
+    args = [PYTHON, str(PROJECT / "scripts" / "daily_reflection.py")]
     if mode == "weekly":
         args.append("--weekly")
     elif mode == "monthly":
@@ -86,7 +88,7 @@ def mt5_sync_watchdog():
         log("mt5_sync watchdog: starting mt5_sync.py...")
         log_file = open(LOGS / "mt5_sync_session.log", "a", encoding="utf-8")
         proc = subprocess.Popen(
-            [PYTHON, "-u", str(PROJECT / "mt5_sync.py")],
+            [PYTHON, "-u", str(PROJECT / "scripts" / "mt5_sync.py")],
             cwd=str(PROJECT),
             stdout=log_file,
             stderr=subprocess.STDOUT,

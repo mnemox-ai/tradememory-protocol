@@ -105,7 +105,7 @@ MT5 Account: your_login_here @ YourBroker-Server
 
 ```batch
 @echo off
-cd /d C:\OpenClawWork\tradememory-protocol
+cd /d C:\Users\<你的使用者名稱>\projects\tradememory-protocol
 python scripts/mt5_sync.py
 pause
 ```
@@ -117,10 +117,17 @@ pause
 3. 名稱：`MT5 TradeMemory Sync`
 4. 觸發程序：「當電腦啟動時」
 5. 動作：「啟動程式」
-   - 程式：`C:\OpenClawWork\tradememory-protocol\start_mt5_sync.bat`
+   - 程式：`C:\Users\<你的使用者名稱>\projects\tradememory-protocol\start_mt5_sync.bat`
 6. 完成
 
 **注意**：確保 Windows 登入後自動啟動 MT5 Terminal。
+
+### 方式 C：用 repo 附的啟動器（`scripts\platform\`）
+
+- `start_services.bat`：啟動 TradeMemory server，再開 `watchdog_mt5_sync.bat` 跑 `scripts\mt5_sync.py`（程式結束後 30 秒自動重啟）
+- `install_autostart.bat`：以系統管理員身分執行，把 `TradeMemory_AutoStart.xml` 註冊成登入 30 秒後自動執行 `start_services.bat`
+
+bat 檔會從自己所在的位置找到 repo 根目錄，不用改路徑；但 `start_services.bat` 和 `watchdog_mt5_sync.bat` 開頭的 `PYTHON=` 要改成你電腦上 `python.exe` 的路徑。`TradeMemory_AutoStart.xml` 裡的路徑寫成 `%USERPROFILE%\projects\tradememory-protocol`，repo 不在這個位置的話，註冊前先改 XML 的 `<Arguments>` 和 `<WorkingDirectory>` 兩行。
 
 ---
 

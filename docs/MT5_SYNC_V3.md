@@ -65,7 +65,7 @@ uvicorn scripts.mt5_sync_v3:app --port 9001 --host 0.0.0.0
 
 或用 bat 檔（含 watchdog 自動重啟）：
 ```bash
-scripts\start_mt5_sync_v3.bat
+scripts\platform\start_mt5_sync_v3.bat
 ```
 
 啟動後開瀏覽器 http://localhost:9001 看 dashboard。
@@ -77,8 +77,10 @@ scripts\start_mt5_sync_v3.bat
 ### 方法 1：匯入 XML
 
 ```powershell
-schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\MT5SyncV3_AutoStart.xml"
+schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\platform\MT5SyncV3_AutoStart.xml"
 ```
+
+XML 裡的路徑寫成 `%USERPROFILE%\projects\tradememory-protocol`，Task Scheduler 執行時會展開成你的使用者目錄。repo 不在這個位置的話，匯入前先改 XML 的 `<Arguments>` 和 `<WorkingDirectory>` 兩行。bat 檔會從自己所在的位置找到 repo 根目錄，不用改。
 
 ### 方法 2：手動建立
 
@@ -91,7 +93,7 @@ schtasks /create /tn "MT5SyncV3_AutoStart" /xml "C:\Users\<你的使用者名稱
    - At log on → Delay task for **30 seconds**（等 MT5 啟動）
 5. **Actions**：
    - Program: `cmd.exe`
-   - Arguments: `/c "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\start_mt5_sync_v3.bat"`
+   - Arguments: `/c "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\platform\start_mt5_sync_v3.bat"`
    - Start in: `C:\Users\<你的使用者名稱>\projects\tradememory-protocol`
 6. **Settings**：
    - Allow task to be run on demand: ✅

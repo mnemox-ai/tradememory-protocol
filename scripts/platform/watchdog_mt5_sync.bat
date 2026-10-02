@@ -9,7 +9,8 @@ REM ============================================================
 setlocal
 
 set PYTHON=C:\Users\johns\AppData\Local\Python312\python.exe
-set PROJECT_DIR=C:\Users\johns\projects\tradememory-protocol
+REM Repo root = two levels up from this script (scripts\platform\)
+for %%I in ("%~dp0..\..") do set "PROJECT_DIR=%%~fI"
 set SCRIPT=%PROJECT_DIR%\scripts\mt5_sync.py
 set LOG_DIR=%PROJECT_DIR%\logs
 set RESTART_DELAY=30
