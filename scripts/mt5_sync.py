@@ -25,8 +25,8 @@ from datetime import datetime, timezone, timedelta
 from typing import Optional, Dict, Any, List, Tuple
 from dotenv import load_dotenv
 
-# Add scripts/ to path so we can import trade_advisor
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+# Add scripts/research/ to path for trade_advisor (moved during 2026-03-19 repo reorg)
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "research"))
 from trade_advisor import advise_on_open, send_discord_alert
 
 # ---------------------------------------------------------------------------

@@ -15,10 +15,33 @@ permissions:
 jobs:
   publish-registry:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15  # the PyPI wait below can take up to 10
 
     steps:
       - uses: actions/checkout@v4
+
+      # publish.yml uploads to PyPI from the same release event, and the
+      # registry rejects server.json until PyPI serves that version. Runs
+      # before Login because registry tokens expire after 5 minutes.
+      - name: Wait for PyPI to serve the package version
+        env:
+          WAIT_SECONDS: 600
+          POLL_SECONDS: 15
+        run: |
+          pypi='.packages[] | select(.registryType == "pypi")'
+          name=$(jq -er "$pypi | .identifier" server.json)
+          version=$(jq -er "$pypi | .version" server.json)
+          url="https://pypi.org/pypi/$name/$version/json"
+          deadline=$((SECONDS + WAIT_SECONDS))
+          until status=$(curl -sL --max-time 10 -o /dev/null -w '%{http_code}' "$url"); [ "$status" = 200 ]; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::Gave up after ${WAIT_SECONDS}s: PyPI still answers $status for $url. Check the 'Publish to PyPI' run for this release, then re-run this workflow."
+              exit 1
+            fi
+            echo "PyPI answers $status for $name $version; checking again in ${POLL_SECONDS}s"
+            sleep "$POLL_SECONDS"
+          done
+          echo "PyPI serves $name $version"
 
       - name: Install mcp-publisher
         run: |
