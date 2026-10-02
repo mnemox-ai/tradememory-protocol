@@ -9,7 +9,8 @@ setlocal
 
 REM --- Configuration ---
 set PYTHON=C:\Users\johns\AppData\Local\Python312\python.exe
-set PROJECT_DIR=C:\Users\johns\projects\tradememory-protocol
+REM Repo root = two levels up from this script (scripts\platform\)
+for %%I in ("%~dp0..\..") do set "PROJECT_DIR=%%~fI"
 set LOG_DIR=%PROJECT_DIR%\logs
 
 REM --- Create log directory ---
@@ -29,7 +30,7 @@ timeout /t 5 /nobreak > nul
 
 REM --- Start mt5_sync.py via watchdog (auto-restart on crash) ---
 echo Starting mt5_sync.py (with watchdog auto-restart)...
-start /MIN "" "%PROJECT_DIR%\scripts\watchdog_mt5_sync.bat"
+start /MIN "" "%PROJECT_DIR%\scripts\platform\watchdog_mt5_sync.bat"
 
 echo [%date% %time%] All services started. >> "%LOG_DIR%\startup.log"
 echo.

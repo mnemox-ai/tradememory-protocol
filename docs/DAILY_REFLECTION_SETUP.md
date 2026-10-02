@@ -19,14 +19,14 @@
    - **觸發程序**：每天
    - **時間**：23:55
    - **動作**：啟動程式
-     - 程式：`C:\OpenClawWork\tradememory-protocol\start_daily_reflection.bat`
+     - 程式：`C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\platform\start_daily_reflection.bat`
    - **條件**：取消勾選「只有在電腦使用 AC 電源時才啟動工作」
 
 #### 方式 B：命令列設定
 
 ```powershell
 # 以管理員權限執行 PowerShell
-schtasks /create /tn "TradeMemory Daily Reflection" /tr "C:\OpenClawWork\tradememory-protocol\start_daily_reflection.bat" /sc daily /st 23:55 /ru SYSTEM
+schtasks /create /tn "TradeMemory Daily Reflection" /tr "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\platform\start_daily_reflection.bat" /sc daily /st 23:55 /ru SYSTEM
 ```
 
 ### 2. 測試執行

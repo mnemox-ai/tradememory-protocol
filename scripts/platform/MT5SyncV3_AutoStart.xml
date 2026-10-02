@@ -30,10 +30,11 @@
     <ExecutionTimeLimit>PT0S</ExecutionTimeLimit>
   </Settings>
   <Actions Context="Author">
+    <!-- Assumes the repo is cloned at %USERPROFILE%\projects\tradememory-protocol; if it is elsewhere, edit both paths below before importing. -->
     <Exec>
       <Command>cmd.exe</Command>
-      <Arguments>/c "C:\Users\johns\projects\tradememory-protocol\scripts\start_mt5_sync_v3.bat"</Arguments>
-      <WorkingDirectory>C:\Users\johns\projects\tradememory-protocol</WorkingDirectory>
+      <Arguments>/c "%USERPROFILE%\projects\tradememory-protocol\scripts\platform\start_mt5_sync_v3.bat"</Arguments>
+      <WorkingDirectory>%USERPROFILE%\projects\tradememory-protocol</WorkingDirectory>
     </Exec>
   </Actions>
 </Task>
