@@ -9,9 +9,13 @@ import shutil
 import sys
 import time
 import threading
-import schedule
 from pathlib import Path
 from datetime import datetime
+
+try:
+    import schedule
+except ImportError:  # only the reflection schedule needs it; server and sync still start
+    schedule = None
 
 # Repo root: this file lives in <repo>/scripts/platform/. For the Startup folder,
 # add a shortcut to it there; a copy would resolve the wrong root.
@@ -73,6 +77,11 @@ def run_reflection(mode="daily"):
 
 def reflection_scheduler():
     """Background thread: run daily reflection at 23:55, weekly on Sunday."""
+    if schedule is None:
+        # This file runs under whatever Python opened it (the .pyw association or the
+        # shortcut's target), which need not be PYTHON above.
+        log(f"Reflection schedule off: the schedule package is not installed for {sys.executable}")
+        return
     schedule.every().day.at("23:55").do(run_reflection, mode="daily")
     schedule.every().sunday.at("23:50").do(run_reflection, mode="weekly")
 
