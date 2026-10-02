@@ -126,8 +126,23 @@ pause
 
 - `start_services.bat`：啟動 TradeMemory server，再開 `watchdog_mt5_sync.bat` 跑 `scripts\mt5_sync.py`（程式結束後 30 秒自動重啟）
 - `install_autostart.bat`：以系統管理員身分執行，把 `TradeMemory_AutoStart.xml` 註冊成登入 30 秒後自動執行 `start_services.bat`
+- `start_tradememory.pyw`：不開視窗的版本，跑 server 和 `mt5_sync.py`，另外排好每日／每週的 `daily_reflection.py`。要開機自動跑，就在「啟動」資料夾放它的捷徑（不要放複本）
 
-bat 檔會從自己所在的位置找到 repo 根目錄，不用改路徑；但 `start_services.bat` 和 `watchdog_mt5_sync.bat` 開頭的 `PYTHON=` 要改成你電腦上 `python.exe` 的路徑。`TradeMemory_AutoStart.xml` 裡的路徑寫成 `%USERPROFILE%\projects\tradememory-protocol`，repo 不在這個位置的話，註冊前先改 XML 的 `<Arguments>` 和 `<WorkingDirectory>` 兩行。
+bat 檔會從自己所在的位置找到 repo 根目錄，不用改路徑。`TradeMemory_AutoStart.xml` 裡的路徑寫成 `%USERPROFILE%\projects\tradememory-protocol`，repo 不在這個位置的話，註冊前先改 XML 的 `<Arguments>` 和 `<WorkingDirectory>` 兩行。
+
+用哪個 Python 也不用改檔案，`start_services.bat`、`watchdog_mt5_sync.bat`、`start_tradememory.pyw` 都照同一個順序找：
+
+1. 有設環境變數 `PYTHON`，就用它（值是 `python.exe` 的完整路徑）
+2. 沒設的話，repo 根目錄有 `.venv\Scripts\python.exe` 就用它
+3. 都沒有，就用 PATH 上的 `python`
+
+實際用了哪一個，會寫在 `logs\startup.log` 和 `logs\watchdog.log`。沒設 `PYTHON` 的話，repo 裡只要有 `.venv` 就會用它，所以 `.venv` 要裝齊：
+
+```batch
+.venv\Scripts\python -m pip install -e . MetaTrader5
+```
+
+用 `start_tradememory.pyw` 的話，還要再裝 `schedule`。不想用 `.venv`，就把 `PYTHON` 設成要用的 `python.exe`，例如 `setx PYTHON "C:\Users\<你的使用者名稱>\AppData\Local\Programs\Python\Python313\python.exe"`（`setx` 會拿掉外層引號；在「環境變數」視窗手動填的話，值不要加引號）。`setx` 只影響之後新開的程式，已經開著的視窗要重開。
 
 ---
 
@@ -193,6 +208,8 @@ SYNC_INTERVAL=60
 ```bash
 pip install MetaTrader5
 ```
+
+用方式 C 的啟動器時，要裝進它選到的那個 Python（看 `logs\startup.log` 或 `logs\watchdog.log`），例如 `.venv\Scripts\python -m pip install MetaTrader5`。
 
 ### Q: `MT5 initialize() failed`
 

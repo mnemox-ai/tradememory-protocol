@@ -5,6 +5,7 @@ No console window (uses .pyw extension).
 """
 import subprocess
 import os
+import shutil
 import sys
 import time
 import threading
@@ -15,9 +16,23 @@ from datetime import datetime
 # Repo root: this file lives in <repo>/scripts/platform/. For the Startup folder,
 # add a shortcut to it there; a copy would resolve the wrong root.
 PROJECT = Path(__file__).resolve().parents[2]
-PYTHON = r"C:\Users\johns\AppData\Local\Python312\python.exe"
 LOGS = PROJECT / "logs"
 LOGS.mkdir(exist_ok=True)
+
+
+def find_python():
+    """PYTHON env var, else the repo's .venv, else python on PATH, like the .bat launchers."""
+    if os.environ.get("PYTHON"):
+        return os.environ["PYTHON"]
+    venv_python = PROJECT / ".venv" / "Scripts" / "python.exe"
+    if venv_python.exists():
+        return str(venv_python)
+    # Not sys.executable: under the .pyw association that is pythonw.exe. And look PATH up
+    # here, because a bare "python" in Popen is found next to pythonw.exe before PATH.
+    return shutil.which("python") or "python"
+
+
+PYTHON = find_python()
 
 
 def log(msg):
@@ -69,6 +84,8 @@ def reflection_scheduler():
 
 
 # --- Main ---
+
+log(f"Starting TradeMemory services with {PYTHON}")
 
 # Start tradememory FastAPI server
 server_pid = start_detached(
