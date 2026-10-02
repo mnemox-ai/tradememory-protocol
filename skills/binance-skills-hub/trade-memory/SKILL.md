@@ -1,24 +1,24 @@
 ---
 title: TradeMemory — Decision Audit Trail
 description: >-
-  Compliance-grade decision audit trail for AI trading agents. Records every
-  trading decision with full context (conditions, filters, indicators, risk state),
-  SHA-256 tamper detection, and structured export for MiFID II / EU AI Act readiness.
-  Works alongside Binance Spot, Futures, and Web3 skills — they execute trades,
+  Decision audit trail for AI trading agents. Records every trading decision
+  with full context (conditions, filters, indicators, risk state) in a SHA-256
+  hash chain, so a later edit is detectable, and exports it as JSON or JSONL.
+  Works alongside Binance Spot, Futures, and Web3 skills: they execute trades,
   TradeMemory records why.
 metadata:
-  version: 0.5.1
+  version: 0.5.6
   author: mnemox-ai
 license: MIT
 ---
 
 # TradeMemory — Decision Audit Trail for AI Trading Agents
 
-Every Binance skill executes trades. None of them record **why**.
+Binance skills execute trades. TradeMemory records **why**.
 
-TradeMemory is the compliance layer. When your AI agent opens a position using the Spot or Futures skill, TradeMemory captures the full decision context: what conditions triggered the signal, which filters passed or blocked, the market indicators at that moment, risk state, and execution details. Every record is SHA-256 hashed for tamper detection.
+TradeMemory keeps the decision record. When your AI agent opens a position using the Spot or Futures skill, TradeMemory captures the full decision context: what conditions triggered the signal, which filters passed or blocked, the market indicators at that moment, risk state, and execution details. Every record is SHA-256 hashed for tamper detection.
 
-**This matters because regulators now require it.** MiFID II Article 17 mandates algorithmic trading audit trails. The EU AI Act (August 2025) requires high-risk AI systems to maintain systematic logging of every action and decision path. ESMA's February 2026 supervisory briefing specifically targets AI-driven trading. Non-compliance fines reach up to 15M EUR or 3% of global turnover.
+**Why keep it.** So you, or anyone you report to, can see why each trade was taken and how it ended. Rules that require decision records (MiFID II Article 17) bind investment firms, not retail users; the EU AI Act's high-risk logging obligations were postponed to 2 December 2027, and ESMA's February 2026 briefing states that AI-based algorithmic trading is currently excluded from the high-risk scope. This is not a compliance claim.
 
 ## What TradeMemory Records
 
@@ -174,18 +174,19 @@ Recomputes SHA-256 from stored inputs and compares. If any field was tampered wi
 GET /audit/export?strategy=VolBreakout&start=2026-03-01&end=2026-03-31&format=jsonl
 ```
 
-Export all TDRs as JSON or JSONL for regulatory submission.
+Export all TDRs as JSON or JSONL for review.
 
 ## Security
 
-- **TradeMemory never touches API keys.** It does not execute trades, move funds, or access wallets.
+- **The memory server never asks for exchange or broker keys.** It does not execute trades, move funds, or access wallets. (The optional brake that sits in front of a broker is a separate install; see the project README.)
 - **Read and record only.** The agent calls TradeMemory after making a decision, passing the context. TradeMemory stores it.
-- **Local-first.** No external network calls by default; the only optional outbound call is RFC 3161 trusted timestamping, and only if you enable it. No data is sent to third parties.
-- **SHA-256 tamper detection.** Every record is hashed at creation time. Verify integrity at any point with `/audit/verify`.
-- **1,400+ tests passing.** Full test suite with CI.
-- **Scale:** 17 MCP tools, 35 REST endpoints, 5-layer memory architecture (episodic, semantic, procedural, affective, prospective).
+- **Local-first.** Records stay in a local SQLite file. Daily audit roots are timestamped by an RFC 3161 authority by default: a 32-byte hash, no trade data (`TRADEMEMORY_TSA=off` turns it off). The evolution tools read public Binance market data when an agent calls them. The README's Security section lists every outbound call.
+- **Tamper-evident, not tamper-proof.** Every record is hashed at creation and linked to the one before; changing a record breaks the chain. Verify it at any point with `/audit/verify`.
+- **Scale:** 20 MCP tools, a REST API, and five memory layers (episodic, semantic, procedural, affective, prospective).
 
-## Regulatory Alignment
+## Where the records map to regulation
+
+The table shows which TradeMemory features map to these texts if and when they apply to you. It is not a compliance claim.
 
 | Regulation | Requirement | TradeMemory Coverage |
 |------------|-------------|---------------------|
@@ -196,7 +197,7 @@ Export all TDRs as JSON or JSONL for regulatory submission.
 
 ## MCP Integration
 
-TradeMemory also runs as an MCP server with 17 tools:
+TradeMemory also runs as an MCP server with 20 tools:
 
 ```json
 {
@@ -209,10 +210,10 @@ TradeMemory also runs as an MCP server with 17 tools:
 }
 ```
 
-Key MCP tools: `store_trade`, `recall_trades`, `get_performance`, `daily_reflection`, `audit_decision_record`, `audit_verify`.
+Key MCP tools: `remember_trade`, `recall_memories` (with `order="losses_first"` before a trade), `get_strategy_performance`, `export_audit_trail`, `verify_audit_hash`, `verify_audit_chain`.
 
 ## Links
 
 - **PyPI**: [tradememory-protocol](https://pypi.org/project/tradememory-protocol/)
-- **GitHub**: [mnemox-ai/tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol) (1,234 tests, MIT license)
+- **GitHub**: [mnemox-ai/tradememory-protocol](https://github.com/mnemox-ai/tradememory-protocol) (MIT license)
 - **Author**: [mnemox-ai](https://github.com/mnemox-ai)

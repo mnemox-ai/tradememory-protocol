@@ -637,6 +637,10 @@ class BrakeMiddleware(Middleware):
             "reasoning": f"{tool} forwarded by the proxy after ALLOW",
             "market_context": {
                 "entry_price": entry_price,
+                # Kept so `tradememory sync alpaca` can express the outcome in R.
+                "protective_stop_price": (
+                    float(intent.protective_stop_price) if intent.protective_stop_price is not None else None
+                ),
                 "policy_hash": evaluation.policy_hash,
                 "intent_id": str(intent.intent_id),
                 "decision_event": event_id,
@@ -664,11 +668,14 @@ class BrakeMiddleware(Middleware):
         if self.recall is None:
             return []
         try:
+            # The order just went out: show the losing trades from similar
+            # conditions first, not the flattering ones.
             result = await self.recall(
                 symbol=intent.symbol,
                 market_context=f"{tool} {intent.side.value} {intent.symbol}",
                 strategy_name=None,
                 limit=3,
+                order="losses_first",
             )
         except Exception as exc:
             log.warning("recall failed for %s: %s", intent.symbol, exc)
@@ -678,5 +685,9 @@ class BrakeMiddleware(Middleware):
         for m in memories or []:
             if not isinstance(m, dict):
                 continue
-            out.append({k: _json_safe(m.get(k)) for k in ("timestamp", "direction", "pnl_r", "reflection") if k in m})
+            out.append({
+                k: _json_safe(m.get(k))
+                for k in ("memory_id", "direction", "pnl", "pnl_r", "lot_size", "reflection")
+                if k in m
+            })
         return out[:3]

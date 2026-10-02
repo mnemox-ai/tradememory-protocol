@@ -1,7 +1,7 @@
 {
   "name": "tradememory",
   "version": "0.5.0",
-  "description": "Persistent memory + autonomous strategy evolution for AI traders. 200+ trading MCP servers execute. None remember. TradeMemory does.",
+  "description": "Persistent trade memory for AI trading agents: record trades, recall the losing ones from similar conditions before the next order, and review behaviour over time.",
   "author": {
     "name": "Mnemox AI"
   }

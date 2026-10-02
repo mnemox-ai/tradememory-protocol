@@ -135,7 +135,7 @@ async def test_recall_use_hybrid_attaches_candidate_embeddings(seed_episodic):
     fake = _FakeBackend()
     captured_memories = []
 
-    def _capture(query_context, query_embedding, memories, affective_state, alpha, limit):
+    def _capture(query_context, query_embedding, memories, affective_state, alpha, limit, order="outcome"):
         captured_memories.extend(memories)
         return []
 

@@ -46,7 +46,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="TradeMemory Protocol",
     description="AI Agent Trading Memory & Adaptive Decision Layer",
-    version="0.5.5"
+    version="0.5.6"
 )
 
 # CORS middleware — allow dashboard dev server

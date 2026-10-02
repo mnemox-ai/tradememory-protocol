@@ -1,6 +1,6 @@
 [project]
 name = "tradememory-protocol"
-version = "0.5.5"
+version = "0.5.6"
 description = "Decision audit trail + persistent memory for AI trading agents. SHA-256 tamper detection, outcome-weighted recall, strategy evolution via MCP."
 authors = [{name = "Mnemox", email = "contact@mnemox.ai"}]
 license = {text = "MIT"}
@@ -31,9 +31,8 @@ dependencies = [
 [project.optional-dependencies]
 proxy = [
     # Brake in front of a broker MCP server. Needs Python >= 3.12 for mnemox-control.
-    # TODO before a PyPI release: publish mnemox-control to PyPI; PyPI rejects direct git references.
     "fastmcp>=3.2.0,<4",
-    "mnemox-control @ git+https://github.com/mnemox-ai/mnemox-control.git@f7d9953 ; python_version >= '3.12'",
+    "mnemox-control>=0.3.1,<0.4 ; python_version >= '3.12'",
 ]
 test = [
     "pytest>=9.0.3",

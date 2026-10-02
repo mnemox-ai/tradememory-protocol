@@ -196,5 +196,5 @@ TradeMemory Protocol is exchange-agnostic. While this skill documents the Binanc
 1. All timestamps are UTC (ISO 8601 format).
 2. `pnl_r` (R-multiple) is optional but significantly improves recall quality.
 3. The `context_regime` field enables regime-filtered recall — strongly recommended.
-4. TradeMemory stores data locally by default (SQLite). No data is sent to external servers unless you configure a hosted endpoint.
-5. All 17 MCP tools are free and open source under MIT license.
+4. TradeMemory stores data locally (SQLite). Daily audit roots are timestamped by an RFC 3161 authority by default: a 32-byte hash, no trade data (`TRADEMEMORY_TSA=off` turns it off). The README's Security section lists the other outbound calls.
+5. All 20 MCP tools are free and open source under the MIT license.

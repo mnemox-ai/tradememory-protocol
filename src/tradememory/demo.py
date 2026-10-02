@@ -409,7 +409,7 @@ def main(fast=False):
     # ──────────────────────────────────────────────────
     print_header("Phase 6: Audit — Trading Decision Record (TDR)", fast=fast)
     slow_print("  Every trade produces a tamper-evident audit record.", fast=fast)
-    slow_print("  This is the compliance layer for AI trading agents.", fast=fast)
+    slow_print("  Change a record and the hash chain no longer verifies.", fast=fast)
     print()
 
     try:

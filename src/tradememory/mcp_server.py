@@ -7,6 +7,7 @@ Runs alongside the existing FastAPI server (separate entry point).
 
 import json
 import logging
+import math
 import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
@@ -14,17 +15,13 @@ from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
 
 from .db import Database
-from .embedding import embed_trade_context, get_embedding_backend
+from .embedding import get_embedding_backend
 from .hybrid_recall import hybrid_recall
 from .owm import ContextVector, outcome_weighted_recall
 from .owm.anti_resonance import compute_recall_consonance
 from .owm.drift import compute_context_drift, compute_drift_summary
-from .owm_helpers import (
-    ensure_tz,
-    update_affective_from_trade,
-    update_procedural_from_trade,
-    update_semantic_from_trade,
-)
+from .owm_helpers import ensure_tz
+from .trade_store import hold_seconds_between, store_trade_memory
 
 logger = logging.getLogger(__name__)
 
@@ -36,18 +33,20 @@ mcp = FastMCP(
     website_url="https://github.com/mnemox-ai/tradememory-protocol",
     instructions=(
         "Decision audit trail and persistent memory for AI trading agents.\n\n"
-        "Before proposing a trade: call `recall_memories` for the symbol and "
-        "current conditions, and `check_trade_legitimacy` (or `compute_dqs`) "
-        "to see whether this strategy has earned full size right now. Weigh "
-        "what comes back — recall is ranked by how those past trades actually "
-        "turned out, so losses in similar conditions surface first.\n\n"
-        "After a trade: call `remember_trade` with the full reasoning, then "
-        "record the outcome when the position closes. Every decision is "
+        "Before proposing a trade: call `recall_memories` with "
+        "`order=\"losses_first\"` for the symbol and current conditions, so "
+        "the losing trades taken in similar conditions come back first, and "
+        "`check_trade_legitimacy` (or `compute_dqs`) to see whether this "
+        "strategy has earned full size right now. The default order ranks "
+        "better outcomes higher (by R multiple, where one was recorded) and "
+        "keeps at least 20% losses in the list.\n\n"
+        "After a trade: call `remember_trade` with the full reasoning and the "
+        "position size, then record the outcome when the position closes. Every decision is "
         "SHA-256 hash-chained; `verify_audit_chain` and `get_daily_root` prove "
         "the record has not been altered, and `export_audit_trail` produces a "
         "reviewable log.\n\n"
-        "This server never places orders, moves funds, or touches API keys. "
-        "It records and recalls only."
+        "This server never places orders, moves funds, or asks for broker "
+        "keys. It records and recalls only."
     ),
 )
 
@@ -271,6 +270,7 @@ async def remember_trade(
     timestamp: Optional[str] = None,
     entry_timestamp: Optional[str] = None,
     exit_timestamp: Optional[str] = None,
+    lot_size: Optional[float] = None,
 ) -> dict:
     """Store a trade into OWM multi-layer memory with automatic updates.
 
@@ -297,6 +297,8 @@ async def remember_trade(
         timestamp: ISO format timestamp. Defaults to now (UTC).
         entry_timestamp: ISO format entry time. Used to compute hold duration.
         exit_timestamp: ISO format exit time. Used to compute hold duration.
+        lot_size: Position size (lots, shares or contracts). Without it,
+            patterns such as sizing up after a losing streak cannot be seen.
     """
     db = _get_db()
 
@@ -306,126 +308,31 @@ async def remember_trade(
     direction_lower = direction.lower()
     if direction_lower not in ("long", "short"):
         return {"error": f"direction must be 'long' or 'short', got '{direction}'"}
+    if lot_size is not None and not (math.isfinite(lot_size) and lot_size >= 0):
+        return {"error": f"lot_size must be a non-negative finite number, got {lot_size}"}
 
     symbol_upper = symbol.upper()
 
-    # Compute hold duration if timestamps provided
-    hold_seconds = None
-    if entry_timestamp and exit_timestamp:
-        try:
-            entry_dt = datetime.fromisoformat(entry_timestamp)
-            exit_dt = datetime.fromisoformat(exit_timestamp)
-            hold_seconds = int((exit_dt - entry_dt).total_seconds())
-            if hold_seconds < 0:
-                hold_seconds = None
-        except (ValueError, TypeError):
-            hold_seconds = None
-
-    # Build context dict for episodic memory
-    context_dict = {
-        "symbol": symbol_upper,
-        "price": entry_price,
-        "regime": context_regime,
-        "atr_d1": context_atr_d1,
-        "description": market_context,
-    }
-
-    # Compute DQS (best-effort — don't block trade storage on failure)
-    try:
-        from .owm.dqs import DQSEngine
-        dqs_engine = DQSEngine(db)
-        dqs_result = dqs_engine.compute(
-            symbol=symbol_upper,
-            strategy_name=strategy_name,
-            direction=direction_lower,
-            market_context=market_context,
-            context_regime=context_regime,
-            context_atr_d1=context_atr_d1,
-        )
-        context_dict["dqs_score"] = dqs_result.score
-        context_dict["dqs_tier"] = dqs_result.tier
-    except Exception as e:
-        logger.warning(f"DQS computation skipped for trade {tid}: {e}")
-        context_dict["dqs_score"] = None
-        context_dict["dqs_tier"] = None
-
-    # 1) Insert into episodic_memory
-    episodic_data = {
-        "id": tid,
-        "timestamp": ts,
-        "context_json": context_dict,
-        "context_regime": context_regime,
-        "context_volatility_regime": None,
-        "context_session": None,
-        "context_atr_d1": context_atr_d1,
-        "context_atr_h1": None,
-        "strategy": strategy_name,
-        "direction": direction_lower,
-        "entry_price": entry_price,
-        "lot_size": 0.0,
-        "exit_price": exit_price,
-        "pnl": pnl,
-        "pnl_r": pnl_r,
-        "hold_duration_seconds": hold_seconds,
-        "max_adverse_excursion": max_adverse_excursion,
-        "reflection": reflection,
-        "confidence": confidence,
-        "tags": [],
-        "retrieval_strength": 1.0,
-        "retrieval_count": 0,
-        "last_retrieved": None,
-    }
-    db.insert_episodic(episodic_data)
-
-    # 2) Update semantic (Bayesian), procedural (running avg), affective (EWMA)
-    update_semantic_from_trade(db, symbol_upper, strategy_name, pnl, pnl_r, context_regime, tid)
-    update_procedural_from_trade(
-        db, symbol_upper, strategy_name, pnl,
-        hold_duration_seconds=episodic_data.get("hold_duration_seconds"),
+    store_trade_memory(
+        db,
+        trade_id=tid,
+        timestamp=ts,
+        symbol=symbol_upper,
+        direction=direction_lower,
+        entry_price=entry_price,
+        exit_price=exit_price,
+        pnl=pnl,
+        strategy_name=strategy_name,
+        market_context=market_context,
         pnl_r=pnl_r,
+        context_regime=context_regime,
+        context_atr_d1=context_atr_d1,
+        confidence=confidence,
+        reflection=reflection,
+        max_adverse_excursion=max_adverse_excursion,
+        hold_seconds=hold_seconds_between(entry_timestamp, exit_timestamp),
+        lot_size=lot_size,
     )
-    update_affective_from_trade(db, pnl, confidence, strategy_name=strategy_name, symbol=symbol_upper)
-
-    # 3) Backward compatibility: also store in trade_records
-    trade_data = {
-        "id": tid,
-        "timestamp": ts,
-        "symbol": symbol_upper,
-        "direction": direction_lower,
-        "lot_size": 0.0,
-        "strategy": strategy_name,
-        "confidence": confidence,
-        "reasoning": market_context,
-        "market_context": {"description": market_context, "entry_price": entry_price},
-        "references": [],
-        "exit_timestamp": None,
-        "exit_price": exit_price,
-        "pnl": pnl,
-        "pnl_r": pnl_r,
-        "hold_duration": None,
-        "exit_reasoning": reflection,
-        "slippage": None,
-        "execution_quality": None,
-        "lessons": reflection,
-        "tags": [],
-        "grade": None,
-    }
-    db.insert_trade(trade_data)
-
-    # 4) Auto-generate embedding for hybrid recall (best-effort)
-    try:
-        embed_input = {
-            "strategy": strategy_name,
-            "direction": direction_lower,
-            "context_regime": context_regime,
-            "reflection": reflection,
-        }
-        embedding = embed_trade_context(embed_input)
-        if embedding is not None:
-            db.update_episodic_embedding(tid, embedding)
-            logger.info(f"Embedding stored for trade {tid} (dim={len(embedding)})")
-    except Exception as e:
-        logger.warning(f"Embedding generation skipped for trade {tid}: {e}")
 
     return {
         "memory_id": tid,
@@ -454,12 +361,17 @@ async def recall_memories(
     limit: int = 10,
     use_hybrid: bool = True,
     hybrid_alpha: float = 0.3,
+    order: str = "outcome",
 ) -> dict:
     """Recall memories using OWM outcome-weighted scoring.
 
     Queries episodic and semantic memories, scores them by outcome quality,
     context similarity, recency, confidence, and affective modulation.
     Returns ranked memories with score breakdown.
+
+    Use order="losses_first" right before placing a trade: losing trades
+    taken in similar conditions rank first, and the current mood (a losing
+    streak) no longer pushes them down.
 
     Args:
         symbol: Trading instrument (e.g. "XAUUSD")
@@ -474,7 +386,15 @@ async def recall_memories(
             when sentence-transformers is not installed.
         hybrid_alpha: Vector vs OWM blend weight [0..1] when hybrid is active.
             0.0 = pure OWM, 1.0 = pure vector. Default 0.3 (OWM-dominant).
+        order: "outcome" (default): better outcomes rank higher (by R
+            multiple, where one was recorded), and at least 20% of the
+            results are losses. "losses_first": every losing trade comes
+            before anything else, the bigger losses in similar conditions
+            first; the symbol's recent losing trades are searched as well as
+            its recent trades. For a pre-trade check.
     """
+    if order not in ("outcome", "losses_first"):
+        return {"error": f"order must be 'outcome' or 'losses_first', got '{order}'"}
     db = _get_db()
     symbol_upper = symbol.upper()
 
@@ -502,7 +422,16 @@ async def recall_memories(
 
     if "episodic" in memory_types:
         # Don't filter by regime at DB level — let OWM similarity scoring rank by context
-        episodic = db.query_episodic(strategy=strategy_name, limit=limit * 5)
+        episodic = db.query_episodic(strategy=strategy_name, symbol=symbol_upper, limit=limit * 5)
+        if order == "losses_first":
+            # The most recent trades alone can miss an older loss.
+            seen = {ep["id"] for ep in episodic}
+            episodic += [
+                ep for ep in db.query_episodic(
+                    strategy=strategy_name, symbol=symbol_upper, limit=limit * 5, losses_only=True
+                )
+                if ep["id"] not in seen
+            ]
         for ep in episodic:
             ctx = ep.get("context_json") or {}
             ep_symbol = ctx.get("symbol")
@@ -516,6 +445,7 @@ async def recall_memories(
                 "context": ctx,
                 "pnl_r": ep.get("pnl_r"),
                 "pnl": ep.get("pnl"),
+                "lot_size": ep.get("lot_size"),
                 "strategy": ep.get("strategy"),
                 "direction": ep.get("direction"),
                 "reflection": ep.get("reflection"),
@@ -615,6 +545,7 @@ async def recall_memories(
         affective_state=affective_state,
         alpha=hybrid_alpha,
         limit=limit,
+        order=order,
     )
 
     results = []
@@ -647,6 +578,7 @@ async def recall_memories(
             entry["direction"] = sm.data.get("direction")
             entry["pnl"] = sm.data.get("pnl")
             entry["pnl_r"] = sm.data.get("pnl_r")
+            entry["lot_size"] = sm.data.get("lot_size")
             entry["reflection"] = sm.data.get("reflection")
         elif sm.memory_type == "semantic":
             entry["proposition"] = sm.data.get("proposition")
@@ -687,6 +619,7 @@ async def recall_memories(
         "query_symbol": symbol_upper,
         "query_context": market_context,
         "query_regime": context_regime,
+        "order": order,
         "memory_types_queried": memory_types,
         "matches_found": len(results),
         "affective_state": affective_state,

@@ -1,19 +1,19 @@
 # TradeMemory Protocol
 
-> Platform-agnostic AI trading memory system with Outcome-Weighted Memory (OWM) architecture via MCP. Accepts standardized trade data from any source (MT5, Binance, Alpaca) and provides structured memory with LLM-powered reflection.
+> Open-source, local-first memory and brake for AI trading agents, over MCP. It syncs fills (Hyperliquid by address, Alpaca read-only), finds where a trader's own history loses money, returns losing trades from similar conditions before the next order, and can refuse orders that break the trader's rules before they reach the broker (Alpaca MCP proxy, preview).
 
-TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. It does NOT connect to trading platforms directly — it accepts standardized trade data and organizes it into three layers:
+TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. The memory server never places orders; `tradememory sync` reads fills from a venue, and the optional proxy sits in front of a broker's MCP server. Memory is organized in three layers:
 
 - L1 (Raw Trades): Every trade recorded automatically with full metadata
 - L2 (Patterns): AI discovers what works and what doesn't across trade history
 - L3 (Strategy): Memory becomes judgment — adaptive risk and strategy refinement
 
 Key capabilities:
-- 4 MCP tools: store_trade, recall_trades, get_performance, run_reflection
-- LLM-powered reflection engine (Claude API) for trade analysis
-- Adaptive risk management based on historical memory
-- Platform-agnostic: works with MT5, Binance, Alpaca, or any trading platform
-- MT5 auto-sync via mt5_sync.py (polls every 60 seconds)
+- 20 MCP tools, including remember_trade, recall_memories (order="losses_first" before a trade), get_behavioral_analysis, check_trade_legitimacy, and the audit-chain tools
+- tradememory sync hyperliquid / alpaca: fills to closed trades to memory, plus a descriptive loss report
+- tradememory proxy (preview): a policy brake in front of Alpaca's MCP server
+- MT5 and Binance spot sync scripts in scripts/
+- SHA-256 hash-chained, tamper-evident decision records with daily Merkle roots
 
 ## Install
 
@@ -38,16 +38,17 @@ pip install tradememory-protocol
 
 - [README](https://github.com/mnemox-ai/tradememory-protocol#readme): Full documentation with architecture diagrams.
 - [PyPI](https://pypi.org/project/tradememory-protocol/): Install via `pip install tradememory-protocol`.
-- [Quick Start](https://github.com/mnemox-ai/tradememory-protocol#quick-start): Multiple installation methods (Claude Desktop, Claude Code, source, Docker).
+- [Connect your agent](https://github.com/mnemox-ai/tradememory-protocol#connect-your-agent): Claude Desktop, Claude Code, source, Docker.
 
 ## MCP Tools
 
-- store_trade: Record a trade with standardized schema (symbol, direction, lots, entry/exit price, PnL)
-- recall_trades: Query trade history with filters (symbol, date range, strategy)
-- get_performance: Calculate performance metrics (win rate, profit factor, drawdown)
-- run_reflection: Trigger LLM-powered analysis of recent trades
+- Memory: remember_trade, recall_memories, get_strategy_performance, get_trade_reflection, get_behavioral_analysis, get_agent_state, create_trading_plan, check_active_plans
+- Audit: export_audit_trail, verify_audit_hash, verify_audit_chain, get_daily_root
+- Checks: validate_strategy, check_trade_legitimacy, compute_dqs
+- Evolution (research): evolution_fetch_market_data, evolution_discover_patterns, evolution_run_backtest, evolution_evolve_strategy, evolution_get_log
 
 ## Optional
 
-- [MT5 Setup Guide](https://github.com/mnemox-ai/tradememory-protocol#connect-to-mt5): How to connect MetaTrader 5 for automatic trade syncing.
-- [Dashboard](https://github.com/mnemox-ai/tradememory-protocol#dashboard): Streamlit-based monitoring dashboard.
+- [Getting Started](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/GETTING_STARTED.md): Trader and developer walkthroughs.
+- [MT5 Setup](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/MT5_SYNC_SETUP.md): Syncing MetaTrader 5 trades.
+- [Alpaca brake walkthrough](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/recipes/alpaca-brake.md): The proxy in front of Alpaca's MCP server, with real outputs.

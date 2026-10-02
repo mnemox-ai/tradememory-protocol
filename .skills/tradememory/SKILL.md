@@ -1,7 +1,7 @@
 ---
 name: tradememory
 slug: tradememory
-version: 0.5.5
+version: 0.5.6
 description: >-
   Memory and a brake for AI trading agents. 20 MCP tools: outcome-weighted
   recall, behavioral drift alerts, tamper-evident audit chain. Optional proxy
@@ -44,8 +44,8 @@ MIT licensed, 1,500+ tests, CI on Python 3.10 to 3.12.
 
 ```bash
 pip install tradememory-protocol
-# brake preview (Python 3.12+), until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"
+# brake preview (Python 3.12+):
+pip install "tradememory-protocol[proxy]"
 ```
 
 Verify: `tradememory doctor`.

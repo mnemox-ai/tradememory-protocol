@@ -73,7 +73,7 @@ One call. Five memory layers update automatically:
 
 ### 3. Your Pre-Flight Checklist
 
-Based on how real users run TradeMemory in production:
+A checklist one independent user runs before every trade (see [Use Cases](USE_CASES.md)):
 
 ```
 Before every trade:
