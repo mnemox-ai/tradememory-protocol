@@ -965,11 +965,19 @@ class Database:
         regime: Optional[str] = None,
         direction: Optional[str] = None,
         limit: int = 100,
+        symbol: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
-        """Query episodic memories with filters."""
+        """Query episodic memories with filters.
+
+        ``symbol`` filters in SQL on the symbol stored in context_json, so the
+        limit applies to that symbol's memories and not to the whole table.
+        """
         with self.get_connection() as conn:
             query = "SELECT * FROM episodic_memory WHERE 1=1"
             params: list[Any] = []
+            if symbol:
+                query += " AND json_extract(context_json, '$.symbol') = ?"
+                params.append(symbol)
             if strategy:
                 query += " AND strategy = ?"
                 params.append(strategy)

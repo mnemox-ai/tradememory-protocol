@@ -58,6 +58,41 @@ def compute_outcome_quality(
     return sigmoid(k * pnl_r / sigma_r)
 
 
+def compute_loss_salience(
+    memory: Dict[str, Any],
+    pnl_scale: Optional[float] = None,
+    sigma_r: float = 1.5,
+    k: float = 2.0,
+) -> float:
+    """L(m) — how strongly a memory counts as a loss, in (0, 1).
+
+    The mirror image of Q: L = sigmoid(-k * pnl_r / sigma_r), so a -2R trade
+    scores high and a +2R trade scores low. A memory without pnl_r but with
+    pnl (an imported fill history has no stop, so no R) is measured in units
+    of ``pnl_scale``, the typical absolute P&L of the memories being ranked.
+    Memories with no outcome at all sit at the neutral 0.5.
+    """
+    pnl_r = memory.get("pnl_r")
+    if pnl_r is not None:
+        return sigmoid(-k * pnl_r / sigma_r)
+    pnl = memory.get("pnl")
+    if pnl is not None and pnl_scale:
+        return sigmoid(-k * (pnl / pnl_scale) / sigma_r)
+    return 0.5
+
+
+def typical_abs_pnl(memories: List[Dict[str, Any]]) -> Optional[float]:
+    """Median absolute pnl over memories that have one; None when there is none."""
+    values = sorted(abs(m["pnl"]) for m in memories if m.get("pnl"))
+    if not values:
+        return None
+    mid = len(values) // 2
+    return values[mid] if len(values) % 2 else (values[mid - 1] + values[mid]) / 2
+
+
+RECALL_ORDERS = ("outcome", "losses_first")
+
+
 def compute_recency(
     timestamp_iso: str,
     tau: float = 30.0,
@@ -118,6 +153,7 @@ def outcome_weighted_recall(
     memories: List[Dict[str, Any]],
     affective_state: Optional[Dict[str, Any]] = None,
     limit: int = 10,
+    order: str = "outcome",
 ) -> List[ScoredMemory]:
     """Core OWM recall — score, rank, and return top memories.
 
@@ -132,13 +168,25 @@ def outcome_weighted_recall(
     affective_state dict may contain:
       - drawdown_state: float [0, 1]
       - consecutive_losses: int
+
+    order:
+      - "outcome" (default): better outcomes rank higher (Q), modulated by
+        the current affective state.
+      - "losses_first": for a pre-trade check. Losing trades in similar
+        conditions rank highest (L instead of Q), and the affective
+        modulation is switched off, because it would otherwise hide losses
+        during a losing streak — exactly when the check matters most.
     """
+    if order not in RECALL_ORDERS:
+        raise ValueError(f"order must be one of {RECALL_ORDERS}, got {order!r}")
     if not memories:
         return []
 
     aff = affective_state or {}
     drawdown = aff.get("drawdown_state", 0.0)
     consec = aff.get("consecutive_losses", 0)
+    losses_first = order == "losses_first"
+    pnl_scale = typical_abs_pnl(memories) if losses_first else None
 
     candidates: List[ScoredMemory] = []
 
@@ -151,7 +199,6 @@ def outcome_weighted_recall(
         else:
             tau, d_exp = 30.0, 0.5
 
-        q = compute_outcome_quality(m)
         ctx = m.get("context") or {}
         mem_ctx = ContextVector(**{
             k: v for k, v in ctx.items()
@@ -160,15 +207,23 @@ def outcome_weighted_recall(
         sim = context_similarity(mem_ctx, query_context)
         rec = compute_recency(m.get("timestamp", datetime.now(timezone.utc).isoformat()), tau=tau, d=d_exp)
         conf = compute_confidence_factor(m.get("confidence", 0.5))
-        aff_mod = compute_affective_modulation(m, drawdown_state=drawdown, consecutive_losses=consec)
 
-        score = q * sim * rec * conf * aff_mod
+        if losses_first:
+            weight = compute_loss_salience(m, pnl_scale=pnl_scale)
+            aff_mod = 1.0
+            weight_name = "Loss"
+        else:
+            weight = compute_outcome_quality(m)
+            aff_mod = compute_affective_modulation(m, drawdown_state=drawdown, consecutive_losses=consec)
+            weight_name = "Q"
+
+        score = weight * sim * rec * conf * aff_mod
 
         candidates.append(ScoredMemory(
             memory_id=m.get("id", ""),
             memory_type=mem_type,
             score=score,
-            components={"Q": q, "Sim": sim, "Rec": rec, "Conf": conf, "Aff": aff_mod},
+            components={weight_name: weight, "Sim": sim, "Rec": rec, "Conf": conf, "Aff": aff_mod},
             data=m,
         ))
 

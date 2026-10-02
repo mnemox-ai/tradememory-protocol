@@ -48,6 +48,11 @@ from .proxy.cli import proxy as _proxy_group  # noqa: E402
 
 cli.add_command(_proxy_group, name="proxy")
 
+# Fill history from a venue into memory: `tradememory sync hyperliquid|alpaca`.
+from .sync.cli import sync as _sync_group  # noqa: E402
+
+cli.add_command(_sync_group, name="sync")
+
 
 if __name__ == "__main__":
     cli()

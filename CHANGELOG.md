@@ -8,6 +8,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- **`tradememory sync hyperliquid --address 0x...`** rebuilds an address's
+  perpetual trades from Hyperliquid's public fill history (no key) and stores
+  each closed trade in memory once; re-running stores only new trades. It
+  prints where the history loses money: size right after losing streaks,
+  how long losers are held versus winners, the worst symbols and entry
+  hours, the biggest single losses. Descriptive statistics only. Hyperliquid
+  keeps only an address's 10,000 most recent fills retrievable.
+- **`tradememory sync alpaca`** reads the account's fills over the trading
+  REST API (read-only calls) and gives the broker proxy's trades their
+  outcome: exit, P&L, and P&L in R when the entry carried a protective stop.
+  Symbols whose rebuilt position disagrees with the broker's current
+  position are left out instead of being stored with a guessed P&L.
+- `recall_memories(order="losses_first")`: losing trades taken in similar
+  conditions rank first, for the check before a trade; the affective
+  modulation that hides losses during a losing streak is off in this order.
+  The proxy now uses it for the `prior_outcomes` it returns after an ALLOW.
+- `remember_trade(lot_size=...)` stores the position size. It was stored as
+  0 before, so sizing up after losses could not be seen.
+
+### Fixed
+- The server instructions said recall surfaces losses in similar conditions
+  first; the default order ranks better outcomes higher and keeps at least
+  20% losses. The instructions now describe the default order as it is and
+  point to `order="losses_first"` for the pre-trade check.
+- `recall_memories` filtered by symbol after reading the 50 most recent
+  memories of every symbol, so a large history in other symbols pushed this
+  symbol's trades out of reach. The symbol is now filtered in SQL.
+- Trades opened through the proxy were written to `trade_records` only and
+  never reached episodic memory, so recall could not see them. They enter
+  memory when `tradememory sync alpaca` closes them.
+
 - **Broker proxy (preview), `proxy` extra.** `tradememory proxy run` puts the
   memory layer between an MCP agent and Alpaca's official MCP server. Read
   tools pass through unchanged; `place_stock_order` / `place_crypto_order`

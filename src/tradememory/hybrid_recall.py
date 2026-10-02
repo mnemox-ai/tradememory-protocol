@@ -109,6 +109,7 @@ def hybrid_recall(
     affective_state: Optional[Dict[str, Any]] = None,
     alpha: float = 0.3,
     limit: int = 10,
+    order: str = "outcome",
 ) -> List[ScoredMemory]:
     """Hybrid recall combining vector similarity and OWM scoring.
 
@@ -121,9 +122,11 @@ def hybrid_recall(
         affective_state: Optional dict with 'drawdown_state', 'consecutive_losses'.
         alpha: Blend weight. 0.0 = pure OWM, 1.0 = pure vector.
         limit: Max results to return.
+        order: "outcome" (default) or "losses_first"; see outcome_weighted_recall.
 
     Returns:
-        Ranked list of ScoredMemory, with negative balance enforced.
+        Ranked list of ScoredMemory. In "outcome" order at least 20% of the
+        results are losses; "losses_first" already puts them on top.
     """
     if not memories:
         return []
@@ -131,17 +134,17 @@ def hybrid_recall(
     use_vector = (
         query_embedding is not None and _memories_have_embeddings(memories)
     )
+    balance = (lambda top, pool: top) if order == "losses_first" else ensure_negative_balance
 
     # Step 1: OWM scoring (always runs)
     owm_results = outcome_weighted_recall(
-        query_context, memories, affective_state=affective_state, limit=len(memories)
+        query_context, memories, affective_state=affective_state, limit=len(memories), order=order
     )
-    owm_by_id = {r.memory_id: r for r in owm_results}
 
     if not use_vector:
         # Pure OWM fallback
         top = owm_results[:limit]
-        return ensure_negative_balance(top, owm_results)
+        return balance(top, owm_results)
 
     # Step 2: Vector similarity scoring
     all_candidates: List[ScoredMemory] = []
@@ -173,4 +176,4 @@ def hybrid_recall(
 
     all_candidates.sort(key=lambda x: x.score, reverse=True)
     top = all_candidates[:limit]
-    return ensure_negative_balance(top, all_candidates)
+    return balance(top, all_candidates)
