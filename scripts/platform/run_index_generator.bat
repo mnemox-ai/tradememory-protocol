@@ -6,5 +6,7 @@ REM Python: PYTHON env var if set, else .venv\Scripts\python.exe in the repo, el
 if not defined PYTHON if exist "%PROJECT_DIR%\.venv\Scripts\python.exe" set "PYTHON=%PROJECT_DIR%\.venv\Scripts\python.exe"
 if not defined PYTHON set "PYTHON=python"
 cd /d "%PROJECT_DIR%"
+if not exist logs mkdir logs
+echo [%date% %time%] generate_index.py with "%PYTHON%" >> logs\index_generator.log
 echo Generating index with "%PYTHON%"
 "%PYTHON%" scripts\generate_index.py

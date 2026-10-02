@@ -136,11 +136,13 @@ bat 檔會從自己所在的位置找到 repo 根目錄，不用改路徑。`Tra
 2. 沒設的話，repo 根目錄有 `.venv\Scripts\python.exe` 就用它
 3. 都沒有，就用 PATH 上的 `python`
 
-實際用了哪一個，會寫在各自的 log（`logs\startup.log`、`logs\watchdog.log`、`logs\mt5_sync_v3_start.log`、`logs\reflection.log`、`logs\trade_adapter.log`）。沒設 `PYTHON` 的話，repo 裡只要有 `.venv` 就會用它，所以 `.venv` 要裝齊：
+實際用了哪一個，會寫在各自的 log（`logs\startup.log`、`logs\watchdog.log`、`logs\mt5_sync_v3_start.log`、`logs\reflection.log`、`logs\trade_adapter.log`、`logs\index_generator.log`）。沒設 `PYTHON` 的話，repo 裡只要有 `.venv` 就會用它，所以 `.venv` 要裝齊：
 
 ```batch
-.venv\Scripts\python -m pip install -e . MetaTrader5
+.venv\Scripts\python -m pip install -e . MetaTrader5 schedule pytz
 ```
+
+`schedule` 是 `start_tradememory.pyw` 的 reflection 排程要用的，`pytz` 是 `start_trade_adapter.bat` 跑的 `trade_adapter.py` 要用的，只用其他啟動器的話可以不裝。
 
 `start_tradememory.pyw` 自己排每日／每週的 reflection，要用到 `schedule` 套件，而且要裝在執行 .pyw 的那個 Python 裡。從「啟動」資料夾的捷徑開啟時，執行它的是副檔名關聯的 `pythonw.exe`，不一定是上面選到的那個。最簡單的做法是把捷徑目標設成 `<repo>\.venv\Scripts\pythonw.exe <repo>\scripts\platform\start_tradememory.pyw`，再把 `schedule` 裝進 `.venv`。沒裝的話，server 和 `mt5_sync.py` 照常啟動，只有 reflection 排程不跑，原因會寫在 `logs\startup.log`。不想用 `.venv`，就把 `PYTHON` 設成要用的 `python.exe`，例如 `setx PYTHON "C:\Users\<你的使用者名稱>\AppData\Local\Programs\Python\Python313\python.exe"`（`setx` 會拿掉外層引號；在「環境變數」視窗手動填的話，值不要加引號）。`setx` 只影響之後新開的程式，已經開著的視窗要重開。
 
@@ -209,7 +211,7 @@ SYNC_INTERVAL=60
 pip install MetaTrader5
 ```
 
-用方式 C 的啟動器時，要裝進它選到的那個 Python（看 `logs\startup.log` 或 `logs\watchdog.log`），例如 `.venv\Scripts\python -m pip install MetaTrader5`。
+用方式 C 的啟動器時，要裝進它選到的那個 Python（看那支啟動器自己的 log，清單在方式 C），例如 `.venv\Scripts\python -m pip install MetaTrader5`。
 
 ### Q: `MT5 initialize() failed`
 
