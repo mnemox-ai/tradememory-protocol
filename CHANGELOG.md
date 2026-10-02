@@ -5,7 +5,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ---
 
-## [Unreleased]
+## [0.5.6] - 2026-10-02
 
 ### Added
 - **`tradememory sync hyperliquid --address 0x...`** rebuilds an address's
@@ -14,43 +14,23 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   prints where the history loses money: size right after losing streaks,
   how long losers are held versus winners, the worst symbols and entry
   hours, the biggest single losses. Descriptive statistics only. Hyperliquid
-  keeps only an address's 10,000 most recent fills retrievable.
+  serves only an address's recent fills. Fees charged
+  in a token other than USDC are left out and the trades are marked; the
+  summary says when the fetch had to stop early.
 - **`tradememory sync alpaca`** reads the account's fills over the trading
   REST API (read-only calls) and gives the broker proxy's trades their
   outcome: exit, P&L, and P&L in R when the entry carried a protective stop.
   Symbols whose rebuilt position disagrees with the broker's current
-  position are left out instead of being stored with a guessed P&L.
-- `recall_memories(order="losses_first")`: losing trades taken in similar
-  conditions rank first, for the check before a trade; the affective
-  modulation that hides losses during a losing streak is off in this order.
-  The proxy now uses it for the `prior_outcomes` it returns after an ALLOW.
-- `remember_trade(lot_size=...)` stores the position size. It was stored as
-  0 before, so sizing up after losses could not be seen.
-
-### Changed
-- README (en, zh) rewritten around what the project does now: sync your
-  history, see where it loses money, recall losses before the next order,
-  and the optional brake. The maintenance-mode banner, the paid analysis
-  offer and the dashboard link are gone; the security section describes
-  the memory server, sync and the brake separately (the old one said
-  TradeMemory never touches keys or executes trades, which the brake does);
-  the AGPL licence of the brake's policy engine is stated; claims that no
-  other MCP server handles memory, that users run it in production, and
-  that regulators require it were removed from the README, llms.txt, the
-  Binance skill, the plugin manifest, GETTING_STARTED and the demo.
-
-### Fixed
-- The server instructions said recall surfaces losses in similar conditions
-  first; the default order ranks better outcomes higher and keeps at least
-  20% losses. The instructions now describe the default order as it is and
-  point to `order="losses_first"` for the pre-trade check.
-- `recall_memories` filtered by symbol after reading the 50 most recent
-  memories of every symbol, so a large history in other symbols pushed this
-  symbol's trades out of reach. The symbol is now filtered in SQL.
-- Trades opened through the proxy were written to `trade_records` only and
-  never reached episodic memory, so recall could not see them. They enter
-  memory when `tradememory sync alpaca` closes them.
-
+  position are left out instead of being stored with a guessed P&L. If a
+  run stops halfway, the next run writes the outcome rows it left out.
+- `recall_memories(order="losses_first")`: every losing trade ranks above
+  everything else, the bigger losses in similar conditions first, for the
+  check before a trade. Besides the symbol's most recent trades, its recent
+  losing trades are searched too. The affective modulation that hides losses
+  during a losing streak is off in this order. The proxy now uses it for the
+  `prior_outcomes` it returns after an ALLOW.
+- `remember_trade(lot_size=...)` stores the position size, and recall returns
+  it with each trade. It was stored as 0 before.
 - **Broker proxy (preview), `proxy` extra.** `tradememory proxy run` puts the
   memory layer between an MCP agent and Alpaca's official MCP server. Read
   tools pass through unchanged; `place_stock_order` / `place_crypto_order`
@@ -68,11 +48,38 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   replacement, stop-limit and trailing orders are refused.
 
 ### Changed
+- README (en, zh) rewritten around what the project does now: sync your
+  history, see where it loses money, recall losses before the next order,
+  and the optional brake. The maintenance-mode banner, the paid analysis
+  offer and the dashboard link are gone; the security section describes
+  the memory server, sync, the brake and every outbound call separately (the
+  old one said TradeMemory never touches keys or executes trades, which the
+  brake does); the AGPL licence of the brake's policy engine is stated;
+  claims that no other MCP server handles memory, that users run it in
+  production, and that regulators require it were removed from the README,
+  llms.txt, the Binance and bridge skills, the plugin manifest,
+  GETTING_STARTED and the demo.
+- The default recall order's 20% loss floor also counts trades that have
+  P&L but no R multiple (an imported history has no stop, so no R).
+- The `proxy` extra installs Mnemox Control 0.3.1 from PyPI instead of a git
+  commit.
 - README (en, zh): the regulatory framing now states that MiFID II / RTS 6
   bind investment firms, that the AI Act's Annex III logging obligations were
   postponed to 2 December 2027, and that ESMA's February 2026 briefing
   excludes AI algorithmic trading from the high-risk scope. The table is
   labelled as a feature map, not a compliance claim.
+
+### Fixed
+- The server instructions said recall surfaces losses in similar conditions
+  first; the default order ranks better outcomes higher and keeps at least
+  20% losses. The instructions now describe the default order as it is and
+  point to `order="losses_first"` for the pre-trade check.
+- `recall_memories` filtered by symbol after reading the 50 most recent
+  memories of every symbol, so a large history in other symbols pushed this
+  symbol's trades out of reach. The symbol is now filtered in SQL.
+- Trades opened through the proxy were written to `trade_records` only and
+  never reached episodic memory, so recall could not see them. They enter
+  memory when `tradememory sync alpaca` closes them.
 
 ### Verified live
 - Run against a real Alpaca paper account on 2026-10-01 (alpaca-mcp-server,
@@ -132,8 +139,6 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
   recorded as DRY_RUN. Accepts the fields an advisory layer sends.
 
 ### Not yet
-- `mnemox-control` is pinned as a git dependency; it must be published to
-  PyPI before this extra can ship in a PyPI release.
 - The policy seal, state file and ledger are unkeyed files: an agent with
   shell access on the same host could rewrite them. Run the proxy as a
   different OS user than an agent that has a shell.

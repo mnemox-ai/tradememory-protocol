@@ -13,7 +13,7 @@ import math
 from typing import Any, Dict, List, Optional
 
 from .owm.context import ContextVector
-from .owm.recall import ScoredMemory, outcome_weighted_recall
+from .owm.recall import ScoredMemory, is_loss, outcome_weighted_recall, rank_key
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +40,10 @@ def ensure_negative_balance(
     all_candidates: List[ScoredMemory],
     min_negative_ratio: float = 0.2,
 ) -> List[ScoredMemory]:
-    """Ensure negative memories (pnl_r < 0) comprise >= min_negative_ratio of results.
+    """Ensure losing trades comprise >= min_negative_ratio of results.
 
+    A loss is negative R, or negative P&L when no R was recorded (an
+    imported fill history has no stop, so no R).
     If the ratio is already met, returns results unchanged.
     Otherwise, replaces lowest-scoring positive memories with the
     highest-scoring negative memories from remaining candidates.
@@ -51,11 +53,7 @@ def ensure_negative_balance(
 
     target_count = max(1, math.ceil(len(results) * min_negative_ratio))
 
-    negative_ids = {
-        r.memory_id
-        for r in results
-        if r.data.get("pnl_r") is not None and r.data["pnl_r"] < 0
-    }
+    negative_ids = {r.memory_id for r in results if is_loss(r.data)}
 
     if len(negative_ids) >= target_count:
         return results
@@ -66,20 +64,14 @@ def ensure_negative_balance(
     spare_negatives = [
         c
         for c in all_candidates
-        if c.memory_id not in result_ids
-        and c.data.get("pnl_r") is not None
-        and c.data["pnl_r"] < 0
+        if c.memory_id not in result_ids and is_loss(c.data)
     ]
     spare_negatives.sort(key=lambda x: x.score, reverse=True)
 
     if not spare_negatives:
         return results
 
-    positives_in_result = [
-        r
-        for r in results
-        if r.data.get("pnl_r") is None or r.data["pnl_r"] >= 0
-    ]
+    positives_in_result = [r for r in results if not is_loss(r.data)]
     positives_in_result.sort(key=lambda x: x.score)
 
     swapped = 0
@@ -174,6 +166,6 @@ def hybrid_recall(
             )
         )
 
-    all_candidates.sort(key=lambda x: x.score, reverse=True)
+    all_candidates.sort(key=rank_key(order), reverse=True)
     top = all_candidates[:limit]
     return balance(top, all_candidates)

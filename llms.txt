@@ -38,16 +38,17 @@ pip install tradememory-protocol
 
 - [README](https://github.com/mnemox-ai/tradememory-protocol#readme): Full documentation with architecture diagrams.
 - [PyPI](https://pypi.org/project/tradememory-protocol/): Install via `pip install tradememory-protocol`.
-- [Quick Start](https://github.com/mnemox-ai/tradememory-protocol#quick-start): Multiple installation methods (Claude Desktop, Claude Code, source, Docker).
+- [Connect your agent](https://github.com/mnemox-ai/tradememory-protocol#connect-your-agent): Claude Desktop, Claude Code, source, Docker.
 
 ## MCP Tools
 
-- store_trade: Record a trade with standardized schema (symbol, direction, lots, entry/exit price, PnL)
-- recall_trades: Query trade history with filters (symbol, date range, strategy)
-- get_performance: Calculate performance metrics (win rate, profit factor, drawdown)
-- run_reflection: Trigger LLM-powered analysis of recent trades
+- Memory: remember_trade, recall_memories, get_strategy_performance, get_trade_reflection, get_behavioral_analysis, get_agent_state, create_trading_plan, check_active_plans
+- Audit: export_audit_trail, verify_audit_hash, verify_audit_chain, get_daily_root
+- Checks: validate_strategy, check_trade_legitimacy, compute_dqs
+- Evolution (research): evolution_fetch_market_data, evolution_discover_patterns, evolution_run_backtest, evolution_evolve_strategy, evolution_get_log
 
 ## Optional
 
-- [MT5 Setup Guide](https://github.com/mnemox-ai/tradememory-protocol#connect-to-mt5): How to connect MetaTrader 5 for automatic trade syncing.
-- [Dashboard](https://github.com/mnemox-ai/tradememory-protocol#dashboard): Streamlit-based monitoring dashboard.
+- [Getting Started](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/GETTING_STARTED.md): Trader and developer walkthroughs.
+- [MT5 Setup](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/MT5_SYNC_SETUP.md): Syncing MetaTrader 5 trades.
+- [Alpaca brake walkthrough](https://github.com/mnemox-ai/tradememory-protocol/blob/master/docs/recipes/alpaca-brake.md): The proxy in front of Alpaca's MCP server, with real outputs.

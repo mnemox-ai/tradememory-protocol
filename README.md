@@ -45,11 +45,11 @@ After 2 losses in a row (20 trades):
 Median hold: winners 1.5h, losers 9.0h.
 ```
 
-These are descriptive statistics of your own past trades, not advice about the next one. Hyperliquid keeps only an address's 10,000 most recent fills retrievable, so the sooner it is synced, the more history is kept. Other venues: MT5 and Binance spot sync scripts are in `scripts/`, and any agent can record a trade with `remember_trade`.
+These are descriptive statistics of your own past trades, not advice about the next one. Hyperliquid's API serves only an address's recent fills, not its whole history, so the sooner it is synced, the more history is kept. Other venues: MT5 and Binance spot sync scripts are in `scripts/`, and any agent can record a trade with `remember_trade`.
 
 ## Before the next order
 
-`recall_memories(order="losses_first")` returns the losing trades taken in similar conditions first, with their size and P&L. The server tells connected agents to call it before proposing a trade. The default order ranks better outcomes higher and keeps at least 20% losses in the list.
+`recall_memories(order="losses_first")` puts every losing trade ahead of the rest, the bigger losses in similar conditions first, with their size and P&L. Besides the symbol's most recent trades, it searches the symbol's recent losing trades, so an older loss is not crowded out. The server tells connected agents to call it before proposing a trade. The default order ranks better outcomes higher (by R multiple, where one was recorded) and keeps at least 20% losses in the list.
 
 ## Connect your agent
 
@@ -96,8 +96,7 @@ docker compose up -d
 The `proxy` extra runs TradeMemory between your agent and your broker's MCP server (Alpaca today). Every tool is forwarded unchanged except the order-placing ones, which [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) evaluates against a policy you own before they reach the broker. Every evaluation, allowed or refused, is recorded and chained into the audit log. An allowed order comes back with your losing trades from similar conditions first, and `tradememory sync alpaca` later fills in how each forwarded trade ended, in R when the entry carried a stop. The agent you already have keeps working; only one line of its MCP config changes.
 
 ```bash
-# until the next release ships the extra:
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
+pip install "tradememory-protocol[proxy]"   # Python 3.12+
 tradememory proxy init --account-id <your Alpaca account id> --symbols AAPL,MSFT
 tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the live tool names and the account id
 tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one
@@ -194,7 +193,7 @@ Daily roots are timestamped by an RFC 3161 authority by default since 0.5.3. Not
 - **Memory server (default).** Never places orders and never asks for broker keys. Records and recalls only, in a local SQLite file.
 - **Sync.** `tradememory sync hyperliquid` reads public data with no key. `tradememory sync alpaca` makes read-only calls with keys from a file on your machine. Synced trades stay in your local database.
 - **Brake (`proxy` extra).** Forwards the orders your policy allows to your broker's MCP server. Your broker keys are passed only to the broker process the proxy starts; TradeMemory never stores them.
-- **Outbound calls.** RFC 3161 timestamping of daily audit roots, a 32-byte hash with no trade data (on by default; `TRADEMEMORY_TSA=off` turns it off). The evolution and replay features call the Anthropic API only if you set `ANTHROPIC_API_KEY`. `tradememory sync` calls the venue you name.
+- **Outbound calls.** RFC 3161 timestamping of daily audit roots, a 32-byte hash with no trade data (on by default; `TRADEMEMORY_TSA=off` turns it off). `tradememory sync` calls the venue you name. The evolution tools read public Binance market data (`api.binance.com`) when an agent calls them, and evolution calls the Anthropic API only if you set `ANTHROPIC_API_KEY`. Replay calls DeepSeek by default (or Anthropic), and only with that provider's key set. If you install `sentence-transformers` for hybrid recall, it downloads its model from Hugging Face on first use. The MT5 and Binance sync scripts in `scripts/` read their credentials from your environment, and the MT5 one posts trade summaries (symbol, prices, P&L) to a Discord webhook only if you set `DISCORD_WEBHOOK_URL`.
 - **Tamper-evident, not tamper-proof.** Every record is hashed and linked to the one before, with daily Merkle roots. Changing a record breaks the chain; someone who can rewrite the whole database can rebuild it.
 
 ## Research Status

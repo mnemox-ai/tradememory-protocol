@@ -6,7 +6,6 @@ only through a 20% floor. remember_trade also stored every position size as 0,
 so sizing up after a losing streak could never be seen.
 """
 
-import asyncio
 import math
 import os
 import tempfile
@@ -121,6 +120,27 @@ def test_losses_first_ranks_pnl_only_history():
     book = [_memory("w", pnl=250.0), _memory("l", pnl=-400.0), _memory("w2", pnl=90.0)]
     ranked = outcome_weighted_recall(QUERY, book, limit=3, order="losses_first")
     assert ranked[0].memory_id == "l"
+
+
+def test_losses_first_puts_an_old_loss_above_a_recent_win():
+    # By score alone a +0.3R win from yesterday (0.40 x 0.98) beats a -1R
+    # loss from 120 days ago (0.79 x 0.45). "Losses first" means every loss.
+    book = [_memory("new-win", pnl_r=0.3, days_ago=1), _memory("old-loss", pnl_r=-1.0, days_ago=120)]
+    ranked = outcome_weighted_recall(QUERY, book, limit=2, order="losses_first")
+    assert [r.memory_id for r in ranked] == ["old-loss", "new-win"]
+    assert ranked[0].score < ranked[1].score
+    for m in book:
+        m["embedding"] = [1.0, 0.0]
+    hybrid = hybrid_recall(QUERY, [1.0, 0.0], book, limit=2, order="losses_first")
+    assert [r.memory_id for r in hybrid] == ["old-loss", "new-win"]
+
+
+def test_default_order_keeps_losses_that_have_only_pnl():
+    # An imported history has P&L but no R; the 20% floor must still see its losses.
+    book = [_memory(f"win-{i}", pnl=50.0, confidence=0.9) for i in range(5)]
+    book.append(_memory("loss", pnl=-80.0, confidence=0.1))
+    top = hybrid_recall(QUERY, None, book, limit=5)
+    assert "loss" in [r.memory_id for r in top]
 
 
 def test_unknown_order_is_rejected():
@@ -246,3 +266,33 @@ async def test_recall_finds_a_symbol_buried_under_other_symbols():
         limit=10, use_hybrid=False, order="losses_first",
     )
     assert [m["pnl"] for m in result["memories"]] == [-300.0]
+
+
+def _episode(db, mid, pnl, days_ago, lot=1.0):
+    db.insert_episodic({
+        "id": mid, "timestamp": _ts(days_ago=days_ago), "context_json": {"symbol": "XAUUSD"},
+        "context_regime": None, "context_volatility_regime": None, "context_session": None,
+        "context_atr_d1": None, "context_atr_h1": None, "strategy": "VolBreakout",
+        "direction": "long", "entry_price": 100.0, "lot_size": lot, "exit_price": 101.0,
+        "pnl": pnl, "pnl_r": None, "hold_duration_seconds": None, "max_adverse_excursion": None,
+        "reflection": None, "confidence": 0.5, "tags": [], "retrieval_strength": 1.0,
+        "retrieval_count": 0, "last_retrieved": None,
+    })
+
+
+@pytest.mark.asyncio
+async def test_losses_first_reaches_a_loss_older_than_the_recent_trades():
+    # limit=3 reads the 15 most recent trades; the loss is the 41st.
+    import tradememory.mcp_server as mod
+    from tradememory.mcp_server import recall_memories
+
+    _episode(mod._db, "old-loss", -400.0, days_ago=30, lot=3.0)
+    for i in range(40):
+        _episode(mod._db, f"win-{i}", 20.0, days_ago=1)
+    result = await recall_memories(symbol="XAUUSD", market_context="x", memory_types=["episodic"],
+                                   limit=3, use_hybrid=False, order="losses_first")
+    first = result["memories"][0]
+    assert (first["memory_id"], first["pnl"], first["lot_size"]) == ("old-loss", -400.0, 3.0)
+    default = await recall_memories(symbol="XAUUSD", market_context="x", memory_types=["episodic"],
+                                    limit=3, use_hybrid=False)
+    assert "old-loss" not in [m["memory_id"] for m in default["memories"]]

@@ -966,11 +966,14 @@ class Database:
         direction: Optional[str] = None,
         limit: int = 100,
         symbol: Optional[str] = None,
+        losses_only: bool = False,
     ) -> List[Dict[str, Any]]:
         """Query episodic memories with filters.
 
         ``symbol`` filters in SQL on the symbol stored in context_json, so the
         limit applies to that symbol's memories and not to the whole table.
+        ``losses_only`` keeps losing trades: negative R, or negative P&L when
+        no R was recorded.
         """
         with self.get_connection() as conn:
             query = "SELECT * FROM episodic_memory WHERE 1=1"
@@ -978,6 +981,8 @@ class Database:
             if symbol:
                 query += " AND json_extract(context_json, '$.symbol') = ?"
                 params.append(symbol)
+            if losses_only:
+                query += " AND (pnl_r < 0 OR (pnl_r IS NULL AND pnl < 0))"
             if strategy:
                 query += " AND strategy = ?"
                 params.append(strategy)

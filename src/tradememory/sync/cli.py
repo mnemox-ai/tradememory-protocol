@@ -44,26 +44,30 @@ def sync() -> None:
 def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: bool) -> None:
     """Rebuild an address's Hyperliquid perp trades and store them in memory.
 
-    Hyperliquid keeps only the 10,000 most recent fills of an address
-    retrievable, so older history is gone; re-running stores only new trades.
+    Hyperliquid serves only an address's recent fills, so older history is
+    gone; re-running stores only new trades.
     """
     from .fills import build_round_trips
     from .hyperliquid import fetch_fills, perp_fills
     from .report import loss_patterns, render_report
 
     try:
-        raw = fetch_fills(address)
+        raw, complete = fetch_fills(address)
+        fills, spot = perp_fills(raw, address)
     except ValueError as exc:
         raise click.ClickException(str(exc)) from exc
-    fills, spot = perp_fills(raw, address)
     built = build_round_trips(fills)
     summary: dict[str, Any] = {
         "fills_fetched": len(raw),
+        "fetch_complete": complete,
         "spot_fills_skipped": spot,
         "closed_trades": len(built.trips),
         "open_positions": {k: str(v) for k, v in built.open_positions.items()},
         "trades_dropped_for_missing_history": built.dropped,
     }
+    unpriced = sum(1 for f in fills if not f.fee_known)
+    if unpriced:
+        summary["fills_with_fee_in_another_token_not_netted"] = unpriced
     if not dry_run:
         from ..db import Database
         from .store import store_round_trips
@@ -71,6 +75,8 @@ def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: 
         result = store_round_trips(Database(db_path), built.trips, venue="Hyperliquid", strategy="hyperliquid")
         summary["stored_new"] = len(result.stored)
         summary["already_stored"] = result.skipped
+        if result.repaired:
+            summary["finished_after_an_interrupted_run"] = len(result.repaired)
     stats = loss_patterns(built.trips)
     _emit(summary, render_report(stats, title=f"Hyperliquid {address[:6]}...{address[-4:]}"), as_json, stats)
 
@@ -85,7 +91,14 @@ def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: 
 @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
 def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, as_json: bool) -> None:
     """Rebuild the account's trades from its fills and fill in the brake's outcomes."""
-    from .alpaca import LIVE_URL, PAPER_URL, fetch_fill_activities, fetch_positions, http_get, to_fill
+    from .alpaca import (
+        LIVE_URL,
+        PAPER_URL,
+        fetch_fill_activities,
+        fetch_positions,
+        http_get,
+        to_fill,
+    )
     from .fills import build_round_trips
     from .report import loss_patterns, render_report
 
@@ -97,7 +110,10 @@ def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, a
     get = http_get(LIVE_URL if live else PAPER_URL, key_id, secret)
 
     account = str(get("/v2/account", {})["id"])
-    built = build_round_trips(to_fill(a, account) for a in fetch_fill_activities(get))
+    try:
+        built = build_round_trips([to_fill(a, account) for a in fetch_fill_activities(get)])
+    except ValueError as exc:
+        raise click.ClickException(str(exc)) from exc
     broker = fetch_positions(get)
     mismatched = sorted(
         s for s in set(built.open_positions) | set(broker)
@@ -124,5 +140,7 @@ def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, a
         summary["brake_trades_given_outcome"] = len(result.linked)
         summary["stored_new"] = len(result.stored)
         summary["already_stored"] = result.skipped
+        if result.repaired:
+            summary["finished_after_an_interrupted_run"] = len(result.repaired)
     stats = loss_patterns(trips)
     _emit(summary, render_report(stats, title=f"Alpaca {'live' if live else 'paper'} account"), as_json, stats)

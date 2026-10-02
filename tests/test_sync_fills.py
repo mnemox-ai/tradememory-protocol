@@ -111,15 +111,17 @@ def test_bad_fills_are_rejected(kwargs):
 
 
 def test_fills_in_one_millisecond_keep_numeric_order():
-    # Sorted as text, fill "100" would come before "99" and the history
-    # would look broken (2026-10-02: 703 of 9,409 live fills dropped).
+    # Sorted as text, fill "100" would come before "99" (2026-10-02: 703 of
+    # 9,409 live fills dropped). No start positions here, so id order is all
+    # there is: the buy (99) must come first and make this a long.
     same = T0
     buy = Fill(source="t", account="a", symbol="ETH", side="buy", qty=D(1), price=D(100), fee=D(0),
-               time=same, fill_id="99", start_position=D(0))
+               time=same, fill_id="99")
     sell = Fill(source="t", account="a", symbol="ETH", side="sell", qty=D(1), price=D(101), fee=D(0),
-                time=same, fill_id="100", start_position=D(1))
+                time=same, fill_id="100")
     r = build_round_trips([sell, buy])
-    assert r.dropped == 0 and len(r.trips) == 1 and r.trips[0].gross_pnl == D(1)
+    assert r.dropped == 0 and len(r.trips) == 1
+    assert (r.trips[0].direction, r.trips[0].gross_pnl) == ("long", D(1))
 
 
 def test_one_millisecond_sweep_is_ordered_by_the_position_chain():
@@ -140,3 +142,59 @@ def test_one_millisecond_sweep_is_ordered_by_the_position_chain():
     r = build_round_trips([closer, *sweep, opener])
     assert r.dropped == 0 and len(r.trips) == 1
     assert r.trips[0].gross_pnl == D(245833) and r.trips[0].adds == 7
+
+
+def _at(fid, side, qty, start, price=1, t=T0, order=None):
+    return Fill(source="t", account="a", symbol="X", side=side, qty=D(qty), price=D(price), fee=D(0),
+                time=t, fill_id=fid, order_id=order, start_position=D(start))
+
+
+def test_a_position_that_returns_to_the_same_size_in_one_millisecond():
+    # 0 -> 5 -> 0 -> 3 inside one millisecond. Taking the lowest id that fits
+    # (the buy of 3) first strands the other two and drops a real trade.
+    x = _at("2", "buy", 5, 0, price=10)
+    y = _at("3", "sell", 5, 5, price=12)
+    z = _at("1", "buy", 3, 0, price=11)
+    r = build_round_trips([z, x, y])
+    assert r.dropped == 0 and r.open_positions == {"X": D(3)}
+    (t,) = r.trips
+    assert (t.direction, t.gross_pnl) == ("long", D(10))
+
+
+def test_two_holes_in_one_unknown_position_count_once():
+    r = build_round_trips([
+        fill("buy", 1, 100, start=0),
+        fill("buy", 1, 101, minutes=1, start=3),  # hole: the trade in progress is dropped
+        fill("sell", 4, 110, minutes=2, start=7),  # another hole, same unknown position
+        fill("sell", 3, 111, minutes=3, start=3),  # flat
+    ])
+    assert r.trips == [] and r.dropped == 1
+
+
+def test_an_unknown_position_that_ends_inside_a_hole_still_counts():
+    r = build_round_trips([
+        fill("sell", 2, 100, start=5),  # 5 already open, entry never seen
+        fill("buy", 1, 100, minutes=1, start=0),  # flat somewhere in a hole
+        fill("sell", 1, 104, minutes=2, start=1),
+    ])
+    assert r.dropped == 1
+    (t,) = r.trips
+    assert t.gross_pnl == D(4)
+
+
+def test_one_order_filled_in_pieces_is_one_add():
+    r = build_round_trips([
+        fill("buy", 1, 100, order="A"), fill("buy", 1, 100, order="A"),  # the opening order, in two pieces
+        fill("buy", 1, 101, minutes=1, order="B"), fill("buy", 1, 101, minutes=1, order="B"),
+        fill("sell", 4, 105, minutes=2, order="C"),
+    ])
+    assert r.trips[0].adds == 1
+
+
+def test_a_fee_in_another_token_marks_the_trade():
+    paid_elsewhere = Fill(source="t", account="a", symbol="BTC", side="sell", qty=D(1), price=D(110),
+                          fee=D(0), time=T0 + timedelta(minutes=1), fill_id="z", fee_known=False)
+    (t,) = build_round_trips([fill("buy", 1, 100), paid_elsewhere]).trips
+    assert not t.fees_complete
+    (u,) = build_round_trips([fill("buy", 1, 100), fill("sell", 1, 110, minutes=1)]).trips
+    assert u.fees_complete

@@ -38,14 +38,15 @@ mcp = FastMCP(
         "the losing trades taken in similar conditions come back first, and "
         "`check_trade_legitimacy` (or `compute_dqs`) to see whether this "
         "strategy has earned full size right now. The default order ranks "
-        "better outcomes higher and keeps at least 20% losses in the list.\n\n"
+        "better outcomes higher (by R multiple, where one was recorded) and "
+        "keeps at least 20% losses in the list.\n\n"
         "After a trade: call `remember_trade` with the full reasoning and the "
         "position size, then record the outcome when the position closes. Every decision is "
         "SHA-256 hash-chained; `verify_audit_chain` and `get_daily_root` prove "
         "the record has not been altered, and `export_audit_trail` produces a "
         "reviewable log.\n\n"
-        "This server never places orders, moves funds, or touches API keys. "
-        "It records and recalls only."
+        "This server never places orders, moves funds, or asks for broker "
+        "keys. It records and recalls only."
     ),
 )
 
@@ -385,9 +386,12 @@ async def recall_memories(
             when sentence-transformers is not installed.
         hybrid_alpha: Vector vs OWM blend weight [0..1] when hybrid is active.
             0.0 = pure OWM, 1.0 = pure vector. Default 0.3 (OWM-dominant).
-        order: "outcome" (default): better outcomes rank higher, at least 20%
-            of the results are losses. "losses_first": losing trades in
-            similar conditions rank highest, for a pre-trade check.
+        order: "outcome" (default): better outcomes rank higher (by R
+            multiple, where one was recorded), and at least 20% of the
+            results are losses. "losses_first": every losing trade comes
+            before anything else, the bigger losses in similar conditions
+            first; the symbol's recent losing trades are searched as well as
+            its recent trades. For a pre-trade check.
     """
     if order not in ("outcome", "losses_first"):
         return {"error": f"order must be 'outcome' or 'losses_first', got '{order}'"}
@@ -419,6 +423,15 @@ async def recall_memories(
     if "episodic" in memory_types:
         # Don't filter by regime at DB level — let OWM similarity scoring rank by context
         episodic = db.query_episodic(strategy=strategy_name, symbol=symbol_upper, limit=limit * 5)
+        if order == "losses_first":
+            # The most recent trades alone can miss an older loss.
+            seen = {ep["id"] for ep in episodic}
+            episodic += [
+                ep for ep in db.query_episodic(
+                    strategy=strategy_name, symbol=symbol_upper, limit=limit * 5, losses_only=True
+                )
+                if ep["id"] not in seen
+            ]
         for ep in episodic:
             ctx = ep.get("context_json") or {}
             ep_symbol = ctx.get("symbol")
@@ -432,6 +445,7 @@ async def recall_memories(
                 "context": ctx,
                 "pnl_r": ep.get("pnl_r"),
                 "pnl": ep.get("pnl"),
+                "lot_size": ep.get("lot_size"),
                 "strategy": ep.get("strategy"),
                 "direction": ep.get("direction"),
                 "reflection": ep.get("reflection"),
@@ -564,6 +578,7 @@ async def recall_memories(
             entry["direction"] = sm.data.get("direction")
             entry["pnl"] = sm.data.get("pnl")
             entry["pnl_r"] = sm.data.get("pnl_r")
+            entry["lot_size"] = sm.data.get("lot_size")
             entry["reflection"] = sm.data.get("reflection")
         elif sm.memory_type == "semantic":
             entry["proposition"] = sm.data.get("proposition")

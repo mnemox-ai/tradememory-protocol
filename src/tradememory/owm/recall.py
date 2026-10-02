@@ -90,6 +90,15 @@ def typical_abs_pnl(memories: List[Dict[str, Any]]) -> Optional[float]:
     return values[mid] if len(values) % 2 else (values[mid - 1] + values[mid]) / 2
 
 
+def is_loss(memory: Dict[str, Any]) -> bool:
+    """A losing trade: negative R, or negative P&L when no R was recorded."""
+    pnl_r = memory.get("pnl_r")
+    if pnl_r is not None:
+        return pnl_r < 0
+    pnl = memory.get("pnl")
+    return pnl is not None and pnl < 0
+
+
 RECALL_ORDERS = ("outcome", "losses_first")
 
 
@@ -172,10 +181,11 @@ def outcome_weighted_recall(
     order:
       - "outcome" (default): better outcomes rank higher (Q), modulated by
         the current affective state.
-      - "losses_first": for a pre-trade check. Losing trades in similar
-        conditions rank highest (L instead of Q), and the affective
-        modulation is switched off, because it would otherwise hide losses
-        during a losing streak — exactly when the check matters most.
+      - "losses_first": for a pre-trade check. Every losing trade ranks
+        above everything else, and among them the bigger losses in similar
+        conditions come first (L instead of Q). The affective modulation is
+        switched off, because it would otherwise hide losses during a losing
+        streak — exactly when the check matters most.
     """
     if order not in RECALL_ORDERS:
         raise ValueError(f"order must be one of {RECALL_ORDERS}, got {order!r}")
@@ -227,5 +237,12 @@ def outcome_weighted_recall(
             data=m,
         ))
 
-    candidates.sort(key=lambda x: x.score, reverse=True)
+    candidates.sort(key=rank_key(order), reverse=True)
     return candidates[:limit]
+
+
+def rank_key(order: str):
+    """Sort key for ScoredMemory: score, with every loss first in "losses_first"."""
+    if order == "losses_first":
+        return lambda x: (is_loss(x.data), x.score)
+    return lambda x: x.score

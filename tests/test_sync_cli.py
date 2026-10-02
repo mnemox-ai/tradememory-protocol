@@ -4,6 +4,7 @@ import json
 import os
 import tempfile
 
+import pytest
 from click.testing import CliRunner
 
 from tradememory.cli import cli
@@ -21,12 +22,13 @@ def _hl(tid, time, side, px, start, sz="1", coin="ETH"):
 def test_hyperliquid_sync_stores_and_reports(monkeypatch):
     history = [_hl(1, 1000, "B", "100", "0"), _hl(2, 2000, "A", "90", "1"),
                _hl(3, 3000, "B", "100", "0"), _hl(4, 4000, "A", "112", "1")]
-    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: history)
+    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: (history, True))
     db_path = os.path.join(tempfile.mkdtemp(), "hl.db")
 
     out = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", db_path])
     assert out.exit_code == 0, out.output
     assert "closed trades: 2" in out.output and "stored new: 2" in out.output
+    assert "fetch complete: True" in out.output
     assert "Not investment advice" in out.output
 
     again = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", db_path, "--json"])
@@ -35,7 +37,7 @@ def test_hyperliquid_sync_stores_and_reports(monkeypatch):
 
 
 def test_hyperliquid_dry_run_writes_nothing(monkeypatch):
-    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: [])
+    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: ([], True))
     db_path = os.path.join(tempfile.mkdtemp(), "never.db")
     out = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", db_path, "--dry-run"])
     assert out.exit_code == 0 and not os.path.exists(db_path)
@@ -93,6 +95,17 @@ def test_alpaca_sync_gives_the_brake_trade_its_outcome(monkeypatch, tmp_path):
     row = db.get_trade("ord-ENTRY1")
     assert row["exit_price"] == 320.0 and round(row["pnl"], 2) == -8.94
     assert round(row["pnl_r"], 3) == round(-8.94 / 8.94, 3)  # stop 320 vs fill 328.94: lost one R
+
+
+def test_alpaca_history_too_long_to_page_is_refused_not_cut(monkeypatch):
+    from tradememory.sync import alpaca
+
+    monkeypatch.setattr(alpaca, "MAX_PAGES", 2)
+    fake = FakeAlpaca([_act(i, "buy", 1, 10, f"o{i}") for i in range(250)], positions=[])
+    with pytest.raises(ValueError, match="stopped rather than store part"):
+        alpaca.fetch_fill_activities(fake)
+    short = FakeAlpaca([_act(i, "buy", 1, 10, f"o{i}") for i in range(150)], positions=[])
+    assert len(alpaca.fetch_fill_activities(short)) == 150
 
 
 def test_alpaca_sync_needs_keys(tmp_path):

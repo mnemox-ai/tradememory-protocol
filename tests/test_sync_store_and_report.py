@@ -1,6 +1,5 @@
 """Storing rebuilt trades in memory once each, closing the brake's loop, and the loss report."""
 
-import asyncio
 import os
 import tempfile
 from datetime import datetime, timedelta, timezone
@@ -9,7 +8,7 @@ from decimal import Decimal as D
 import pytest
 
 from tradememory.db import Database
-from tradememory.sync.fills import Fill, RoundTrip, build_round_trips
+from tradememory.sync.fills import RoundTrip
 from tradememory.sync.report import loss_patterns, render_report
 from tradememory.sync.store import store_round_trips
 
@@ -66,6 +65,94 @@ def test_a_brake_trade_gets_its_outcome_instead_of_a_second_row(db):
     assert row["pnl"] == -10.0 and row["exit_price"] == 95.0
     assert row["pnl_r"] == pytest.approx(-1.0)  # risk = (100 - 95) * 2
     assert _count(db, "trade_records") == 1 and _count(db, "episodic_memory") == 1
+
+
+def _brake_row(db, order="ORDER1", symbol="AAPL", direction="long", stop=95.0):
+    db.insert_trade({
+        "id": f"ord-{order}", "timestamp": T0.isoformat(), "symbol": symbol, "direction": direction,
+        "lot_size": 2.0, "strategy": "agent-1", "confidence": 0.5, "reasoning": "forwarded by the proxy",
+        "market_context": {"entry_price": 100.0, "protective_stop_price": stop}, "references": [],
+        "exit_timestamp": None, "exit_price": None, "pnl": None, "pnl_r": None, "hold_duration": None,
+        "exit_reasoning": None, "slippage": None, "execution_quality": None, "lessons": None,
+        "tags": ["proxy"], "grade": None,
+    })
+
+
+def _link(db):
+    return lambda tr: db.get_trade(f"ord-{tr.order_ids[0]}")
+
+
+def _fail_once(monkeypatch, obj, name):
+    real = getattr(obj, name)
+    calls = []
+
+    def flaky(*args, **kwargs):
+        calls.append(1)
+        if len(calls) == 1:
+            raise RuntimeError("process killed here")
+        return real(*args, **kwargs)
+    monkeypatch.setattr(obj, name, flaky)
+
+
+def test_an_interrupted_run_gives_the_brake_row_its_outcome_next_time(db, monkeypatch):
+    _brake_row(db)
+    t = trip(9, -10, size=2, symbol="AAPL", order_ids=["ORDER1"])
+    _fail_once(monkeypatch, db, "update_trade_outcome")
+    with pytest.raises(RuntimeError):
+        store_round_trips(db, [t], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert db.get_trade("ord-ORDER1")["exit_price"] is None  # memory written, outcome not
+    again = store_round_trips(db, [t], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert again.repaired == ["ord-ORDER1"] and again.skipped == 0
+    assert db.get_trade("ord-ORDER1")["pnl"] == -10.0
+    third = store_round_trips(db, [t], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert third.skipped == 1 and not third.repaired
+    assert _count(db, "episodic_memory") == 1 and _count(db, "trade_records") == 1
+
+
+def test_an_interrupted_run_gets_its_trade_record_next_time(db, monkeypatch):
+    t = trip(1, -50)
+    _fail_once(monkeypatch, db, "insert_trade")
+    with pytest.raises(RuntimeError):
+        store_round_trips(db, [t], venue="Test", strategy="imported")
+    assert db.get_trade(t.trip_id) is None
+    again = store_round_trips(db, [t], venue="Test", strategy="imported")
+    assert again.repaired == [t.trip_id]
+    assert db.get_trade(t.trip_id)["pnl"] == -50.0 and _count(db, "episodic_memory") == 1
+
+
+def test_a_brake_row_for_another_symbol_or_direction_is_not_used(db):
+    _brake_row(db, order="ORDER1", direction="short")
+    t = trip(9, -10, size=2, symbol="AAPL", order_ids=["ORDER1"])
+    result = store_round_trips(db, [t], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert result.stored == [t.trip_id] and not result.linked
+    assert db.get_trade("ord-ORDER1")["exit_price"] is None
+
+
+def test_one_brake_row_goes_to_one_trip(db):
+    # One working order filled on both sides of a flat moment: two trips name it.
+    _brake_row(db, order="ORDER1")
+    first = trip(1, -10, symbol="AAPL", order_ids=["ORDER1", "X1"], start_hour=0)
+    second = trip(2, 5, symbol="AAPL", order_ids=["ORDER1", "X2"], start_hour=3)
+    result = store_round_trips(db, [second, first], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert result.linked == ["ord-ORDER1"] and result.stored == [second.trip_id]
+    assert db.get_trade("ord-ORDER1")["pnl"] == -10.0 and db.get_trade(second.trip_id)["pnl"] == 5.0
+    again = store_round_trips(db, [second, first], venue="Alpaca", strategy="alpaca", link=_link(db))
+    assert again.skipped == 2 and not again.repaired
+
+
+def test_a_crypto_brake_row_written_with_a_slash_still_links(db):
+    _brake_row(db, order="C1", symbol="BTC/USD")
+    t = trip(4, 12, symbol="BTCUSD", order_ids=["C1"])
+    assert store_round_trips(db, [t], venue="Alpaca", strategy="alpaca", link=_link(db)).linked == ["ord-C1"]
+
+
+def test_a_trade_with_unpriced_fees_says_so(db):
+    t = trip(5, 20)
+    t.fees_complete = False
+    store_round_trips(db, [t], venue="Hyperliquid", strategy="hyperliquid")
+    (ep,) = db.query_episodic(limit=5)
+    assert ep["context_json"]["fees_complete"] is False
+    assert "not netted" in ep["context_json"]["description"]
 
 
 @pytest.mark.asyncio

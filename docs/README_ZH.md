@@ -45,11 +45,11 @@ After 2 losses in a row (20 trades):
 Median hold: winners 1.5h, losers 9.0h.
 ```
 
-這些是你自己過去交易的描述性統計，不是對下一筆的建議。Hyperliquid 只保留一個地址最近 10,000 筆成交可供查詢，越早同步，留下的歷史越多。其他交易所：`scripts/` 裡有 MT5 與 Binance 現貨的同步腳本，任何 agent 也都可以用 `remember_trade` 記錄一筆交易。
+這些是你自己過去交易的描述性統計，不是對下一筆的建議。Hyperliquid 的 API 只提供一個地址近期的成交，不是全部歷史，越早同步，留下的歷史越多。其他交易所：`scripts/` 裡有 MT5 與 Binance 現貨的同步腳本，任何 agent 也都可以用 `remember_trade` 記錄一筆交易。
 
 ## 下一張單之前
 
-`recall_memories(order="losses_first")` 會先回傳在相似條件下虧損的交易，附上部位大小與損益。伺服器會告訴連上來的 agent，在提出交易前先呼叫它。預設排序則是結果越好排越前，並保留至少 20% 的虧損交易。
+`recall_memories(order="losses_first")` 會把所有虧損的交易排在其他記憶前面，相似條件下虧得越多越前面，並附上部位大小與損益。除了這個商品最近的交易，也會另外找它近期的虧損交易，較早的虧損不會被擠掉。伺服器會告訴連上來的 agent，在提出交易前先呼叫它。預設排序則是結果越好排越前（有記錄 R 的交易按 R 排），並保留至少 20% 的虧損交易。
 
 ## 接上你的 agent
 
@@ -96,8 +96,7 @@ docker compose up -d
 `proxy` extra 讓 TradeMemory 跑在你的 agent 和券商的 MCP server 之間（目前支援 Alpaca）。所有工具原樣轉送，只有下單工具會先交給 [Mnemox Control](https://github.com/mnemox-ai/mnemox-control) 用你自己的政策評估，通過才送到券商。每一次評估，不論放行或拒絕，都會記錄並串進稽核鏈。放行的單回來時，會先附上你在相似條件下虧損的交易；之後用 `tradememory sync alpaca` 補上每一筆轉送出去的交易最後怎麼結束，進場有帶停損的，會換算成幾倍風險（R）。你原本的 agent 照常運作，只改 MCP 設定裡的一行。
 
 ```bash
-# 下一版發布前先從分支安裝：
-pip install "tradememory-protocol[proxy] @ git+https://github.com/mnemox-ai/tradememory-protocol@master"   # Python 3.12+
+pip install "tradememory-protocol[proxy]"   # Python 3.12+
 tradememory proxy init --account-id <你的 Alpaca 帳號 id> --symbols AAPL,MSFT
 tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # 核對上游工具名稱與帳號 id
 tradememory proxy config                                           # 印出要換掉的那一行 MCP 設定
@@ -191,7 +190,7 @@ GET /audit/export?strategy=VolBreakout&start=2026-03-01&format=jsonl
 - **記憶伺服器（預設）。** 不下單，也不要求券商金鑰。只記錄與回憶，資料存在本機的 SQLite 檔。
 - **同步。** `tradememory sync hyperliquid` 讀的是公開資料，不用金鑰。`tradememory sync alpaca` 用你本機檔案裡的金鑰做唯讀查詢。同步進來的交易留在你本機的資料庫。
 - **煞車（`proxy` extra）。** 把你的政策允許的單轉送到券商的 MCP server。券商金鑰只交給 proxy 啟動的券商程序，TradeMemory 不保存。
-- **對外連線。** 每日稽核 root 的 RFC 3161 時間戳，送出的只是 32 bytes 的雜湊、不含交易資料（預設開啟，`TRADEMEMORY_TSA=off` 可關閉）。策略演化與回放功能只有在你設了 `ANTHROPIC_API_KEY` 時才會呼叫 Anthropic API。`tradememory sync` 只連你指定的交易所。
+- **對外連線。** 每日稽核 root 的 RFC 3161 時間戳，送出的只是 32 bytes 的雜湊、不含交易資料（預設開啟，`TRADEMEMORY_TSA=off` 可關閉）。`tradememory sync` 只連你指定的交易所。agent 呼叫策略演化工具時，會向 Binance 讀取公開行情（`api.binance.com`）；策略演化只有在你設了 `ANTHROPIC_API_KEY` 時才呼叫 Anthropic API。回放預設呼叫 DeepSeek（也可改用 Anthropic），同樣要你設了該家的金鑰才會連線。如果你另外安裝 `sentence-transformers` 來用混合檢索，第一次使用時會從 Hugging Face 下載模型。`scripts/` 裡的 MT5 與 Binance 同步腳本從你的環境變數讀取登入資料或金鑰；MT5 腳本只有在你設了 `DISCORD_WEBHOOK_URL` 時，才會把交易摘要（商品、價格、損益）送到 Discord webhook。
 - **可查核，不是防竄改。** 每筆紀錄都計算雜湊並串到前一筆，另有每日 Merkle root。改一筆紀錄會讓鏈斷掉；能改寫整個資料庫的人，也能把整條鏈重建。
 
 ## 研究現況

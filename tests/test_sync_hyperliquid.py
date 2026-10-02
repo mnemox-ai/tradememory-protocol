@@ -37,16 +37,49 @@ def test_pages_through_and_drops_the_repeated_millisecond():
     # 4,500 fills where every 10 share a millisecond, so page edges overlap.
     fills = [raw(i, 1_000_000 + i // 10) for i in range(4500)]
     api = FakeInfoAPI(fills)
-    got = fetch_fills(ADDR, post=api)
+    got, complete = fetch_fills(ADDR, post=api)
     assert [f["tid"] for f in got] == list(range(4500))
-    assert len(api.calls) == 3
+    assert complete and len(api.calls) == 3
 
 
-def test_stops_when_a_page_brings_nothing_new():
-    # 2,000 fills in one millisecond: the second page would repeat the first.
-    api = FakeInfoAPI([raw(i, 5_000) for i in range(PAGE_SIZE)])
-    assert len(fetch_fills(ADDR, post=api)) == PAGE_SIZE
-    assert len(api.calls) == 2
+def test_a_full_page_inside_one_millisecond_is_skipped_and_flagged():
+    # 2,000 fills in one millisecond: asking again from that time returns the
+    # same page forever. Move past it, keep what comes after, say it is partial.
+    api = FakeInfoAPI([raw(i, 5_000) for i in range(PAGE_SIZE)] + [raw(PAGE_SIZE, 6_000)])
+    got, complete = fetch_fills(ADDR, post=api)
+    assert len(got) == PAGE_SIZE + 1 and got[-1]["time"] == 6_000
+    assert not complete and len(api.calls) == 3
+
+
+def test_running_out_of_pages_is_flagged_not_silent(monkeypatch):
+    from tradememory.sync import hyperliquid
+
+    monkeypatch.setattr(hyperliquid, "MAX_PAGES", 3)
+    api = FakeInfoAPI([raw(i, 1_000 + i) for i in range(3 * PAGE_SIZE + 100)])
+    got, complete = fetch_fills(ADDR, post=api)
+    assert not complete and len(api.calls) == 3
+
+
+def test_rate_limit_backoff_outlasts_the_one_minute_window(monkeypatch):
+    # The weight limit is per minute; 2026-10-02 probing hit 429 after
+    # retries that waited 15 s in total.
+    import io
+    import urllib.error
+
+    from tradememory.sync import hyperliquid
+
+    calls, waits = [], []
+
+    def urlopen(request, timeout):
+        calls.append(1)
+        if len(calls) <= 6:
+            raise urllib.error.HTTPError(hyperliquid.API_URL, 429, "Too Many Requests", {}, None)
+        return io.BytesIO(b"[]")
+
+    monkeypatch.setattr(hyperliquid.urllib.request, "urlopen", urlopen)
+    monkeypatch.setattr(hyperliquid.time, "sleep", waits.append)
+    assert hyperliquid._post({"type": "userFillsByTime"}) == []
+    assert sum(waits) >= 60
 
 
 def test_rejects_something_that_is_not_an_address():
@@ -59,7 +92,15 @@ def test_normalises_side_position_fee_and_symbol():
                     fee="0.2", fee_token="HYPE"), ADDR.upper().replace("0X", "0x"))
     assert (f.side, f.qty, f.price, f.symbol) == ("sell", D("0.5"), D("64000.5"), "BTC")
     assert f.start_position == D("-1.5") and f.fee == 0  # fee paid in another token is not netted
+    assert not f.fee_known and to_fill(raw(8, 1), ADDR).fee_known
     assert f.account == ADDR and f.order_id == "70"
+
+
+def test_a_fill_without_a_fee_is_malformed_not_free():
+    record = raw(9, 1)
+    del record["fee"]
+    with pytest.raises(ValueError):
+        to_fill(record, ADDR)
 
 
 def test_spot_fills_are_skipped():

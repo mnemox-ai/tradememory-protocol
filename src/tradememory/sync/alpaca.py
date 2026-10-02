@@ -44,7 +44,11 @@ def http_get(base_url: str, key_id: str, secret: str) -> Get:
 
 
 def fetch_fill_activities(get: Get) -> list[dict[str, Any]]:
-    """Every FILL activity, oldest first."""
+    """Every FILL activity, oldest first.
+
+    Raises ValueError instead of returning a partial history: pages come
+    oldest first, so a cut-off list would be missing the newest trades.
+    """
     out: list[dict[str, Any]] = []
     token: str | None = None
     for _ in range(MAX_PAGES):
@@ -56,9 +60,11 @@ def fetch_fill_activities(get: Get) -> list[dict[str, Any]]:
             raise ValueError(f"unexpected response from Alpaca: {str(page)[:200]}")
         out.extend(page)
         if len(page) < PAGE_SIZE:
-            break
+            return out
+        if page[-1]["id"] == token:
+            raise ValueError("Alpaca returned the same page twice; the fill history is incomplete")
         token = page[-1]["id"]
-    return out
+    raise ValueError(f"more than {MAX_PAGES * PAGE_SIZE:,} fill activities; stopped rather than store part of them")
 
 
 def fetch_positions(get: Get) -> dict[str, Decimal]:

@@ -685,5 +685,9 @@ class BrakeMiddleware(Middleware):
         for m in memories or []:
             if not isinstance(m, dict):
                 continue
-            out.append({k: _json_safe(m.get(k)) for k in ("memory_id", "direction", "pnl", "pnl_r", "reflection") if k in m})
+            out.append({
+                k: _json_safe(m.get(k))
+                for k in ("memory_id", "direction", "pnl", "pnl_r", "lot_size", "reflection")
+                if k in m
+            })
         return out[:3]
