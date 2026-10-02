@@ -34,6 +34,14 @@ proxy = [
     "fastmcp>=3.2.0,<4",
     "mnemox-control>=0.3.1,<0.4 ; python_version >= '3.12'",
 ]
+mt5 = [
+    # MT5 scripts in scripts/ and the Windows launchers in scripts/platform/.
+    # MetaTrader5 ships Windows wheels only; schedule runs start_tradememory.pyw's
+    # reflection schedule; pytz is imported by scripts/trade_adapter.py.
+    "MetaTrader5>=5.0.45 ; sys_platform == 'win32'",
+    "schedule>=1.2.0",
+    "pytz>=2023.3",
+]
 test = [
     "pytest>=9.0.3",
     "pytest-asyncio>=0.23.3",

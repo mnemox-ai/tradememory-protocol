@@ -10,5 +10,5 @@ numpy>=1.24.0
 python-dotenv>=1.2.2
 requests>=2.33.0
 
-# Optional: MT5 integration (required for mt5_sync.py)
-# MetaTrader5>=5.0.45
+# Optional: MT5 integration (mt5_sync.py, trade_adapter.py, the Windows launchers),
+# installed with the package's extra instead: pip install -e ".[mt5]"
