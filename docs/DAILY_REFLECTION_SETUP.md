@@ -29,6 +29,8 @@
 schtasks /create /tn "TradeMemory Daily Reflection" /tr "C:\Users\<你的使用者名稱>\projects\tradememory-protocol\scripts\platform\start_daily_reflection.bat" /sc daily /st 23:55 /ru SYSTEM
 ```
 
+`start_daily_reflection.bat` 挑 Python 的順序同 [MT5_SYNC_SETUP.md](MT5_SYNC_SETUP.md) 的方式 C（環境變數 `PYTHON`、repo 的 `.venv`、PATH 上的 `python`），用了哪一個會寫在 `logs\reflection.log`。用 `/ru SYSTEM` 註冊時，工作讀不到你自己帳號設的 `PYTHON`，會用 repo 的 `.venv`，所以 `.venv` 要先裝好。
+
 ### 2. 測試執行
 
 手動執行腳本測試：
