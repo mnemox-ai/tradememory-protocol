@@ -8,11 +8,39 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 ## [Unreleased]
 
 ### Added
+- **Rules learned from your own history.** `tradememory sync hyperliquid|alpaca`
+  now suggests a rule when the history shows the trader sizing up right after
+  two losses in a row more often than they size up at all (one-sided binomial
+  test against their own rate, p <= 0.10, and at least 5 points above it) and
+  those sized-up trades lost money in total. The suggestion is saved to
+  `~/.tradememory/rules.json` as proposed and does nothing until
+  `tradememory rules approve <id>` (optionally `--max-notional`,
+  `--action deny`). `tradememory rules list` and `rules retire` manage it.
+  On 2026-10-05 none of 18 high-volume Hyperliquid accounts we sampled
+  qualified; 8 of the 51 smaller accounts with enough trades did (8 to 36
+  points above their usual rate).
+- The broker brake enforces approved rules on every new order (`proxy run
+  --rules`, default `~/.tradememory/rules.json`, re-read per order): when the
+  account's two latest closed trades are losses and the order is at or above
+  the rule's limit, it is held for approval (`TM_RULE_SIZE_AFTER_LOSING_STREAK`)
+  or refused. A rule never lifts a policy DENY, never holds a reducing or
+  closing order, and an ESCALATE is lifted by the same `proxy approve` of exact
+  terms. A rule edited after approval makes the brake refuse every order until
+  it is retired. Decisions a rule changed are chained over the whole record.
+  `brake_status` and `proxy status` list the active rules.
+- The loss report shows how often the trader sizes up across all trades next
+  to the share after a losing streak, and says whether the difference is real
+  (`more_often_than_usual`).
 - `mt5` extra: `pip install -e ".[mt5]"` installs MetaTrader5 (Windows only),
   `schedule` and `pytz`, which the MT5 scripts and the Windows launchers in
   `scripts/platform/` use.
 
 ### Fixed
+- `tradememory sync hyperliquid` stopped with "qty and price must be
+  positive" for 4 of 40 sampled addresses: Hyperliquid's "#..." outcome
+  markets close the losing side with a Settlement fill at px 0.0. A price of
+  zero is now accepted (a negative one is still refused) and the trade closes
+  as a full loss.
 - `scripts/mt5_sync.py` stopped at start with an ImportError: `trade_advisor`
   moved to `scripts/research/` in the March reorganisation (#20).
 - The Windows launchers in `scripts/platform/` still used pre-reorganisation

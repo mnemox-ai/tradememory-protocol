@@ -1,8 +1,14 @@
 {
   "name": "tradememory",
-  "version": "0.5.0",
-  "description": "Persistent trade memory for AI trading agents: record trades, recall the losing ones from similar conditions before the next order, and review behaviour over time.",
+  "displayName": "TradeMemory",
+  "version": "0.6.0",
+  "description": "TradeMemory remembers what it cost. Local-first memory and brake for AI trading agents.",
   "author": {
-    "name": "Mnemox AI"
-  }
+    "name": "Mnemox AI",
+    "url": "https://www.mnemox.ai"
+  },
+  "homepage": "https://github.com/mnemox-ai/tradememory-protocol",
+  "repository": "https://github.com/mnemox-ai/tradememory-protocol",
+  "license": "MIT",
+  "keywords": ["trading", "memory", "risk", "trading-journal", "ai-agents"]
 }

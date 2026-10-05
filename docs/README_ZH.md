@@ -38,14 +38,25 @@ tradememory sync alpaca --env-file ~/.secrets/alpaca.env
 
 ```
 After 2 losses in a row (20 trades):
-  5 of them (25%) were 1.5x your usual size or more.
-  All 20 won 60% and made -$1,500.
-  The 5 sized-up trades won 20% and made -$1,700.
+  9 of them (45%) were 1.5x your usual size or more (across all your trades: 25%).
+  That is more often than usual.
+  All 20 won 50% and made -$1,500.
+  The 9 sized-up trades won 22% and made -$2,100.
 
 Median hold: winners 1.5h, losers 9.0h.
+
+Suggested rule (does nothing until you approve it):
+  After 2 losses in a row, new orders of $1,500 or more are held for your approval.
+  To turn it on: tradememory rules approve r-3f2a9c1e5b [--max-notional N] (the brake enforces it on its next order)
 ```
 
 這些是你自己過去交易的描述性統計，不是對下一筆的建議。Hyperliquid 的 API 只提供一個地址近期的成交，不是全部歷史，越早同步，留下的歷史越多。其他交易所：`scripts/` 裡有 MT5 與 Binance 現貨的同步腳本，任何 agent 也都可以用 `remember_trade` 記錄一筆交易。
+
+## 從你自己的歷史學出來的規則
+
+同步只在你的歷史真的有這個習慣時才提出規則：連虧兩筆之後放大部位的比例，比你平常放大部位的比例高（對你自己的比例做單尾二項檢定 p ≤ 0.10，而且至少高 5 個百分點），而且那些放大的交易合計是虧錢的。門檻就是報告裡說的「放大」：你中位數部位的 1.5 倍。大部分人的歷史不會觸發。2026-10-05 抽樣的 18 個高交易量 Hyperliquid 帳戶，沒有一個符合；70 個交易量較小的帳戶（每月 5 千到 20 萬美元）裡，交易筆數夠的 51 個中有 8 個符合，高出 8 到 36 個百分點。
+
+提出來的規則在你核准之前什麼都不做（先看 `tradememory rules list`，再執行 `tradememory rules approve <id>`，也可以用 `--max-notional` 換成你自己的門檻）。核准之後，煞車每張新單都會檢查：帳戶最近兩筆已平倉的交易都是虧損、而且這張單的金額達到門檻，這張單就會跟其他需要核准的單一樣等你同意；如果核准規則時加了 `--action deny`，就直接拒絕。減倉或平倉永遠不擋，規則也不會放行你的政策拒絕的單。煞車只看得到同步寫進來的平倉紀錄，所以交易平倉後要跑 `tradememory sync alpaca --db <煞車用的資料庫>`；每張被擋下的單都會記錄當時的歷史新到哪個時間點。規則核准之後如果被改過，煞車會拒絕所有單，直到你用 `tradememory rules retire <id>` 停用它。
 
 ## 下一張單之前
 
@@ -102,7 +113,7 @@ tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # 核對上游
 tradememory proxy config                                           # 印出要換掉的那一行 MCP 設定
 ```
 
-預設拒絕：清單外的標的、超過單筆或總部位上限的單、沒帶 bracket 停損的進場、觸及當日虧損或回撤上限之後的任何新單、取消持倉中的保護停損、煞車還沒分類過的工具，以及你下過 `tradememory proxy halt FULL_HALT` 之後的一切。永遠不擋：平倉。達到 `approval_notional` 的單會等你執行 `tradememory proxy approve <intent_id> --terms <fingerprint>`，核准的就是你看過的那組條件；agent 用同一個 `client_order_id`、同樣的條件重送，proxy 最多只轉送一次。`evaluate_order` 只回傳同樣的判斷、不下單，給事前檢查和其他框架的顧問層用。任何評估不了的情況，例如報價斷線、不認得的標的、政策沒涵蓋的單型，一律拒絕而不是放行。
+預設拒絕：清單外的標的、超過單筆或總部位上限的單、沒帶 bracket 停損的進場、觸及當日虧損或回撤上限之後的任何新單、取消持倉中的保護停損、煞車還沒分類過的工具，以及你下過 `tradememory proxy halt FULL_HALT` 之後的一切。永遠不擋：平倉。達到 `approval_notional` 的單會等你執行 `tradememory proxy approve <intent_id> --terms <fingerprint>`，核准的就是你看過的那組條件；agent 用同一個 `client_order_id`、同樣的條件重送，proxy 最多只轉送一次。你從自己歷史核准的規則（見[從你自己的歷史學出來的規則](#從你自己的歷史學出來的規則)）也會用同樣的方式擋下新單。`evaluate_order` 只回傳同樣的判斷、不下單，給事前檢查和其他框架的顧問層用。任何評估不了的情況，例如報價斷線、不認得的標的、政策沒涵蓋的單型，一律拒絕而不是放行。
 
 目前狀態：已對一個有狀態的 Alpaca MCP 假上游跑完端到端測試（`tests/proxy/`），並在 2026 年 10 月 1 日對真實的 Alpaca 模擬帳戶跑過：三筆拒絕（清單外標的、沒帶停損、超過單筆上限）、一筆放行的一股 bracket 單真的送到券商、一筆用同一個 `client_order_id` 重送的單由紀錄回覆，沒有產生第二張單。選擇權、改單、stop-limit 與 trailing 單是拒絕不是評估。券商金鑰只交給 proxy 啟動的券商程序，TradeMemory 不保存。
 

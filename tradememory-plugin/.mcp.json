@@ -2,11 +2,7 @@
   "mcpServers": {
     "tradememory": {
       "command": "uvx",
-      "args": ["tradememory-protocol"],
-      "env": {
-        "ANTHROPIC_API_KEY": "",
-        "TRADEMEMORY_API": "http://localhost:8000"
-      }
+      "args": ["tradememory-protocol==0.6.0"]
     }
   }
 }
