@@ -1,6 +1,6 @@
 # TradeMemory Protocol
 
-> Open-source, local-first memory and brake for AI trading agents, over MCP. It syncs fills (Hyperliquid by address, Alpaca read-only), finds where a trader's own history loses money, returns losing trades from similar conditions before the next order, and can refuse orders that break the trader's rules before they reach the broker (Alpaca MCP proxy, preview).
+> TradeMemory remembers what it cost. Open-source, local-first memory and brake for AI trading agents, over MCP. It syncs fills (Hyperliquid by address, Alpaca read-only), finds where a trader's own history loses money, returns losing trades from similar conditions before the next order, and can refuse orders that break the trader's rules before they reach the broker (Alpaca MCP proxy, preview).
 
 TradeMemory Protocol is an open-source memory layer for AI-assisted trading systems. The memory server never places orders; `tradememory sync` reads fills from a venue, and the optional proxy sits in front of a broker's MCP server. Memory is organized in three layers:
 
@@ -12,6 +12,7 @@ Key capabilities:
 - 20 MCP tools, including remember_trade, recall_memories (order="losses_first" before a trade), get_behavioral_analysis, check_trade_legitimacy, and the audit-chain tools
 - tradememory sync hyperliquid / alpaca: fills to closed trades to memory, plus a descriptive loss report
 - tradememory proxy (preview): a policy brake in front of Alpaca's MCP server
+- tradememory rules: when the history shows sizing up after two losses in a row more often than usual, a sync proposes a rule; once the trader approves it, the brake holds such orders
 - MT5 and Binance spot sync scripts in scripts/
 - SHA-256 hash-chained, tamper-evident decision records with daily Merkle roots
 

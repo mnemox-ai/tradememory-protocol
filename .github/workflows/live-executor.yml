@@ -1,4 +1,8 @@
-name: Live Executor
+# Paper simulation only. Every hour it reads public BTCUSDT 1h candles from
+# Binance and updates simulated positions for one strategy in a Supabase table
+# (the log shown at mnemox.ai/live). It places no order on any exchange and
+# holds no exchange keys.
+name: Paper strategy log (simulated, no orders)
 
 on:
   schedule:
