@@ -113,3 +113,36 @@ def test_alpaca_sync_needs_keys(tmp_path):
     env.write_text("# nothing here\n", encoding="utf-8")
     out = CliRunner().invoke(cli, ["sync", "alpaca", "--env-file", str(env), "--dry-run"])
     assert out.exit_code != 0 and "ALPACA_API_KEY" in out.output
+
+
+def _always_suggest(stats, *, source):
+    return {"kind": "size_after_losing_streak", "streak": 2, "max_notional": "1500", "action": "escalate",
+            "source": source, "evidence": {"history_trades": 9, "median_notional": 1000.0, "trades_after_streak": 6,
+                                           "sized_up": 3, "sized_up_share": 0.5, "usual_sized_up_share": 0.2,
+                                           "p_value": 0.03, "sized_up_win_rate": 0.0, "sized_up_net_pnl": -90.0}}
+
+
+def test_a_suggested_rule_is_saved_only_outside_a_dry_run(monkeypatch, tmp_path):
+    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: ([], True))
+    monkeypatch.setattr("tradememory.rules.suggest.suggest_size_rule", _always_suggest)
+    rules = tmp_path / "rules.json"
+    db_path = str(tmp_path / "tm.db")
+    out = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", db_path, "--dry-run",
+                                   "--rules", str(rules)])
+    assert out.exit_code == 0, out.output
+    assert "not saved (dry run)" in out.output and not rules.exists()
+    out = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", db_path, "--rules", str(rules)])
+    assert out.exit_code == 0, out.output
+    assert "tradememory rules approve r-" in out.output
+    assert json.loads(rules.read_text(encoding="utf-8"))["rules"][0]["status"] == "proposed"
+
+
+def test_a_broken_rules_file_is_reported_not_overwritten(monkeypatch, tmp_path):
+    monkeypatch.setattr("tradememory.sync.hyperliquid.fetch_fills", lambda address: ([], True))
+    monkeypatch.setattr("tradememory.rules.suggest.suggest_size_rule", _always_suggest)
+    rules = tmp_path / "rules.json"
+    rules.write_text("{broken", encoding="utf-8")
+    out = CliRunner().invoke(cli, ["sync", "hyperliquid", "--address", ADDR, "--db", str(tmp_path / "tm.db"),
+                                   "--rules", str(rules)])
+    assert out.exit_code == 0, out.output
+    assert "not saved:" in out.output and rules.read_text(encoding="utf-8") == "{broken"

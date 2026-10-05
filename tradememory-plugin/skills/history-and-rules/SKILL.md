@@ -17,7 +17,7 @@ After two losses in a row, does the trader size up (1.5 times their median notio
 
 ## 3. Rules
 
-When the habit shows and those bigger trades lost money in total, the sync saves a proposed rule: after 2 losses in a row, new orders at or above that size are held for the trader's approval. A proposed rule does nothing.
+When the habit shows and those bigger trades lost money in total, the sync saves a proposed rule: after 2 losses in a row, orders that take a position to that size or more are held for the trader's approval. A proposed rule does nothing.
 
 - `tradememory rules list`: proposed and active rules with their evidence.
 - `tradememory rules approve <id> [--max-notional N] [--action deny]`: only the trader runs this. Never approve a rule on the trader's behalf.
@@ -25,6 +25,6 @@ When the habit shows and those bigger trades lost money in total, the sync saves
 
 ## 4. The brake
 
-The brake (`pip install "tradememory-protocol[proxy]"`, Python 3.12+, preview) sits between an agent and Alpaca's official MCP server. Order tools are evaluated against the trader's sealed policy and their approved rules before anything is forwarded. A held order returns `ESCALATE` with code `TM_RULE_SIZE_AFTER_LOSING_STREAK`, the two losing trades that triggered it, and the `tradememory proxy approve` command that releases exactly those terms. Reducing or closing a position is never held. The brake counts only closes that a sync has written, so after trades close the trader runs `tradememory sync alpaca --db <brake database>`.
+The brake (`pip install "tradememory-protocol[proxy]"`, Python 3.12+, preview) sits between an agent and Alpaca's official MCP server. Order tools are evaluated against the trader's sealed policy and their approved rules before anything is forwarded. A held order returns `ESCALATE` with code `TM_RULE_SIZE_AFTER_LOSING_STREAK`, the two losing trades that triggered it, and the `tradememory proxy approve` command that releases exactly those terms. Reducing or closing a position is never held. The brake reads the account's closed trades from the broker at the moment of the order, so no sync is needed for the check; if it cannot read them, it refuses an order big enough to trip the rule.
 
 When an order comes back held or refused, tell the trader which rule and which trades caused it. Do not retry with different terms to get around it.

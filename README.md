@@ -46,7 +46,7 @@ After 2 losses in a row (20 trades):
 Median hold: winners 1.5h, losers 9.0h.
 
 Suggested rule (does nothing until you approve it):
-  After 2 losses in a row, new orders of $1,500 or more are held for your approval.
+  After 2 losses in a row, orders that take a position to $1,500 or more are held for your approval.
   To turn it on: tradememory rules approve r-3f2a9c1e5b [--max-notional N] (the brake enforces it on its next order)
 ```
 
@@ -56,7 +56,7 @@ These are descriptive statistics of your own past trades, not advice about the n
 
 A sync suggests a rule only when your history calls for one: you size up right after two losses in a row more often than you size up at all (a one-sided binomial test against your own rate gives p ≤ 0.10, and the difference is at least 5 points), and those bigger trades lost money in total. The limit is the size the report calls "sized up", 1.5 times your median trade. Most histories do not call for one. On 2026-10-05, none of 18 high-volume Hyperliquid accounts we sampled did; among 70 smaller accounts (US$5k to 200k of monthly volume), 8 of the 51 with enough trades did, by 8 to 36 points.
 
-A suggested rule does nothing until you approve it (`tradememory rules list`, then `tradememory rules approve <id>`, optionally with your own `--max-notional`). From then on the brake checks it on every new order: when the account's two latest closed trades are losses and the order is at or above the limit, the order waits for your approval like any other escalation, or is refused if you approved the rule with `--action deny`. Reducing or closing a position is never held, and a rule never lets through anything your policy refuses. The brake counts only the closes a sync has written, so run `tradememory sync alpaca --db <the brake's database>` after trades close; each held order records how recent that history was. A rule edited after approval makes the brake refuse every order until you retire it with `tradememory rules retire <id>`.
+A suggested rule does nothing until you approve it (`tradememory rules list`, then `tradememory rules approve <id>`, optionally with your own `--max-notional`). From then on the brake checks it on every new order that adds risk: when the account's two latest closed trades are losses and the position the order could leave is at or above the limit, the order waits for your approval like any other escalation, or is refused if you approved the rule with `--action deny`. Two small orders that add up to a big position are held like one big order. The closed trades come from the broker at that moment (its fill history, read through the same MCP server), so a stop that closed a minute ago counts without a sync; if that history cannot be read, an order big enough to trip the rule is refused. Reducing or closing a position is never held, a rule never lets through anything your policy refuses, and an approval you gave before a rule fired does not cover it. A rule edited by hand makes the brake refuse every order until you retire it with `tradememory rules retire <id>`; the check catches careless edits, it is not a signature.
 
 ## Before the next order
 

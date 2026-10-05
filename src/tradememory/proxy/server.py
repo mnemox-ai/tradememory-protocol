@@ -19,6 +19,7 @@ REQUIRED_UPSTREAM_TOOLS = (
     "get_account_info", "get_all_positions", "get_orders", "get_order_by_id",
     "get_order_by_client_id", "get_asset", "get_clock", "get_stock_latest_quote",
     "get_stock_latest_trade", "place_stock_order",
+    "get_account_activities_by_type",  # learned rules read the account's closed trades from the broker
 )
 
 # Only what a child process needs to start: the broker keys plus the variables

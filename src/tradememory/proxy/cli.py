@@ -27,11 +27,17 @@ def _paths(policy: str | None, state: str | None):
 
 
 def _rules_path(rules_file: str | None):
+    """The rules file. A path given explicitly must exist: a typo must not silently mean "no rules"."""
     from pathlib import Path
 
     from ..rules.store import DEFAULT_RULES_PATH
 
-    return Path(rules_file).expanduser() if rules_file else DEFAULT_RULES_PATH
+    if not rules_file:
+        return DEFAULT_RULES_PATH
+    path = Path(rules_file).expanduser()
+    if not path.is_file():
+        raise click.UsageError(f"--rules {rules_file}: no such file")
+    return path
 
 
 @proxy.command("init")

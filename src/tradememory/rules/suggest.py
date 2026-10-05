@@ -8,7 +8,13 @@ rate, p <= 0.10, and at least 5 points above it: the report's
 they "revenge trade": in a 2026-10-05 sample of leaderboard accounts the
 share after a streak sat within a few points of each trader's usual share.
 The threshold is the size the report calls "sized up" (SIZE_UP times the
-median notional), so the rule holds exactly the orders the report counted.
+median notional). The report measures a trade by the largest position it
+reached, so the brake compares the position an order could leave, not the
+order alone: two small orders that add up to a big position are held too.
+
+The test is a screening heuristic, not a formal test: the usual rate is
+estimated from the same history (and includes the after-streak trades, which
+pulls toward "no difference"), and consecutive trades are not independent.
 
 The web page on mnemox.ai ports this function; tests/test_rules.py
 and the page's parity fixtures pin the two to the same output.
@@ -17,6 +23,7 @@ and the page's parity fixtures pin the two to the same output.
 from __future__ import annotations
 
 import math
+from decimal import Decimal
 from typing import Any
 
 from ..sync.report import SIZE_UP, STREAK
@@ -61,11 +68,17 @@ def suggest_size_rule(stats: dict[str, Any], *, source: str) -> dict[str, Any] |
     }
 
 
+def money(value: Any) -> str:
+    """A whole-dollar limit for people: "$1,500". Exact for any stored limit, never through float."""
+    d = Decimal(str(value))
+    return f"${d:,.0f}" if d == d.to_integral_value() else f"${d:,}"
+
+
 def describe_rule(rule: dict[str, Any]) -> str:
     """One line a person can approve or turn down."""
     held = "held for your approval" if rule.get("action", "escalate") == "escalate" else "refused"
     return (
-        f"After {rule['streak']} losses in a row, new orders of ${int(rule['max_notional']):,} "
+        f"After {rule['streak']} losses in a row, orders that take a position to {money(rule['max_notional'])} "
         f"or more are {held}."
     )
 

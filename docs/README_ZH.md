@@ -46,7 +46,7 @@ After 2 losses in a row (20 trades):
 Median hold: winners 1.5h, losers 9.0h.
 
 Suggested rule (does nothing until you approve it):
-  After 2 losses in a row, new orders of $1,500 or more are held for your approval.
+  After 2 losses in a row, orders that take a position to $1,500 or more are held for your approval.
   To turn it on: tradememory rules approve r-3f2a9c1e5b [--max-notional N] (the brake enforces it on its next order)
 ```
 
@@ -56,7 +56,7 @@ Suggested rule (does nothing until you approve it):
 
 同步只在你的歷史真的有這個習慣時才提出規則：連虧兩筆之後放大部位的比例，比你平常放大部位的比例高（對你自己的比例做單尾二項檢定 p ≤ 0.10，而且至少高 5 個百分點），而且那些放大的交易合計是虧錢的。門檻就是報告裡說的「放大」：你中位數部位的 1.5 倍。大部分人的歷史不會觸發。2026-10-05 抽樣的 18 個高交易量 Hyperliquid 帳戶，沒有一個符合；70 個交易量較小的帳戶（每月 5 千到 20 萬美元）裡，交易筆數夠的 51 個中有 8 個符合，高出 8 到 36 個百分點。
 
-提出來的規則在你核准之前什麼都不做（先看 `tradememory rules list`，再執行 `tradememory rules approve <id>`，也可以用 `--max-notional` 換成你自己的門檻）。核准之後，煞車每張新單都會檢查：帳戶最近兩筆已平倉的交易都是虧損、而且這張單的金額達到門檻，這張單就會跟其他需要核准的單一樣等你同意；如果核准規則時加了 `--action deny`，就直接拒絕。減倉或平倉永遠不擋，規則也不會放行你的政策拒絕的單。煞車只看得到同步寫進來的平倉紀錄，所以交易平倉後要跑 `tradememory sync alpaca --db <煞車用的資料庫>`；每張被擋下的單都會記錄當時的歷史新到哪個時間點。規則核准之後如果被改過，煞車會拒絕所有單，直到你用 `tradememory rules retire <id>` 停用它。
+提出來的規則在你核准之前什麼都不做（先看 `tradememory rules list`，再執行 `tradememory rules approve <id>`，也可以用 `--max-notional` 換成你自己的門檻）。核准之後，煞車每張會增加風險的新單都會檢查：帳戶最近兩筆已平倉的交易都是虧損、而且這張單成交後的部位達到門檻，這張單就會跟其他需要核准的單一樣等你同意；如果核准規則時加了 `--action deny`，就直接拒絕。拆成兩張小單、加起來部位很大，一樣會被擋。已平倉的交易是當下向券商讀的（透過同一個 MCP server 讀成交紀錄），一分鐘前剛被停損的單不用同步也算得到；讀不到這段歷史時，大到可能觸發規則的單會被拒絕。減倉或平倉永遠不擋，規則不會放行你的政策拒絕的單，規則觸發之前你給過的核准也不算數。規則被手動改過，煞車會拒絕所有單，直到你用 `tradememory rules retire <id>` 停用它；這個檢查擋得住不小心的修改，但不是簽章。
 
 ## 下一張單之前
 

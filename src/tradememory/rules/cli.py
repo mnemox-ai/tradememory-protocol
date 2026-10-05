@@ -42,6 +42,7 @@ def rules_list(rules_file: str | None, show_all: bool) -> None:
     for r in shown:
         click.echo(f"{r['id']}  [{r['status']}]  {describe_rule(r)}")
         click.echo(f"    {describe_evidence(r)}")
+        click.echo(f"    learned from: {r['source']}")
         if r["status"] == "active":
             click.echo(f"    approved {r['approved_at']}")
 
@@ -49,7 +50,7 @@ def rules_list(rules_file: str | None, show_all: bool) -> None:
 @rules.command("approve")
 @click.argument("rule_id")
 @RULES_OPTION
-@click.option("--max-notional", default=None, help="Your own limit instead of the suggested one (whole account currency).")
+@click.option("--max-notional", default=None, help="Your own limit instead of the suggested one: a whole number of account currency, e.g. 1500.")
 @click.option("--action", type=click.Choice(["escalate", "deny"]), default=None,
               help="escalate holds the order for your approval (default); deny refuses it.")
 def rules_approve(rule_id: str, rules_file: str | None, max_notional: str | None, action: str | None) -> None:
@@ -62,8 +63,9 @@ def rules_approve(rule_id: str, rules_file: str | None, max_notional: str | None
     except (KeyError, ValueError, RulesError) as exc:
         raise click.ClickException(str(exc).strip("'")) from exc
     click.echo(f"active: {rule['id']}  {describe_rule(rule)}")
-    click.echo("It counts closed trades the brake knows about; run `tradememory sync alpaca --db <brake db>` "
-               "after trades close so it sees them.")
+    click.echo(f"learned from: {rule['source']}")
+    click.echo("The brake checks it on every new order that adds risk, using the account's closed trades "
+               "read from the broker at that moment.")
 
 
 @rules.command("retire")
