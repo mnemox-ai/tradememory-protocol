@@ -41,8 +41,12 @@ class Fill:
     def __post_init__(self) -> None:
         if self.side not in ("buy", "sell"):
             raise ValueError(f"side must be 'buy' or 'sell', got {self.side!r}")
-        if self.qty <= 0 or self.price <= 0:
-            raise ValueError(f"fill {self.fill_id}: qty and price must be positive")
+        if self.qty <= 0:
+            raise ValueError(f"fill {self.fill_id}: qty must be positive")
+        # Zero is a real price: an expiring contract settles there (Hyperliquid's
+        # "#..." outcome markets close a losing side with a Settlement fill at 0).
+        if self.price < 0:
+            raise ValueError(f"fill {self.fill_id}: price must not be negative")
         if self.time.tzinfo is None:
             raise ValueError(f"fill {self.fill_id}: time must be timezone-aware")
 

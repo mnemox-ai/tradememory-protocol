@@ -10,6 +10,7 @@ from fastmcp import FastMCP
 from fastmcp.client.transports import StdioTransport
 
 from ..db import Database
+from ..rules.store import RulesError, active_rules
 from .brake import BrakeMiddleware
 from .policy import DEFAULT_POLICY_PATH, load_policy
 from .state import DEFAULT_STATE_PATH, ProxyState
@@ -99,6 +100,7 @@ def build_proxy(
     *,
     policy_path: Path | str = DEFAULT_POLICY_PATH,
     state_path: Path | str = DEFAULT_STATE_PATH,
+    rules_path: Path | str | None = None,
     db: Database | None = None,
     agent_id: str = "mcp-agent",
     name: str = "tradememory-brake",
@@ -115,7 +117,7 @@ def build_proxy(
     local_tools = {"recall_memories", "get_behavioral_analysis", "get_agent_state", "brake_status", "evaluate_order"}
     brake = BrakeMiddleware(
         policy=policy, state=ProxyState(state_path), db=database, agent_id=agent_id,
-        recall=recall_memories, local_tools=local_tools,
+        recall=recall_memories, local_tools=local_tools, rules_path=rules_path,
     )
     proxy.add_middleware(brake)
 
@@ -179,7 +181,22 @@ def build_proxy(
             "state_corrupt_reason": brake.state.corrupt_reason,
             "expires_at": policy.expires_at.isoformat(),
             "last_decision": brake.last_decision,
+            "learned_rules": _rules_summary(rules_path),
             "note": "orders need a client_order_id to be retried safely or approved after ESCALATE",
         }
 
     return proxy, brake
+
+
+def _rules_summary(rules_path: Path | str | None) -> Any:
+    """Active owner-approved rules, or why none can be read (orders are refused while it is broken)."""
+    if rules_path is None:
+        return []
+    try:
+        return [
+            {"id": r["id"], "kind": r["kind"], "streak": r["streak"], "max_notional": r["max_notional"],
+             "action": r["action"], "approved_at": r["approved_at"]}
+            for r in active_rules(rules_path)
+        ]
+    except RulesError as exc:
+        return {"error": str(exc), "effect": "every order is refused until the rules file is fixed"}

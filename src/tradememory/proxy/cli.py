@@ -26,6 +26,14 @@ def _paths(policy: str | None, state: str | None):
     )
 
 
+def _rules_path(rules_file: str | None):
+    from pathlib import Path
+
+    from ..rules.store import DEFAULT_RULES_PATH
+
+    return Path(rules_file).expanduser() if rules_file else DEFAULT_RULES_PATH
+
+
 @proxy.command("init")
 @click.option("--account-id", required=True, help="Broker account id the policy binds to (Alpaca: the account 'id').")
 @click.option("--symbols", required=True, help="Comma-separated allowed symbols, e.g. AAPL,MSFT,BTC/USD")
@@ -74,12 +82,13 @@ def proxy_seal(path) -> None:
 @proxy.command("run")
 @click.option("--policy", default=None)
 @click.option("--state", default=None)
+@click.option("--rules", "rules_file", default=None, help="Rules file (default ~/.tradememory/rules.json).")
 @click.option("--env-file", default=None, help="KEY=VALUE file with ALPACA_API_KEY / ALPACA_SECRET_KEY. Passed only to the broker process.")
 @click.option("--upstream", default="uvx alpaca-mcp-server", show_default=True, help="Command that starts the broker MCP server.")
 @click.option("--agent-id", default="mcp-agent", show_default=True)
 @click.option("--live", is_flag=True, help="Use the live account instead of paper. Refused without --i-accept-live-trading.")
 @click.option("--i-accept-live-trading", is_flag=True)
-def proxy_run(policy, state, env_file, upstream, agent_id, live, i_accept_live_trading) -> None:
+def proxy_run(policy, state, rules_file, env_file, upstream, agent_id, live, i_accept_live_trading) -> None:
     """Run the proxy on stdio: point your MCP client here instead of at the broker."""
     import shlex
 
@@ -91,7 +100,8 @@ def proxy_run(policy, state, env_file, upstream, agent_id, live, i_accept_live_t
     env = read_env_file(env_file) if env_file else {}
     parts = shlex.split(upstream)
     backend = alpaca_backend(env=env, paper=not live, command=parts[0], args=parts[1:])
-    server, _ = build_proxy(backend, policy_path=policy_path, state_path=state_path, agent_id=agent_id)
+    server, _ = build_proxy(backend, policy_path=policy_path, state_path=state_path,
+                            rules_path=_rules_path(rules_file), agent_id=agent_id)
     server.run()
 
 
@@ -136,7 +146,8 @@ def proxy_halt(value, state) -> None:
 @proxy.command("status")
 @click.option("--policy", default=None)
 @click.option("--state", default=None)
-def proxy_status(policy, state) -> None:
+@click.option("--rules", "rules_file", default=None, help="Rules file (default ~/.tradememory/rules.json).")
+def proxy_status(policy, state, rules_file) -> None:
     """Show the active policy and owner state."""
     from .policy import load_policy
     from .state import ProxyState
@@ -158,6 +169,18 @@ def proxy_status(policy, state) -> None:
         + (f"\n  CORRUPT: {s.corrupt_reason} (every order is refused until `tradememory proxy halt` resets it)"
            if s.corrupt_reason else "")
     )
+    from ..rules.store import RulesError, active_rules
+    from ..rules.suggest import describe_rule
+
+    rules_path = _rules_path(rules_file)
+    try:
+        rules = active_rules(rules_path)
+    except RulesError as exc:
+        click.echo(f"rules {rules_path}\n  BROKEN: {exc} (every order is refused until it is fixed)")
+        return
+    click.echo(f"rules {rules_path}" + ("" if rules else "\n  none active"))
+    for r in rules:
+        click.echo(f"  {r['id']}  {describe_rule(r)}")
 
 
 @proxy.command("config")

@@ -21,14 +21,53 @@ def _read_env_file(path: str) -> dict[str, str]:
     return env
 
 
-def _emit(summary: dict[str, Any], report: str, as_json: bool, stats: dict[str, Any]) -> None:
+def _suggest(stats: dict[str, Any], *, source: str, dry_run: bool, rules_file: str | None) -> dict[str, Any] | None:
+    """Propose a rule when the history calls for one. Proposed rules do nothing until approved."""
+    from pathlib import Path
+
+    from ..rules.store import DEFAULT_RULES_PATH, RulesError, add_proposal
+    from ..rules.suggest import suggest_size_rule
+
+    proposal = suggest_size_rule(stats, source=source)
+    if proposal is None:
+        return None
+    if dry_run:
+        return {**proposal, "status": "not saved (dry run)"}
+    path = Path(rules_file).expanduser() if rules_file else DEFAULT_RULES_PATH
+    try:
+        rule, created = add_proposal(proposal, path=path)
+    except RulesError as exc:
+        return {**proposal, "status": f"not saved: {exc}"}
+    return {**rule, "saved_to": str(path), "new": created}
+
+
+def _emit(summary: dict[str, Any], report: str, as_json: bool, stats: dict[str, Any],
+          suggestion: dict[str, Any] | None = None) -> None:
     if as_json:
-        click.echo(json.dumps({"summary": summary, "patterns": stats}, indent=2, default=str))
+        click.echo(json.dumps({"summary": summary, "patterns": stats, "suggested_rule": suggestion},
+                              indent=2, default=str))
         return
     for key, value in summary.items():
         click.echo(f"{key.replace('_', ' ')}: {value}")
     click.echo("")
     click.echo(report)
+    if suggestion is None:
+        return
+    from ..rules.suggest import describe_evidence, describe_rule
+
+    click.echo("")
+    click.echo("Suggested rule (does nothing until you approve it):")
+    click.echo(f"  {describe_rule(suggestion)}")
+    click.echo(f"  Why: {describe_evidence(suggestion)}")
+    if suggestion.get("id"):
+        state = suggestion.get("status")
+        if state == "proposed":
+            click.echo(f"  To turn it on: tradememory rules approve {suggestion['id']}"
+                       " [--max-notional N] (the brake enforces it on its next order)")
+        else:
+            click.echo(f"  {suggestion['id']} is already {state}.")
+    else:
+        click.echo(f"  {suggestion.get('status')}")
 
 
 @click.group()
@@ -41,7 +80,8 @@ def sync() -> None:
 @click.option("--db", "db_path", default=None, help="SQLite file to store into (default: TradeMemory's usual database).")
 @click.option("--dry-run", is_flag=True, help="Fetch and report only; store nothing.")
 @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
-def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: bool) -> None:
+@click.option("--rules", "rules_file", default=None, help="Where a suggested rule is saved (default ~/.tradememory/rules.json).")
+def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: bool, rules_file: str | None) -> None:
     """Rebuild an address's Hyperliquid perp trades and store them in memory.
 
     Hyperliquid serves only an address's recent fills, so older history is
@@ -78,7 +118,9 @@ def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: 
         if result.repaired:
             summary["finished_after_an_interrupted_run"] = len(result.repaired)
     stats = loss_patterns(built.trips)
-    _emit(summary, render_report(stats, title=f"Hyperliquid {address[:6]}...{address[-4:]}"), as_json, stats)
+    suggestion = _suggest(stats, source=f"Hyperliquid {address}", dry_run=dry_run, rules_file=rules_file)
+    _emit(summary, render_report(stats, title=f"Hyperliquid {address[:6]}...{address[-4:]}"), as_json, stats,
+          suggestion)
 
 
 @sync.command("alpaca")
@@ -89,7 +131,9 @@ def sync_hyperliquid(address: str, db_path: str | None, dry_run: bool, as_json: 
 @click.option("--live", is_flag=True, help="Read the live account instead of paper. Read-only either way.")
 @click.option("--dry-run", is_flag=True, help="Fetch and report only; store nothing.")
 @click.option("--json", "as_json", is_flag=True, help="Machine-readable output.")
-def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, as_json: bool) -> None:
+@click.option("--rules", "rules_file", default=None, help="Where a suggested rule is saved (default ~/.tradememory/rules.json).")
+def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, as_json: bool,
+                rules_file: str | None) -> None:
     """Rebuild the account's trades from its fills and fill in the brake's outcomes."""
     from .alpaca import (
         LIVE_URL,
@@ -143,4 +187,6 @@ def sync_alpaca(env_file: str, db_path: str | None, live: bool, dry_run: bool, a
         if result.repaired:
             summary["finished_after_an_interrupted_run"] = len(result.repaired)
     stats = loss_patterns(trips)
-    _emit(summary, render_report(stats, title=f"Alpaca {'live' if live else 'paper'} account"), as_json, stats)
+    venue = f"Alpaca {'live' if live else 'paper'} account"
+    suggestion = _suggest(stats, source=venue, dry_run=dry_run, rules_file=rules_file)
+    _emit(summary, render_report(stats, title=venue), as_json, stats, suggestion)
