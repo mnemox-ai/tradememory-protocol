@@ -7,6 +7,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-05
+
 ### Added
 - **Rules learned from your own history.** `tradememory sync hyperliquid|alpaca`
   now suggests a rule when the history shows the trader sizing up right after

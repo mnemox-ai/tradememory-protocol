@@ -7,7 +7,7 @@ description: >-
   Works alongside Binance Spot, Futures, and Web3 skills: they execute trades,
   TradeMemory records why.
 metadata:
-  version: 0.5.6
+  version: 0.6.0
   author: mnemox-ai
 license: MIT
 ---

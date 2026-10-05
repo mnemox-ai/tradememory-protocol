@@ -1,7 +1,7 @@
 ---
 name: tradememory
 slug: tradememory
-version: 0.5.6
+version: 0.6.0
 description: >-
   Memory and a brake for AI trading agents. 20 MCP tools: outcome-weighted
   recall, behavioral drift alerts, tamper-evident audit chain. Optional proxy
