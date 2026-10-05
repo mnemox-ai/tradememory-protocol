@@ -288,3 +288,13 @@ async def test_an_approval_given_before_the_rule_fired_does_not_cover_it(tmp_pat
     res = await w.call("place_stock_order", order(qty="2", cid="big"))
     assert res.structured_content["decision"] == "ESCALATE" and RULE_CODE in codes(res)
     assert w.fake.placed == []
+
+
+async def test_the_reply_names_the_hash_the_chain_anchored_when_no_rule_fired(tmp_path):
+    w = World(tmp_path)
+    res = await w.call("place_stock_order", order(qty="1", cid="small"))  # below every limit
+    s = res.structured_content
+    tier, factors = w.events()[-1]
+    assert tier == "ALLOW" and "learned_rules_checked" in factors
+    assert s["decision_record_hash"] == factors["content_hash"] == factors_hash(factors)
+    assert "evaluation_hash" not in s or s["evaluation_hash"] == factors["content_hash"]

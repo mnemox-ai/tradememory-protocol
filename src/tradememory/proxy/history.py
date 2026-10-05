@@ -29,7 +29,9 @@ from . import alpaca
 UpstreamCall = Callable[[str, dict[str, Any]], Awaitable[Any]]
 PAGE_SIZE = 100
 MAX_PAGES = 200  # 20,000 fills, the same ceiling as `tradememory sync alpaca`
-OVERLAP = timedelta(seconds=2)  # re-read the edge of the last read; duplicates are dropped by id
+# Re-read this much before the newest fill already seen: a fill the broker reports late is
+# not missed by the next incremental read. Duplicates are dropped by id.
+OVERLAP = timedelta(minutes=10)
 
 
 class HistoryUnavailable(RuntimeError):

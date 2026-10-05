@@ -247,7 +247,7 @@ class BrakeMiddleware(Middleware):
                 structured = {
                     "decision": "ESCALATE", "order_placed": False, "intent_id": intent_key,
                     "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-                    **self._hashes(evaluation, learned, event_id), "rules": flagged,
+                    **self._hashes(evaluation, learned, event_id, checked is not None), "rules": flagged,
                     "terms": summary, "terms_fingerprint": approval_key,
                     "how_to_approve": (
                         f"owner runs: tradememory proxy approve {intent_key} --terms {approval_key} "
@@ -306,7 +306,7 @@ class BrakeMiddleware(Middleware):
         structured = {
             "decision": "ALLOW", "order_placed": True, "intent_id": intent_key,
             "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-            **self._hashes(evaluation, learned, event_id), "approved_by_owner": approved,
+            **self._hashes(evaluation, learned, event_id, checked is not None), "approved_by_owner": approved,
             "prior_outcomes": prior,
             "upstream": getattr(upstream_result, "structured_content", None) or payload,
         }
@@ -401,7 +401,7 @@ class BrakeMiddleware(Middleware):
                 "decision": decision.value, "dry_run": True, "order_placed": False,
                 "rules": flagged, "denied_rules": flagged if decision is Decision.DENY else [],
                 "terms": alpaca.terms_summary(tool, args), "decision_event": event_id,
-                "policy_hash": evaluation.policy_hash, **self._hashes(evaluation, learned, event_id),
+                "policy_hash": evaluation.policy_hash, **self._hashes(evaluation, learned, event_id, checked is not None),
             }
 
     # ------------------------------------------------------------------ learned rules
@@ -470,16 +470,22 @@ class BrakeMiddleware(Middleware):
             extra["control_decision"] = evaluation.decision.value
         return extra
 
-    def _hashes(self, evaluation: EvaluationResult, learned: list[dict[str, Any]], event_id: str | None) -> dict[str, Any]:
+    def _hashes(self, evaluation: EvaluationResult, learned: list[dict[str, Any]], event_id: str | None,
+                rules_checked: bool) -> dict[str, Any]:
         """Hashes a verifier can use. Control's evaluation hash describes Control's decision only;
         the decision record hash is what the audit chain anchored for this decision."""
-        out: dict[str, Any] = {"control_evaluation_hash": content_sha256(evaluation)}
+        control = content_sha256(evaluation)
+        out: dict[str, Any] = {"control_evaluation_hash": control}
+        record = None
         if event_id is not None and self.last_decision is not None and self.last_decision.get("event_id") == event_id:
-            out["decision_record_hash"] = self.last_decision.get("content_hash")
+            record = self.last_decision.get("content_hash")
+            out["decision_record_hash"] = record
         if learned:
             out["control_decision"] = evaluation.decision.value
-        else:
-            out["evaluation_hash"] = out["control_evaluation_hash"]  # same meaning as before when Control decided alone
+        # Kept with its old meaning when no learned rule was involved. Once rules were checked,
+        # the chain covers the whole record and only decision_record_hash matches the chain link.
+        if not rules_checked:
+            out["evaluation_hash"] = control
         return out
 
     # ------------------------------------------------------------------ collection
@@ -660,7 +666,8 @@ class BrakeMiddleware(Middleware):
         if intent is not None:
             structured["intent_id"] = str(intent.intent_id)
         if evaluation is not None:
-            structured.update(self._hashes(evaluation, extra.get("learned_rules") or [], event_id))
+            structured.update(self._hashes(evaluation, extra.get("learned_rules") or [], event_id,
+                                           "learned_rules_checked" in extra))
         return ToolResult(content=json.dumps(structured), structured_content=structured)
 
     # ------------------------------------------------------------------ recording
