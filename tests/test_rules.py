@@ -25,7 +25,8 @@ UTC = timezone.utc
 T0 = datetime(2026, 10, 1, 12, 0, tzinfo=UTC)
 
 
-def stats(*, enough=True, sized_up=3, sized_net=-420.0, median=1000.0, after=8, trades=60, base=0.1, p=0.04):
+def stats(*, enough=True, sized_up=3, sized_net=-420.0, median=1000.0, after=8, trades=60, base=0.1, p=0.04,
+          more_often=True):
     return {
         "trades": trades,
         "median_notional": median,
@@ -35,6 +36,7 @@ def stats(*, enough=True, sized_up=3, sized_net=-420.0, median=1000.0, after=8, 
             "sized_up_share": sized_up / after if after else None,
             "baseline_sized_up_share": base,
             "sized_up_p_value": p,
+            "more_often_than_usual": more_often,
             "sized_up_result": {"trades": sized_up, "win_rate": 0.33, "net_pnl": sized_net},
             "after_streak_result": {"trades": after, "win_rate": 0.4, "net_pnl": -100.0},
             "enough_data": enough,
@@ -69,8 +71,7 @@ def test_threshold_rounds_down_to_whole_dollars():
     {"sized_net": 0.0},  # sizing up did not cost money
     {"sized_net": 250.0},
     {"median": 0.0},
-    {"p": 0.11},  # sizes up after losses about as often as always
-    {"p": None},
+    {"more_often": False},  # sizes up after losses about as often as always
 ])
 def test_no_suggestion_without_a_costly_habit(kwargs):
     assert suggest_size_rule(stats(**kwargs), source="x") is None
@@ -234,3 +235,33 @@ def test_binomial_tail_does_not_underflow_on_long_histories():
     # (1 - 0.4) ** 5000 underflows a float; the log-space sum must not.
     assert binomial_tail(2000, 5000, 0.4) == pytest.approx(0.5, abs=0.02)
     assert binomial_tail(2300, 5000, 0.4) < 1e-9
+
+
+def test_more_often_than_usual_needs_both_significance_and_a_real_difference():
+    from datetime import datetime, timedelta, timezone
+    from decimal import Decimal as D
+
+    from tradememory.sync.fills import RoundTrip
+    from tradememory.sync.report import loss_patterns
+
+    t0 = datetime(2026, 1, 1, tzinfo=timezone.utc)
+
+    def trip(i, pnl, size):
+        return RoundTrip(source="x", account="a", symbol="BTC", direction="long",
+                         entry_time=t0 + timedelta(hours=2 * i), exit_time=t0 + timedelta(hours=2 * i + 1),
+                         opened_qty=D(size), max_position=D(size), avg_entry=D(100), avg_exit=D(100),
+                         gross_pnl=D(pnl), fees=D(0), adds=0, fill_ids=[f"f{i}"])
+
+    # Cycle: win, loss, loss, then a big losing trade. Half the trades after two losses
+    # are big (the big one, and the small win that follows it), against a quarter overall.
+    pattern = [(10, 1), (-5, 1), (-5, 1), (-20, 3)]
+    trips = [trip(i, *pattern[i % 4]) for i in range(80)]
+    s = loss_patterns(trips)["after_losing_streak"]
+    assert s["sized_up_share"] == pytest.approx(0.5, abs=0.02) and s["baseline_sized_up_share"] == 0.25
+    assert s["sized_up_p_value"] < 0.01 and s["more_often_than_usual"] is True
+    assert suggest_size_rule(loss_patterns(trips), source="x") is not None
+
+    # Same sizes everywhere: never more often than usual, whatever the p-value says.
+    flat = [trip(i, -5, 1) for i in range(60)]
+    s = loss_patterns(flat)["after_losing_streak"]
+    assert s["more_often_than_usual"] is False

@@ -3,8 +3,8 @@
 Only one kind exists so far: size after a losing streak. It is suggested when
 the history shows the trader sizing up right after losses in a row more often
 than they size up in general (a one-sided binomial test against their own
-rate, p <= MORE_THAN_USUAL_P), and those sized-up trades losing money in
-total. Without the comparison, a trader who often trades big would be told
+rate, p <= 0.10, and at least 5 points above it: the report's
+``more_often_than_usual``), and those sized-up trades losing money in total. Without the comparison, a trader who often trades big would be told
 they "revenge trade": in a 2026-10-05 sample of leaderboard accounts the
 share after a streak sat within a few points of each trader's usual share.
 The threshold is the size the report calls "sized up" (SIZE_UP times the
@@ -19,7 +19,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
-from ..sync.report import MORE_THAN_USUAL_P, SIZE_UP, STREAK
+from ..sync.report import SIZE_UP, STREAK
 
 SIZE_AFTER_LOSING_STREAK = "size_after_losing_streak"
 MIN_SIZED_UP = 2  # one sized-up loser is an anecdote, not a habit
@@ -33,9 +33,9 @@ def suggest_size_rule(stats: dict[str, Any], *, source: str) -> dict[str, Any] |
         return None
     if streak["sized_up"] < MIN_SIZED_UP:
         return None
-    p_value = streak.get("sized_up_p_value")
-    if p_value is None or p_value > MORE_THAN_USUAL_P:
+    if not streak.get("more_often_than_usual"):
         return None
+    p_value = streak["sized_up_p_value"]
     sized_up = streak["sized_up_result"]
     if sized_up["net_pnl"] >= 0:
         return None

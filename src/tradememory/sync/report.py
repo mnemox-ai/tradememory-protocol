@@ -18,6 +18,8 @@ STREAK = 2  # losses in a row before the next trade counts as "after a losing st
 SIZE_UP = 1.5  # notional at least this many times the trader's median counts as sizing up
 MIN_SAMPLE = 5  # below this a pattern is reported as "not enough trades"
 MORE_THAN_USUAL_P = 0.10  # below this, sizing up after a streak is called "more often than usual"
+MIN_LIFT = 0.05  # ...and only when it is at least 5 points above the usual share: a huge history
+                 # makes a 2-point difference "significant" without it meaning anything
 
 
 def _f(x: Decimal) -> float:
@@ -91,6 +93,13 @@ def loss_patterns(trips: list[RoundTrip]) -> dict[str, Any]:
         "after_streak_result": _summary(after_streak),
         "enough_data": len(after_streak) >= MIN_SAMPLE,
     }
+    p_value = streak["sized_up_p_value"]
+    streak["more_often_than_usual"] = bool(
+        streak["enough_data"]
+        and p_value is not None
+        and p_value <= MORE_THAN_USUAL_P
+        and streak["sized_up_share"] - streak["baseline_sized_up_share"] >= MIN_LIFT
+    )
 
     # 2. Holding losers longer than winners.
     winners = [t.hold_seconds for t in trips if t.net_pnl > 0]
@@ -178,11 +187,10 @@ def render_report(stats: dict[str, Any], *, title: str) -> str:
             f"  {s['sized_up']} of them ({s['sized_up_share']:.0%}) were {SIZE_UP:g}x your usual size or more"
             f" (across all your trades: {s['baseline_sized_up_share']:.0%})."
         )
-        p = s["sized_up_p_value"]
         lines.append(
             "  That is more often than usual."
-            if p is not None and p <= MORE_THAN_USUAL_P
-            else "  About as often as usual: no sign that losses make you size up."
+            if s["more_often_than_usual"]
+            else "  Not clearly more often than usual: no sign that losses make you size up."
         )
         lines.append(f"  All {s['trades_after_streak']} won {r['win_rate']:.0%} and made {_money(r['net_pnl'])}.")
         if s["sized_up"]:
