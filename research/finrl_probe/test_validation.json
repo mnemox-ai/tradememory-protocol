@@ -1,0 +1,29 @@
+{
+  "recorded_at_utc": "2026-10-09T19:20:23.013388+00:00",
+  "production_source_changes": false,
+  "suite_scope": "existing recall ranking and MCP wireup; not full repository suite",
+  "runs": [
+    {
+      "files": [
+        "tests/test_losses_first_recall.py",
+        "tests/test_owm_recall.py",
+        "tests/test_hybrid_recall.py"
+      ],
+      "passed": 75,
+      "seconds": 2.77,
+      "exit_code": 0
+    },
+    {
+      "files": [
+        "tests/test_recall_hybrid_wireup.py"
+      ],
+      "passed": 5,
+      "seconds": 1.72,
+      "exit_code": 0
+    }
+  ],
+  "total_passed": 80,
+  "python": "3.11.9",
+  "pytest": "9.1.1",
+  "environment_issue": "Sandbox initially stalled at asyncio socketpair -> socket.accept while building Windows event loop (faulthandler stack). Identical assertions passed with normal local socket permissions; no mocks or source changes."
+}

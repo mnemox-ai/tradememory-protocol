@@ -1,0 +1,140 @@
+{
+  "run_at_utc": "2026-10-09T19:02:50.074151+00:00",
+  "adapted_finrl_gate": false,
+  "upstream_files_unchanged": true,
+  "checks": [
+    {
+      "name": "finrl_cash",
+      "actual": 10000.0,
+      "expected": 10000.0,
+      "pass": true
+    },
+    {
+      "name": "finrl_half",
+      "actual": 10500.0,
+      "expected": 10500.0,
+      "pass": true
+    },
+    {
+      "name": "finrl_full",
+      "actual": 11000.0,
+      "expected": 11000.0,
+      "pass": true
+    },
+    {
+      "name": "finrl_entry_cost",
+      "actual": 10000.0,
+      "expected": 9990.00999000999,
+      "pass": false
+    },
+    {
+      "name": "finrl_roundtrip_cost",
+      "actual": 9979.9892578125,
+      "expected": 9980.01998001998,
+      "pass": false
+    },
+    {
+      "name": "finrl_terminal_reward_should_be_zero",
+      "actual": -0.20030520856380463,
+      "previous_reward": -0.20030520856380463,
+      "pass": false,
+      "scope": "original extra terminal call; adapted path never calls it"
+    },
+    {
+      "name": "adapter_roundtrip_cost",
+      "actual": 9979.9892578125,
+      "expected": 9980.01998001998,
+      "pass": false
+    },
+    {
+      "name": "adapter_exact_transition_count",
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_value_0",
+      "actual": 10200.0,
+      "expected": 10200.0,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_reward_0",
+      "actual": 1.9802610874176025,
+      "expected": 1.9802610874176025,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_observation_0",
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_value_1",
+      "actual": 9226.36328125,
+      "expected": 9226.36328125,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_reward_1",
+      "actual": -10.032275199890137,
+      "expected": -10.032275199890137,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_observation_1",
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_value_2",
+      "actual": 9214.0244140625,
+      "expected": 9214.0244140625,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_reward_2",
+      "actual": -0.1338244378566742,
+      "expected": -0.1338244378566742,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_observation_2",
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_value_3",
+      "actual": 8687.5087890625,
+      "expected": 8687.5087890625,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_reward_3",
+      "actual": -5.884049892425537,
+      "expected": -5.884049892425537,
+      "pass": true
+    },
+    {
+      "name": "adapter_equivalent_observation_3",
+      "pass": true
+    },
+    {
+      "name": "future_prices_do_not_change_prefix",
+      "pass": true
+    },
+    {
+      "name": "broken_normalization_detected",
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    {
+      "name": "finrl_x_half_exposure",
+      "actual": 11000.000000000002,
+      "expected": 10500.0,
+      "pass": false
+    },
+    {
+      "name": "finrl_x_returns_trade_trace",
+      "pass": false,
+      "rows": 0,
+      "scope": "generic BacktestResult, not adaptive_rotation"
+    }
+  ]
+}

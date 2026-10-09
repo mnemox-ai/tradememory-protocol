@@ -1,0 +1,342 @@
+{
+  "checks": [
+    {
+      "label": "SPY_cash_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_cash_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_full_target_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.8189894035458565e-12,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_full_target_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_sma20_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 2.9103830456733704e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_sma20_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 2.7284841053187847e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_ppo_11_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.0913936421275139e-10,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_ppo_11_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 8.003553375601768e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_ppo_23_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 4.9112713895738125e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_ppo_23_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 3.54702933691442e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_ppo_37_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.0732037480920553e-10,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_ppo_37_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 9.094947017729282e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_ppo_51_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 4.18367562815547e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_ppo_51_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.4569682106375694e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "SPY_ppo_71_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.093170329928398e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "SPY_ppo_71_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.729816621169448e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_cash_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_cash_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_full_target_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_full_target_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.8189894035458565e-12,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_sma20_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 3.456079866737127e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_sma20_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 4.001776687800884e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_ppo_11_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 9.822542779147625e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_ppo_11_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 9.094947017729282e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_ppo_23_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.000444171950221e-10,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_ppo_23_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 8.36735125631094e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_ppo_37_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.4915713109076023e-10,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_ppo_37_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.1459633242338896e-10,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_ppo_51_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 9.458744898438454e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_ppo_51_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 8.913048077374697e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "QQQ_ppo_71_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.0913936421275139e-10,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "QQQ_ppo_71_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 7.821654435247183e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_cash_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_cash_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_full_target_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_full_target_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 0.0,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_sma20_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 3.8198777474462986e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_sma20_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 3.8198777474462986e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_ppo_11_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 6.730260793119669e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_ppo_11_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 6.912159733474255e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_ppo_23_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 4.638422979041934e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_ppo_23_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.4569682106375694e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_ppo_37_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 1.8189894035458565e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_ppo_37_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 3.2741809263825417e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_ppo_51_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.275069270282984e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_ppo_51_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.4569682106375694e-11,
+      "pass": true,
+      "steps": 437
+    },
+    {
+      "label": "GLD_ppo_71_2023-2024",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 4.729372449219227e-11,
+      "pass": true,
+      "steps": 502
+    },
+    {
+      "label": "GLD_ppo_71_2025-2026Q3",
+      "reproduced_metrics": true,
+      "max_cash_share_fee_error": 5.820766091346741e-11,
+      "pass": true,
+      "steps": 437
+    }
+  ],
+  "all_pass": true,
+  "total_steps": 22536
+}

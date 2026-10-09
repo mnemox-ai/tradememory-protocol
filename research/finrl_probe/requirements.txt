@@ -1,0 +1,18 @@
+# Direct dependencies observed in this run; transitive dependencies are not a full lock.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.14.1+cpu
+numpy==2.4.6
+pandas==3.0.6
+stable-baselines3==2.9.0
+gymnasium==1.4.0
+gym==0.26.2
+bt==1.3.0
+yfinance==1.7.0
+quantstats==0.0.86
+matplotlib==3.11.2
+scipy==1.17.1
+pydantic==2.14.0
+pydantic-settings==2.15.0
+SQLAlchemy==2.1.4
+pandas-market-calendars==5.5.0
+shimmy==2.0.1

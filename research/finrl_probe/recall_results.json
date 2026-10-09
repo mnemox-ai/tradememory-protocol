@@ -1,0 +1,158 @@
+{
+  "rows": [
+    {
+      "asset": "SPY",
+      "seed": 11,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 182,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 2195,
+      "losses_first_loss_slots": 4639,
+      "total_slots": 4645
+    },
+    {
+      "asset": "SPY",
+      "seed": 23,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 181,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1397,
+      "losses_first_loss_slots": 4582,
+      "total_slots": 4645
+    },
+    {
+      "asset": "SPY",
+      "seed": 37,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 188,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 2121,
+      "losses_first_loss_slots": 4642,
+      "total_slots": 4645
+    },
+    {
+      "asset": "SPY",
+      "seed": 51,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 212,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1484,
+      "losses_first_loss_slots": 4645,
+      "total_slots": 4645
+    },
+    {
+      "asset": "SPY",
+      "seed": 71,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 190,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1734,
+      "losses_first_loss_slots": 4632,
+      "total_slots": 4645
+    },
+    {
+      "asset": "QQQ",
+      "seed": 11,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 295,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 2155,
+      "losses_first_loss_slots": 4627,
+      "total_slots": 4645
+    },
+    {
+      "asset": "QQQ",
+      "seed": 23,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 292,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1836,
+      "losses_first_loss_slots": 4618,
+      "total_slots": 4645
+    },
+    {
+      "asset": "QQQ",
+      "seed": 37,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 298,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 2268,
+      "losses_first_loss_slots": 4639,
+      "total_slots": 4645
+    },
+    {
+      "asset": "QQQ",
+      "seed": 51,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 298,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 2035,
+      "losses_first_loss_slots": 4635,
+      "total_slots": 4645
+    },
+    {
+      "asset": "QQQ",
+      "seed": 71,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 299,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1979,
+      "losses_first_loss_slots": 4626,
+      "total_slots": 4645
+    },
+    {
+      "asset": "GLD",
+      "seed": 11,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 235,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1941,
+      "losses_first_loss_slots": 4642,
+      "total_slots": 4645
+    },
+    {
+      "asset": "GLD",
+      "seed": 23,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 252,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1695,
+      "losses_first_loss_slots": 4644,
+      "total_slots": 4645
+    },
+    {
+      "asset": "GLD",
+      "seed": 37,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 247,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1222,
+      "losses_first_loss_slots": 4464,
+      "total_slots": 4645
+    },
+    {
+      "asset": "GLD",
+      "seed": 51,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 233,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1790,
+      "losses_first_loss_slots": 4583,
+      "total_slots": 4645
+    },
+    {
+      "asset": "GLD",
+      "seed": 71,
+      "queries": 929,
+      "wall_clock_vs_replay_changed_top5": 227,
+      "future_leaks_filtered_adapter": 0,
+      "outcome_loss_slots": 1575,
+      "losses_first_loss_slots": 4589,
+      "total_slots": 4645
+    }
+  ],
+  "future_inclusion_positive_control_detected": true,
+  "filtered_control_returns_past": true,
+  "scope": "actual pure hybrid_recall; no embeddings, MCP server, DB writes or decision efficacy",
+  "run_completed_at_utc": "2026-10-09T19:15:19.386817+00:00"
+}

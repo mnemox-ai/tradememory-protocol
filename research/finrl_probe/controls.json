@@ -1,0 +1,115 @@
+{
+  "adapted_finrl_gate": true,
+  "environment": "upstream StockTradingEnv",
+  "checks": [
+    {
+      "name": "cash",
+      "actual": 10000.0,
+      "expected": 10000.0,
+      "pass": true
+    },
+    {
+      "name": "half",
+      "actual": 10500.0,
+      "expected": 10500.0,
+      "pass": true
+    },
+    {
+      "name": "full",
+      "actual": 11000.0,
+      "expected": 11000.0,
+      "pass": true
+    },
+    {
+      "name": "entry_cost_99_integer_shares",
+      "actual": 9990.1,
+      "expected": 9990.1,
+      "pass": true
+    },
+    {
+      "name": "roundtrip_cost_99_integer_shares",
+      "actual": 9980.2,
+      "expected": 9980.2,
+      "pass": true
+    },
+    {
+      "name": "exact_transition_count",
+      "actual": 3.0,
+      "expected": 3.0,
+      "pass": true
+    },
+    {
+      "name": "terminal_on_last_real_transition",
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    {
+      "name": "original_accounting_equality_0",
+      "actual": 10198.0,
+      "expected": 10198.0,
+      "pass": true
+    },
+    {
+      "name": "original_fee_equality_0",
+      "actual": 2.0,
+      "expected": 2.0,
+      "pass": true
+    },
+    {
+      "name": "original_accounting_equality_1",
+      "actual": 9233.16,
+      "expected": 9233.16,
+      "pass": true
+    },
+    {
+      "name": "original_fee_equality_1",
+      "actual": 6.84,
+      "expected": 6.84,
+      "pass": true
+    },
+    {
+      "name": "original_accounting_equality_2",
+      "actual": 9227.080000000002,
+      "expected": 9227.080000000002,
+      "pass": true
+    },
+    {
+      "name": "original_fee_equality_2",
+      "actual": 12.92,
+      "expected": 12.92,
+      "pass": true
+    },
+    {
+      "name": "original_accounting_equality_3",
+      "actual": 8695.945000000003,
+      "expected": 8695.945000000003,
+      "pass": true
+    },
+    {
+      "name": "original_fee_equality_3",
+      "actual": 22.055,
+      "expected": 22.055,
+      "pass": true
+    },
+    {
+      "name": "future_price_perturbation",
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    {
+      "name": "future_price_perturbation_window20",
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    },
+    {
+      "name": "broken_full_weight_control_detected",
+      "actual": 1.0,
+      "expected": 1.0,
+      "pass": true
+    }
+  ],
+  "portfolio_path": "quarantined; see portfolio_controls.json"
+}

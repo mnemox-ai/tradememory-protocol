@@ -1,0 +1,28 @@
+{
+  "scope": "exact upstream _generate_performance_report only",
+  "source_sha256": "968071fd23ff8dd1dea47ed096e9f4454efc12e58a5b42618c095a9c434b0c1f",
+  "checks": [
+    {
+      "name": "half_cash_preserved",
+      "actual_return": 0.050000000000000044,
+      "expected_net_return": 0.05,
+      "pass": true,
+      "portfolio": [
+        1.0,
+        1.05,
+        1.05
+      ]
+    },
+    {
+      "name": "flat_roundtrip_cost_not_charged",
+      "actual_return": 0.0,
+      "expected_net_return": -0.0019980019980018193,
+      "pass": false,
+      "portfolio": [
+        1.0,
+        1.0,
+        1.0
+      ]
+    }
+  ]
+}

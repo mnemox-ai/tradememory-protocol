@@ -1,0 +1,4 @@
+.cache/
+.venv/
+tasks.txt
+__pycache__/
