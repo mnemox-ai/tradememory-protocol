@@ -39,7 +39,8 @@ class ReplayEngine:
         self.decisions: List[Dict[str, Any]] = []
         self.total_bars = 0
         self._d1_atr_lookup: Dict[date, float] = {}
-        self._checkpoint_path = Path(config.data_path).with_suffix(".checkpoint.json")
+        self._checkpoint_path = (Path(config.checkpoint_path) if config.checkpoint_path
+                                 else Path(config.data_path).with_suffix(".checkpoint.json"))
         self._memory_recalls_count = 0
 
     def run(self, dry_run: bool = False) -> Dict[str, Any]:
@@ -75,6 +76,7 @@ class ReplayEngine:
         system_prompt = self.config.system_prompt or build_system_prompt()
         last_decision_idx: Optional[int] = None
         decision_count = 0
+        stopped_early = False
 
         for bar_idx, window, current_bar in sliding_window(
             bars, self.config.window_size, self.config.decision_interval
@@ -85,6 +87,7 @@ class ReplayEngine:
 
             # Cost control: stop after max_decisions
             if self.config.max_decisions > 0 and decision_count >= self.config.max_decisions:
+                stopped_early = True
                 break
 
             # Check intermediate bars for SL/TP between decision points
@@ -104,11 +107,16 @@ class ReplayEngine:
                     {
                         "bar_idx": bar_idx,
                         "timestamp": current_bar.timestamp.isoformat(),
+                        "decision_time_utc": self._decision_time(current_bar.timestamp).isoformat(),
                         "close": current_bar.close,
                         "indicators": indicators.model_dump(),
                         "decision": "DRY_RUN",
                     }
                 )
+                decision_count += 1
+                if self.config.max_decisions > 0 and decision_count >= self.config.max_decisions:
+                    stopped_early = True
+                    break
                 continue
 
             # Memory recall (before LLM call)
@@ -127,6 +135,7 @@ class ReplayEngine:
                         regime=regime,
                         session=session,
                         atr_d1=d1_atr or 0.0,
+                        as_of=self._decision_time(current_bar.timestamp),
                     )
                 else:
                     # Default built-in recall
@@ -138,6 +147,8 @@ class ReplayEngine:
                         regime=regime,
                         session=session,
                         atr_d1=d1_atr or 0.0,
+                        as_of=self._decision_time(current_bar.timestamp),
+                        symbol=self.config.symbol,
                     )
                 if memory_context:
                     self._memory_recalls_count += 1
@@ -175,6 +186,7 @@ class ReplayEngine:
             entry = {
                 "bar_idx": bar_idx,
                 "timestamp": current_bar.timestamp.isoformat(),
+                "decision_time_utc": self._decision_time(current_bar.timestamp).isoformat(),
                 "close": current_bar.close,
                 "decision": decision.decision.value,
                 "confidence": decision.confidence,
@@ -192,21 +204,25 @@ class ReplayEngine:
             # Checkpoint for resumability
             self._checkpoint(bar_idx)
             decision_count += 1
+            if self.config.max_decisions > 0 and decision_count >= self.config.max_decisions:
+                stopped_early = True
+                break
 
         # Check remaining intermediate bars after last decision
-        if last_decision_idx is not None and last_decision_idx < len(bars) - 1:
+        end_idx = last_decision_idx if stopped_early else len(bars) - 1
+        if last_decision_idx is not None and last_decision_idx < end_idx:
             closed = self._check_intermediate_bars(
-                bars, last_decision_idx, len(bars) - 1
+                bars, last_decision_idx, end_idx
             )
             if closed and db:
-                self._store_to_memory(db, closed, bars[-self.config.window_size :])
+                self._store_to_memory(db, closed, bars[:end_idx + 1][-self.config.window_size :])
 
         # EOD close any open position
         if self.tracker.current_position and bars:
-            closed = self.tracker.close_position(bars[-1], PositionState.CLOSED_EOD)
+            closed = self.tracker.close_position(bars[end_idx], PositionState.CLOSED_EOD)
             if db:
                 self._store_to_memory(
-                    db, closed, bars[-self.config.window_size :]
+                    db, closed, bars[:end_idx + 1][-self.config.window_size :]
                 )
 
         return self._build_summary(llm)
@@ -249,16 +265,19 @@ class ReplayEngine:
         # D1 ATR from pre-computed lookup; H1 ATR from context bars
         atr_d1 = self._lookup_d1_atr(position.entry_time) or 0.0
         atr_h1 = 0.0
-        if context_bars:
-            ind = compute_all_indicators(context_bars)
+        known_context = [b for b in context_bars if b.timestamp <= (position.exit_time or position.entry_time)]
+        if known_context:
+            ind = compute_all_indicators(known_context)
             atr_h1 = ind.atr_h1 or 0.0
 
         data = {
             "id": f"replay_{position.trade_id}",
-            "timestamp": position.entry_time.isoformat(),
+            "timestamp": self._decision_time(position.entry_time).isoformat(),
             "context_json": json.dumps({
                 "source": "replay_engine",
                 "data_file": self.config.data_path,
+                "symbol": self.config.symbol,
+                "available_at": self._decision_time(position.exit_time or position.entry_time).isoformat(),
             }),
             "context_regime": regime,
             "context_volatility_regime": "unknown",
@@ -283,6 +302,12 @@ class ReplayEngine:
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         db.insert_episodic(data)
+
+    def _decision_time(self, timestamp: datetime) -> datetime:
+        """MT5 CSV uses naive broker time; aware inputs are already unambiguous."""
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone(timedelta(hours=self.config.broker_utc_offset)))
+        return timestamp.astimezone(timezone.utc)
 
     @staticmethod
     def _classify_session(timestamp: datetime) -> str:

@@ -10,10 +10,11 @@ from __future__ import annotations
 
 import logging
 import math
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .owm.context import ContextVector
-from .owm.recall import ScoredMemory, is_loss, outcome_weighted_recall, rank_key
+from .owm.recall import ScoredMemory, eligible_memories, is_loss, outcome_weighted_recall, rank_key
 
 logger = logging.getLogger(__name__)
 
@@ -102,6 +103,7 @@ def hybrid_recall(
     alpha: float = 0.3,
     limit: int = 10,
     order: str = "outcome",
+    as_of: Optional[datetime] = None,
 ) -> List[ScoredMemory]:
     """Hybrid recall combining vector similarity and OWM scoring.
 
@@ -115,11 +117,13 @@ def hybrid_recall(
         alpha: Blend weight. 0.0 = pure OWM, 1.0 = pure vector.
         limit: Max results to return.
         order: "outcome" (default) or "losses_first"; see outcome_weighted_recall.
+        as_of: Explicit historical clock and candidate cutoff; None keeps live behavior.
 
     Returns:
         Ranked list of ScoredMemory. In "outcome" order at least 20% of the
         results are losses; "losses_first" already puts them on top.
     """
+    memories = eligible_memories(memories, as_of)
     if not memories:
         return []
 
@@ -130,7 +134,7 @@ def hybrid_recall(
 
     # Step 1: OWM scoring (always runs)
     owm_results = outcome_weighted_recall(
-        query_context, memories, affective_state=affective_state, limit=len(memories), order=order
+        query_context, memories, affective_state=affective_state, limit=len(memories), order=order, as_of=as_of
     )
 
     if not use_vector:

@@ -1,12 +1,15 @@
 """Tests for replay memory_recall module."""
 
+import json
 import sqlite3
 import tempfile
+from contextlib import closing
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
 
-from tradememory.replay.memory_recall import build_memory_context
+from tradememory.replay.memory_recall import build_memory_context, query_replay_memories
 
 _SCHEMA = """
 CREATE TABLE episodic_memory (
@@ -40,16 +43,16 @@ CREATE TABLE episodic_memory (
 
 def _insert(conn, id, strategy="VolBreakout", regime="trending", session="london",
             entry=5100.0, exit_=5150.0, pnl=50.0, pnl_r=1.5,
-            reflection="Good entry on breakout", strength=1.0):
+            reflection="Good entry on breakout", strength=1.0, duration=0):
     conn.execute(
         """INSERT INTO episodic_memory
            (id, timestamp, context_json, context_regime, context_session,
             strategy, direction, entry_price, exit_price, pnl, pnl_r,
-            reflection, retrieval_strength, created_at)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+            reflection, retrieval_strength, created_at, hold_duration_seconds)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
         (id, "2026-03-01T10:00:00", "{}", regime, session,
          strategy, "long", entry, exit_, pnl, pnl_r,
-         reflection, strength, "2026-03-01T10:00:00"),
+         reflection, strength, "2026-03-01T10:00:00", duration),
     )
 
 
@@ -136,3 +139,80 @@ class TestStrategyFiltering:
 
         result = build_memory_context(db_path, "VolBreakout", "trending", "london", 150.0)
         assert result.count("[VolBreakout]") == 1
+
+class TestHistoricalEligibility:
+    def test_imported_exit_timestamp_does_not_add_duration_twice(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            _insert(conn, "imported")
+            conn.execute("UPDATE episodic_memory SET hold_duration_seconds=7200, context_json=?",
+                         ('{"entry_time":"2026-03-01T08:00:00Z"}',))
+        result = build_memory_context(db_path, as_of=datetime(2026, 3, 1, 10, tzinfo=timezone.utc))
+        assert "id=imported" in result
+    def test_future_high_rank_cannot_hide_past_before_limit(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            _insert(conn, "past", pnl=-25, strength=.1)
+            _insert(conn, "future", pnl=-999, strength=100)
+            conn.execute("UPDATE episodic_memory SET timestamp='2030-01-01T00:00:00Z' WHERE id='future'")
+        cutoff = datetime(2026, 3, 1, 11, tzinfo=timezone.utc)
+        assert "future" in build_memory_context(db_path, limit=1)  # positive fault control
+        bounded = build_memory_context(db_path, limit=1, as_of=cutoff)
+        assert "id=past" in bounded and "future" not in bounded
+
+    def test_outcome_not_visible_at_entry_and_explicit_available_time(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            _insert(conn, "legacy")
+            _insert(conn, "explicit")
+            _insert(conn, "open", pnl=None, pnl_r=None, exit_=None)
+            conn.execute("UPDATE episodic_memory SET hold_duration_seconds=7200 WHERE id='legacy'")
+            conn.execute("UPDATE episodic_memory SET context_json=? WHERE id='explicit'",
+                         ('{"available_at":"2026-03-01T13:00:00Z"}',))
+        at11 = datetime(2026, 3, 1, 11, tzinfo=timezone.utc)
+        assert build_memory_context(db_path, as_of=at11) == ""
+        at12 = at11.replace(hour=12)
+        assert "id=legacy" in build_memory_context(db_path, as_of=at12)
+        assert "id=explicit" not in build_memory_context(db_path, as_of=at12)
+        at13 = at11.replace(hour=13)
+        assert "id=explicit" in build_memory_context(db_path, as_of=at13)
+        assert "id=open" not in build_memory_context(db_path, as_of=at13)
+
+    def test_timezone_and_microsecond_boundaries(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            for mid, stamp in [("past", "2026-03-01T11:00:00+02:00"),
+                               ("offset-future", "2026-03-01T09:00:00-02:00"),
+                               ("exact", "2026-03-01T10:00:00Z"),
+                               ("tiny-future", "2026-03-01T10:00:00.000001Z")]:
+                _insert(conn, mid)
+                conn.execute("UPDATE episodic_memory SET timestamp=? WHERE id=?", (stamp, mid))
+        result = build_memory_context(db_path, as_of=datetime(2026, 3, 1, 10, tzinfo=timezone.utc))
+        assert "id=past" in result and "id=exact" in result
+        assert "id=offset-future" not in result and "id=tiny-future" not in result
+
+    def test_unknown_outcome_metadata_fails_closed(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            for mid in ["bad-json", "bad-time", "bad-duration", "bad-available"]:
+                _insert(conn, mid)
+            conn.execute("UPDATE episodic_memory SET context_json='broken' WHERE id='bad-json'")
+            conn.execute("UPDATE episodic_memory SET timestamp='broken' WHERE id='bad-time'")
+            conn.execute("UPDATE episodic_memory SET hold_duration_seconds=-1 WHERE id='bad-duration'")
+            conn.execute("UPDATE episodic_memory SET context_json=? WHERE id='bad-available'",
+                         ('{"available_at":"broken"}',))
+        assert build_memory_context(db_path, as_of=datetime(2026, 3, 2, tzinfo=timezone.utc)) == ""
+
+    def test_missing_r_preserved_and_db_read_only(self, db_path):
+        import hashlib
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            _insert(conn, "no-r", pnl=-30, pnl_r=None)
+        before = hashlib.sha256(Path(db_path).read_bytes()).hexdigest()
+        result = build_memory_context(db_path, as_of=datetime(2026, 3, 2, tzinfo=timezone.utc))
+        assert "pnl=$-30.00 pnl_r=unknown" in result
+        assert hashlib.sha256(Path(db_path).read_bytes()).hexdigest() == before
+
+    def test_unknown_legacy_duration_cannot_make_outcome_available(self, db_path):
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            _insert(conn, "unknown-duration", pnl=-30, duration=None)
+        cutoff = datetime(2026, 3, 2, tzinfo=timezone.utc)
+        assert query_replay_memories(db_path, as_of=cutoff) == []
+        with closing(sqlite3.connect(db_path)) as conn, conn:
+            conn.execute("UPDATE episodic_memory SET context_json=? WHERE id='unknown-duration'",
+                         (json.dumps({"available_at": "2026-03-01T00:00:00Z"}),))
+        assert len(query_replay_memories(db_path, as_of=cutoff)) == 1

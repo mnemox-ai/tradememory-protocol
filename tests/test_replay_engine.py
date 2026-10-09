@@ -494,3 +494,111 @@ class TestSummaryFormat:
             assert summary["total_bars"] == 0
             assert summary["decisions"] == 0
             assert summary["trades"] == 0
+
+class TestHistoricalIsolation:
+    @pytest.mark.parametrize("interval", [4, 128])
+    @patch("tradememory.replay.engine.LLMClient")
+    def test_cap_ends_at_decision_even_without_next_scheduled_decision(self, MockLLMClient, interval, tmp_path):
+        csv = tmp_path/"prices.csv"
+        bars = _make_bars(120)
+        _write_csv(bars, str(csv))
+        mock = MagicMock()
+        mock.decide.return_value = _buy_decision(entry=2348., sl=2200., tp=2500.)
+        mock.total_tokens_used = 0
+        mock.total_cost_usd = 0.
+        MockLLMClient.return_value = mock
+        engine = ReplayEngine(ReplayConfig(data_path=str(csv), decision_interval=interval,
+                                          max_decisions=1, store_to_memory=False, log_path=None))
+        engine.run()
+        assert engine.tracker.closed_positions[0].exit_time == bars[95].timestamp
+
+    @patch("tradememory.replay.engine.LLMClient")
+    def test_stored_outcome_is_unavailable_until_exit(self, MockLLMClient, tmp_path):
+        from datetime import timezone
+        from tradememory.replay.memory_recall import query_replay_memories
+        mock = MagicMock()
+        mock.decide.side_effect = [_buy_decision(entry=2348., sl=2200., tp=2500.), _hold_decision()]
+        mock.total_tokens_used = 0
+        mock.total_cost_usd = 0.
+        MockLLMClient.return_value = mock
+        csv = tmp_path/"prices.csv"
+        _write_csv(_make_bars(120), str(csv))
+        db_path = str(tmp_path/"memory.db")
+        engine = ReplayEngine(ReplayConfig(data_path=str(csv), db_path=db_path, max_decisions=2,
+                                          log_path=None, checkpoint_path=str(tmp_path/"checkpoint.json")))
+        engine.run()
+        trade = engine.tracker.closed_positions[0]
+        exit_utc = (trade.exit_time-timedelta(hours=2)).replace(tzinfo=timezone.utc)
+        assert query_replay_memories(db_path, as_of=exit_utc-timedelta(microseconds=1)) == []
+        known = query_replay_memories(db_path, as_of=exit_utc)
+        assert len(known) == 1
+        assert datetime.fromisoformat(known[0]["available_at"]) == exit_utc
+        assert json.loads(known[0]["context_json"])["symbol"] == "XAUUSD"
+
+    @patch("tradememory.replay.engine.LLMClient")
+    def test_legacy_callback_cannot_silently_ignore_clock(self, MockLLMClient, tmp_path):
+        csv = tmp_path/"prices.csv"
+        _write_csv(_make_bars(120), str(csv))
+        def old_callback(db_path, strategy, regime, session, atr_d1):
+            return "unsafe history"
+        engine = ReplayEngine(ReplayConfig(data_path=str(csv), store_to_memory=False,
+                                          use_memory_recall=True, memory_recall_fn=old_callback))
+        with pytest.raises(TypeError, match="as_of"):
+            engine.run()
+
+    @patch("tradememory.replay.engine.LLMClient")
+    def test_callback_receives_utc_and_outputs_have_distinct_paths(self, MockLLMClient, tmp_path):
+        from datetime import timezone
+        mock = MagicMock()
+        mock.decide.return_value = _hold_decision()
+        mock.total_tokens_used = 0
+        mock.total_cost_usd = 0.
+        MockLLMClient.return_value = mock
+        bars = _make_bars(120)
+        csv = tmp_path / "shared.csv"
+        _write_csv(bars, str(csv))
+        seen = []
+        def recall(**kwargs):
+            seen.append(kwargs["as_of"])
+            return ""
+        for arm in ["a", "b"]:
+            folder = tmp_path / arm
+            folder.mkdir()
+            config = ReplayConfig(data_path=str(csv), max_decisions=1,
+                                  store_to_memory=False, use_memory_recall=True,
+                                  memory_recall_fn=recall, db_path=str(folder/"memory.db"),
+                                  checkpoint_path=str(folder/"checkpoint.json"), log_path=str(folder/"decisions.jsonl"))
+            ReplayEngine(config).run()
+        expected = (bars[95].timestamp - timedelta(hours=2)).replace(tzinfo=timezone.utc)
+        assert seen == [expected, expected]
+        assert (tmp_path/"a/checkpoint.json").exists() and (tmp_path/"b/checkpoint.json").exists()
+        assert not csv.with_suffix(".checkpoint.json").exists()
+
+    @patch("tradememory.replay.engine.LLMClient")
+    def test_future_prices_cannot_change_capped_run_outcome(self, MockLLMClient, tmp_path):
+        results = []
+        for changed in [False, True]:
+            bars = _make_bars(120)
+            if changed:
+                for bar in bars[100:]:
+                    bar.high = 10000.; bar.low = 1.; bar.close = 9000.
+            csv = tmp_path / f"{changed}.csv"
+            _write_csv(bars, str(csv))
+            mock = MagicMock()
+            mock.decide.side_effect = [_buy_decision(entry=2348., sl=2200., tp=2500.), _hold_decision()]
+            mock.total_tokens_used = 0
+            mock.total_cost_usd = 0.
+            MockLLMClient.return_value = mock
+            config = ReplayConfig(data_path=str(csv), max_decisions=2, store_to_memory=False,
+                                  log_path=None, checkpoint_path=str(tmp_path/f"{changed}.checkpoint.json"))
+            engine = ReplayEngine(config)
+            summary = engine.run()
+            assert engine.tracker.closed_positions[0].exit_time == bars[99].timestamp
+            results.append(summary["equity"])
+        assert results[0] == results[1]
+
+    def test_dry_run_obeys_same_decision_cap(self, tmp_path):
+        csv = tmp_path/"prices.csv"
+        _write_csv(_make_bars(120), str(csv))
+        engine = ReplayEngine(ReplayConfig(data_path=str(csv), max_decisions=2, store_to_memory=False))
+        assert engine.run(dry_run=True)["decisions"] == 2

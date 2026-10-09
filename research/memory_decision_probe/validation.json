@@ -1,0 +1,369 @@
+{
+  "status": "blocked_model_no_efficacy_result",
+  "manifest": {
+    "source": "archived public Hyperliquid responses; finite retained history, not full account history",
+    "address": "0x85ecf584f25db6f146718b86d493e33c5af72052",
+    "pages": [
+      {
+        "file": "userFillsByTime_1780167563386_1.json",
+        "sha256": "bc996c36345d4f9740a13de2102d2ff844c465d2bc811919a7d23bf0ca471eca",
+        "query_time_ms": 1780167563386,
+        "rows": 2000
+      },
+      {
+        "file": "userFillsByTime_1780167564046_2.json",
+        "sha256": "847619cb3ec57fcc96da8d9cfb45ace3068249f2a6525cea08266c71fa062570",
+        "query_time_ms": 1780167564046,
+        "rows": 2000
+      },
+      {
+        "file": "userFillsByTime_1780167564654_3.json",
+        "sha256": "1bc1534326e99e665f6baf78c103f010289a09eacd8760a699ee994fd1cb85ef",
+        "query_time_ms": 1780167564654,
+        "rows": 2000
+      },
+      {
+        "file": "userFillsByTime_1780167565316_4.json",
+        "sha256": "d2aee8b17487c2591fe4fede086cd1a1db6be4c11eeccaa0177425c0efdabbd4",
+        "query_time_ms": 1780167565316,
+        "rows": 2000
+      },
+      {
+        "file": "userFillsByTime_1780167565952_5.json",
+        "sha256": "312db40e33a4e45978c7e9a7ecb088268b690d48e153a1e71486a4fed5ad3947",
+        "query_time_ms": 1780167565952,
+        "rows": 2000
+      },
+      {
+        "file": "userFillsByTime_1780167567293_6.json",
+        "sha256": "03012c6eb5f57945836830ba3a30602c713c1e9b100278604d1e80f9d77b9123",
+        "query_time_ms": 1780167567293,
+        "rows": 2000
+      }
+    ],
+    "raw_fills": 12000,
+    "spot_skipped": 0,
+    "closed_trips": 200,
+    "dropped_history_holes": 4,
+    "seed_sha256": "78ba29bb412c993b5c5eef5e37c6411924103978ec71f6284f6e51d5cc55f19c",
+    "cases_sha256": "9aaf6f7fd7e29a041ea56642496a3e0ea869d90510c0b8c65ff84f33e549c0b6",
+    "protocol_sha256": "88f087d424181fcf90d1420c7860be5c49d8155c4b73cd20c7fb00eacf9b9c67",
+    "source_commit": "c7f896790f80b04ef05257551cf571ff5c4c1ec6",
+    "created_at_utc": "2026-10-09T19:55:59.362323+00:00",
+    "warn_cases": 0,
+    "cases": 6
+  },
+  "cases": [
+    {
+      "id": "first5_size0.75",
+      "as_of": "2026-03-31T13:49:29.766001+00:00",
+      "proposal_notional": 1096557.342057129,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "11161.02514785334032945746555",
+        "evidence_ids": [
+          "hyperliquid-6b4e4a96ac20fc21",
+          "hyperliquid-d6892b8580ba86a0",
+          "hyperliquid-5e9db0ac774229d7"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7"
+      ],
+      "eligible_count": 5
+    },
+    {
+      "id": "first5_size2.0",
+      "as_of": "2026-03-31T13:49:29.766001+00:00",
+      "proposal_notional": 2924152.9121523434,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "11161.02514785334032945746555",
+        "evidence_ids": [
+          "hyperliquid-6b4e4a96ac20fc21",
+          "hyperliquid-d6892b8580ba86a0",
+          "hyperliquid-5e9db0ac774229d7"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7"
+      ],
+      "eligible_count": 5
+    },
+    {
+      "id": "first10_size0.75",
+      "as_of": "2026-03-31T17:24:05.091001+00:00",
+      "proposal_notional": 466460.93332407787,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "10043.86578937442522317582666",
+        "evidence_ids": [
+          "hyperliquid-a064c35e37fc88c3",
+          "hyperliquid-61f2c286b2fafa74",
+          "hyperliquid-454d6a4234e4cf5a"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7",
+        "hyperliquid-a21e8ff5342d33e3",
+        "hyperliquid-5cd7f3c749d7e9f3",
+        "hyperliquid-a064c35e37fc88c3",
+        "hyperliquid-61f2c286b2fafa74",
+        "hyperliquid-454d6a4234e4cf5a"
+      ],
+      "eligible_count": 10
+    },
+    {
+      "id": "first10_size2.0",
+      "as_of": "2026-03-31T17:24:05.091001+00:00",
+      "proposal_notional": 1243895.822197541,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "10043.86578937442522317582666",
+        "evidence_ids": [
+          "hyperliquid-a064c35e37fc88c3",
+          "hyperliquid-61f2c286b2fafa74",
+          "hyperliquid-454d6a4234e4cf5a"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7",
+        "hyperliquid-a21e8ff5342d33e3",
+        "hyperliquid-5cd7f3c749d7e9f3",
+        "hyperliquid-a064c35e37fc88c3",
+        "hyperliquid-61f2c286b2fafa74",
+        "hyperliquid-454d6a4234e4cf5a"
+      ],
+      "eligible_count": 10
+    },
+    {
+      "id": "first20_size0.75",
+      "as_of": "2026-04-01T08:43:08.147001+00:00",
+      "proposal_notional": 544776.9580192982,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "-11841.86415661313489004970382",
+        "evidence_ids": [
+          "hyperliquid-c70a99993bc39177",
+          "hyperliquid-b5d9bcba80177248",
+          "hyperliquid-8b61524a69d60e75"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7",
+        "hyperliquid-a21e8ff5342d33e3",
+        "hyperliquid-5cd7f3c749d7e9f3",
+        "hyperliquid-a064c35e37fc88c3",
+        "hyperliquid-61f2c286b2fafa74",
+        "hyperliquid-454d6a4234e4cf5a",
+        "hyperliquid-4ff90420b078d08d",
+        "hyperliquid-1170aad03faf5c52",
+        "hyperliquid-0b7ca6d4e83ebcd6",
+        "hyperliquid-e7db634b251dcaac",
+        "hyperliquid-c1372ccb91a731ee",
+        "hyperliquid-8126ce2cef086fd3",
+        "hyperliquid-09f74498b992a8e0",
+        "hyperliquid-c70a99993bc39177",
+        "hyperliquid-b5d9bcba80177248",
+        "hyperliquid-8b61524a69d60e75"
+      ],
+      "eligible_count": 20
+    },
+    {
+      "id": "first20_size2.0",
+      "as_of": "2026-04-01T08:43:08.147001+00:00",
+      "proposal_notional": 1452738.5547181284,
+      "oracle": {
+        "assessment": "allow",
+        "last3_net_pnl": "-11841.86415661313489004970382",
+        "evidence_ids": [
+          "hyperliquid-c70a99993bc39177",
+          "hyperliquid-b5d9bcba80177248",
+          "hyperliquid-8b61524a69d60e75"
+        ]
+      },
+      "eligible_ids": [
+        "hyperliquid-681cba83a440c3bc",
+        "hyperliquid-628c15fbd3221394",
+        "hyperliquid-6b4e4a96ac20fc21",
+        "hyperliquid-d6892b8580ba86a0",
+        "hyperliquid-5e9db0ac774229d7",
+        "hyperliquid-a21e8ff5342d33e3",
+        "hyperliquid-5cd7f3c749d7e9f3",
+        "hyperliquid-a064c35e37fc88c3",
+        "hyperliquid-61f2c286b2fafa74",
+        "hyperliquid-454d6a4234e4cf5a",
+        "hyperliquid-4ff90420b078d08d",
+        "hyperliquid-1170aad03faf5c52",
+        "hyperliquid-0b7ca6d4e83ebcd6",
+        "hyperliquid-e7db634b251dcaac",
+        "hyperliquid-c1372ccb91a731ee",
+        "hyperliquid-8126ce2cef086fd3",
+        "hyperliquid-09f74498b992a8e0",
+        "hyperliquid-c70a99993bc39177",
+        "hyperliquid-b5d9bcba80177248",
+        "hyperliquid-8b61524a69d60e75"
+      ],
+      "eligible_count": 20
+    }
+  ],
+  "code_fingerprint": {
+    "research/memory_decision_probe/run_probe.py": "acc26f37c5354704aeae412b27ce320f0aab30bef0cdd327d4d27188a12c52a1",
+    "src/tradememory/owm/recall.py": "3ba2a5bdcda3380dd36fd31b7178ff550696eef09b4242f8f1c8ca9ee6438617",
+    "src/tradememory/hybrid_recall.py": "881dd9ac840172457990b8e3a7a9fbbf9dd0a3f5e2d0b1eeafd123872de70349",
+    "src/tradememory/replay/engine.py": "1c1665b1c2a2027b5ed49cbfe9ddf4bc7adddd8fad51e8e1a62a37a3d79b3f55",
+    "src/tradememory/replay/memory_recall.py": "401cd502e0c82f21a8097b8968736af01afb3391bb73c90d6fb19382585495f8",
+    "src/tradememory/replay/models.py": "f81b218f15a029574686167cc597b1da7796e0a609f52a8eee28030117551f65",
+    "src/tradememory/sync/fills.py": "e259e539b8978619fc7f59a3e3b24aa34eb703a5a984614556c7de68cdf8c830",
+    "src/tradememory/sync/hyperliquid.py": "1748fc6eeaeaf25355ecca079a90efa13a8a0d1a036e72bd1dd40ecd62fc9c53",
+    "src/tradememory/sync/store.py": "ecbbb7fe339722e4245bc616c3bbe3303329e0d9c9af9a20d5539d0e920759de",
+    "src/tradememory/sync/report.py": "eb8d7f92ace78211147e565b322edc142db586bedc1e151980824499f31227c4"
+  },
+  "dry_run": {
+    "status": "prepared",
+    "prepared_prompts": 120,
+    "independent_databases": 20,
+    "model_calls": 0,
+    "results_sha256": "777227504e543431f39d7e7520a88e6d6c46abe2f1b39196ba466397897470ee",
+    "runner_sha256": "acc26f37c5354704aeae412b27ce320f0aab30bef0cdd327d4d27188a12c52a1"
+  },
+  "tests": [
+    {
+      "run": "initial live-key regression",
+      "sha256": "164eb4733a0f718645216a0c11698f1771173969c586cc367f3606fcb0aa441c",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "5",
+      "tests": "1614",
+      "time": "53.285",
+      "timestamp": "2026-10-10T03:58:42.489792+08:00",
+      "hostname": "DESKTOP-SLI13KR",
+      "failed_cases": [
+        "tests.test_evolution_discovery.TestDiscoverPatternsIntegration.test_real_discovery"
+      ]
+    },
+    {
+      "run": "key removed then reloaded by dotenv",
+      "sha256": "5a4a2788e4b16bd5a132195cd9c922dd76d4aca9cd565522cc427c7d29c64295",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "1",
+      "skipped": "5",
+      "tests": "1614",
+      "time": "52.744",
+      "timestamp": "2026-10-10T04:03:17.685938+08:00",
+      "hostname": "DESKTOP-SLI13KR",
+      "failed_cases": [
+        "tests.test_evolution_discovery.TestDiscoverPatternsIntegration.test_real_discovery"
+      ]
+    },
+    {
+      "run": "unknown duration guard revealed implicit-duration fixtures; fixtures clarified, assertions retained",
+      "sha256": "67b83f4a199de704b1703ea6857cc085ce4762bdc4cef7b0b00bee7b15e103a1",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "9",
+      "skipped": "6",
+      "tests": "1618",
+      "time": "49.572",
+      "timestamp": "2026-10-10T04:10:11.471256+08:00",
+      "hostname": "DESKTOP-SLI13KR",
+      "failed_cases": [
+        "tests.test_memory_decision_probe.test_every_prompt_excludes_future_even_negative_control[no_history]",
+        "tests.test_memory_decision_probe.test_every_prompt_excludes_future_even_negative_control[raw_csv]",
+        "tests.test_memory_decision_probe.test_every_prompt_excludes_future_even_negative_control[tradememory]",
+        "tests.test_memory_decision_probe.test_every_prompt_excludes_future_even_negative_control[wrong_pnl]",
+        "tests.test_memory_decision_probe.test_invalid_first_answer_is_preserved_and_stops_comparison",
+        "tests.test_replay_memory_recall.TestHistoricalEligibility.test_future_high_rank_cannot_hide_past_before_limit",
+        "tests.test_replay_memory_recall.TestHistoricalEligibility.test_timezone_and_microsecond_boundaries",
+        "tests.test_replay_memory_recall.TestHistoricalEligibility.test_missing_r_preserved_and_db_read_only",
+        "tests.test_replay_memory_recall.TestHistoricalEligibility.test_unknown_legacy_duration_cannot_make_outcome_available"
+      ]
+    },
+    {
+      "run": "final regression with process key empty",
+      "sha256": "8613e72a63bf45e6d7203725232b172e6e8dc4c5595a6aab79a289ebebe101b4",
+      "name": "pytest",
+      "errors": "0",
+      "failures": "0",
+      "skipped": "6",
+      "tests": "1618",
+      "time": "49.995",
+      "timestamp": "2026-10-10T04:11:46.566921+08:00",
+      "hostname": "DESKTOP-SLI13KR",
+      "failed_cases": []
+    }
+  ],
+  "targeted_tests": {
+    "passed": 48,
+    "seconds": 1.06,
+    "log_sha256": "31c9c6a2e78e2b11174b7949c477eb7d16ad6aca22068b217f0fcc0af19987d6"
+  },
+  "auth_only_preflight": {
+    "status": "blocked_model",
+    "trade_rows_sent": 0,
+    "model": null,
+    "error": "RuntimeError: Failed to authenticate: OAuth session expired and could not be refreshed",
+    "exit_code": 1,
+    "modelUsage": {},
+    "usage": {
+      "output_tokens_details": {
+        "thinking_tokens": 0
+      },
+      "input_tokens": 0,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 0,
+      "output_tokens": 0,
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 0,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "",
+      "iterations": [],
+      "speed": "standard"
+    },
+    "total_cost_usd_reported": 0,
+    "receipt_sha256": "7d8cb44fdc2215cbacfb685ce348b4364e1b52ee78f17c412801b14b84d0818c"
+  },
+  "comparison_execution": {
+    "attempted_calls": 0,
+    "valid_answers": 0,
+    "planned_calls": 120,
+    "pending": [
+      "Claude auth login",
+      "external model destination/payload approval"
+    ]
+  },
+  "source_contract": "https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/info-endpoint#retrieve-a-users-fills-by-time",
+  "gate_rejection": {
+    "command_executed": false,
+    "action": "combined calibration and comparison run",
+    "reason": "Auto-review rejected external trade payload plus 120 calls without specific authorization; safe no-history calibration subsequently approved."
+  }
+}

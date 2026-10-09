@@ -172,7 +172,7 @@ class ReplayConfig(BaseModel):
 
     # Memory recall
     use_memory_recall: bool = False
-    # Pluggable memory recall function: (db_path, strategy, regime, session, atr_d1) -> str
+    # Callback must accept as_of (UTC decision datetime) as a keyword and honor it.
     # If set, overrides the built-in build_memory_context when use_memory_recall=True
     memory_recall_fn: Optional[Any] = None
 
@@ -186,6 +186,7 @@ class ReplayConfig(BaseModel):
 
     # Output
     log_path: Optional[str] = "data/replay_decisions.jsonl"  # JSONL output path
+    checkpoint_path: Optional[str] = None  # set per arm; None preserves legacy location
 
     # Broker time offset from UTC (FXTM: +2 winter, +3 summer)
     broker_utc_offset: int = 2

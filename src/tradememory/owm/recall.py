@@ -106,15 +106,36 @@ def compute_recency(
     timestamp_iso: str,
     tau: float = 30.0,
     d: float = 0.5,
+    as_of: Optional[datetime] = None,
 ) -> float:
     """Rec(m) — power-law temporal decay in (0, 1].
 
     Formula: Rec = (1 + age_days / tau) ^ (-d)
     """
-    ts = datetime.fromisoformat(timestamp_iso.replace("Z", "+00:00"))
-    now = datetime.now(timezone.utc)
+    ts = as_utc(timestamp_iso)
+    now = as_utc(as_of) if as_of is not None else datetime.now(timezone.utc)
     age_days = max((now - ts).total_seconds() / 86400.0, 0.0)
     return math.pow(1.0 + age_days / tau, -d)
+
+
+def as_utc(value: datetime | str) -> datetime:
+    """Normalize ISO timestamps; legacy naive memory timestamps mean UTC."""
+    dt = datetime.fromisoformat(value.replace("Z", "+00:00")) if isinstance(value, str) else value
+    return dt.replace(tzinfo=timezone.utc) if dt.tzinfo is None else dt.astimezone(timezone.utc)
+
+
+def eligible_memories(memories: List[Dict[str, Any]], as_of: Optional[datetime]) -> List[Dict[str, Any]]:
+    """For replay, exclude unknown/future observation or outcome availability.
+
+    Callers must supply available_at when an outcome was learned after timestamp.
+    This is eligibility, not reconstruction of later-edited memory metadata.
+    """
+    if as_of is None:
+        return memories
+    cutoff = as_utc(as_of)
+    return [m for m in memories if m.get("timestamp")
+            and as_utc(m["timestamp"]) <= cutoff
+            and as_utc(m.get("available_at") or m["timestamp"]) <= cutoff]
 
 
 def compute_confidence_factor(confidence: float) -> float:
@@ -163,6 +184,7 @@ def outcome_weighted_recall(
     affective_state: Optional[Dict[str, Any]] = None,
     limit: int = 10,
     order: str = "outcome",
+    as_of: Optional[datetime] = None,
 ) -> List[ScoredMemory]:
     """Core OWM recall — score, rank, and return top memories.
 
@@ -189,6 +211,7 @@ def outcome_weighted_recall(
     """
     if order not in RECALL_ORDERS:
         raise ValueError(f"order must be one of {RECALL_ORDERS}, got {order!r}")
+    memories = eligible_memories(memories, as_of)
     if not memories:
         return []
 
@@ -215,7 +238,8 @@ def outcome_weighted_recall(
             if k in ContextVector.__dataclass_fields__
         })
         sim = context_similarity(mem_ctx, query_context)
-        rec = compute_recency(m.get("timestamp", datetime.now(timezone.utc).isoformat()), tau=tau, d=d_exp)
+        stamp = m.get("timestamp") or (as_utc(as_of) if as_of is not None else datetime.now(timezone.utc)).isoformat()
+        rec = compute_recency(stamp, tau=tau, d=d_exp, as_of=as_of)
         conf = compute_confidence_factor(m.get("confidence", 0.5))
 
         if losses_first:
