@@ -38,14 +38,25 @@ Each closed trade is stored in memory once; running it again stores only new tra
 
 ```
 After 2 losses in a row (20 trades):
-  5 of them (25%) were 1.5x your usual size or more.
-  All 20 won 60% and made -$1,500.
-  The 5 sized-up trades won 20% and made -$1,700.
+  9 of them (45%) were 1.5x your usual size or more (across all your trades: 25%).
+  That is more often than usual.
+  All 20 won 50% and made -$1,500.
+  The 9 sized-up trades won 22% and made -$2,100.
 
 Median hold: winners 1.5h, losers 9.0h.
+
+Suggested rule (does nothing until you approve it):
+  After 2 losses in a row, orders that take a position to $1,500 or more are held for your approval.
+  To turn it on: tradememory rules approve r-3f2a9c1e5b [--max-notional N] (the brake enforces it on its next order)
 ```
 
 These are descriptive statistics of your own past trades, not advice about the next one. Hyperliquid's API serves only an address's recent fills, not its whole history, so the sooner it is synced, the more history is kept. Other venues: MT5 and Binance spot sync scripts are in `scripts/`, and any agent can record a trade with `remember_trade`.
+
+## Rules from your own history
+
+A sync suggests a rule only when your history calls for one: you size up right after two losses in a row more often than you size up at all (a one-sided binomial test against your own rate gives p ≤ 0.10, and the difference is at least 5 points), and those bigger trades lost money in total. The limit is the size the report calls "sized up", 1.5 times your median trade. Most histories do not call for one. On 2026-10-05, none of 18 high-volume Hyperliquid accounts we sampled did; among 70 smaller accounts (US$5k to 200k of monthly volume), 8 of the 51 with enough trades did, by 8 to 36 points.
+
+A suggested rule does nothing until you approve it (`tradememory rules list`, then `tradememory rules approve <id>`, optionally with your own `--max-notional`). From then on the brake checks it on every new order that adds risk: when the account's two latest closed trades are losses and the position the order could leave is at or above the limit, the order waits for your approval like any other escalation, or is refused if you approved the rule with `--action deny`. Two small orders that add up to a big position in the same symbol are held like one big order. The closed trades come from the broker at that moment (its fill history, read through the same MCP server), so a stop that closed a minute ago counts without a sync; if that history cannot be read, an order big enough to trip the rule is refused. Reducing or closing a position is never held, a rule never lets through anything your policy refuses, and an approval you gave before a rule fired does not cover it. A rule edited by hand makes the brake refuse every order until you retire it with `tradememory rules retire <id>`; the check catches careless edits, it is not a signature.
 
 ## Before the next order
 
@@ -102,7 +113,7 @@ tradememory proxy doctor --env-file ~/.secrets/alpaca-paper.env   # checks the l
 tradememory proxy config                                           # prints the MCP client entry that replaces the direct Alpaca one
 ```
 
-Refused by default: symbols outside your list, orders above your notional and position limits, entries without a bracket stop, any new order after your daily-loss or drawdown limit, cancelling the protective stop of an open position, any tool the brake has not classified, and everything while you have run `tradememory proxy halt FULL_HALT`. Never blocked: closing a position. Orders at or above `approval_notional` wait for `tradememory proxy approve <intent_id> --terms <fingerprint>`, which approves exactly the terms you read; the agent retries with the same `client_order_id` and the same terms, and the proxy forwards it at most once. `evaluate_order` returns the same decision without placing anything, for pre-checks and for advisory layers in other frameworks. Anything the brake cannot evaluate (a dead quote feed, an unknown asset, an order type the policy does not cover) is refused, not passed through.
+Refused by default: symbols outside your list, orders above your notional and position limits, entries without a bracket stop, any new order after your daily-loss or drawdown limit, cancelling the protective stop of an open position, any tool the brake has not classified, and everything while you have run `tradememory proxy halt FULL_HALT`. Never blocked: closing a position. Orders at or above `approval_notional` wait for `tradememory proxy approve <intent_id> --terms <fingerprint>`, which approves exactly the terms you read; the agent retries with the same `client_order_id` and the same terms, and the proxy forwards it at most once. A rule you approved from your own history (see [Rules from your own history](#rules-from-your-own-history)) holds a new order the same way. `evaluate_order` returns the same decision without placing anything, for pre-checks and for advisory layers in other frameworks. Anything the brake cannot evaluate (a dead quote feed, an unknown asset, an order type the policy does not cover) is refused, not passed through.
 
 Status: tested end-to-end against a stateful fake of Alpaca's MCP server (`tests/proxy/`), and run against a real Alpaca paper account on 2026-10-01: three refusals (symbol not on the list, entry without a stop, notional over the limit), one allowed one-share bracket order that reached the broker, and one retry with the same `client_order_id` that was answered from the record without a second order. Options, order replacement, stop-limit and trailing orders are refused rather than evaluated. Your broker keys go only to the broker process the proxy starts; TradeMemory never stores them.
 

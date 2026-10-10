@@ -25,6 +25,7 @@ import logging
 from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 
 from fastmcp.server.middleware import CallNext, Middleware, MiddlewareContext
@@ -37,7 +38,10 @@ from mnemox_control.state import InstrumentSpec, MarketQuote
 
 from ..audit.chain import ChainBuilder
 from ..db import Database
+from ..rules.check import check_order, rules_in_reach
+from ..rules.store import RulesError, active_rules
 from . import alpaca
+from .history import BrokerCloses
 from .policy import pnl_window
 from .state import ProxyState
 
@@ -105,8 +109,13 @@ class BrakeMiddleware(Middleware):
         clock: Callable[[], datetime] | None = None,
         recall: Callable[..., Awaitable[dict[str, Any]]] | None = None,
         local_tools: set[str] | frozenset[str] | None = None,
+        rules_path: Path | str | None = None,
     ) -> None:
         self.policy = policy
+        # Owner-approved rules learned from history, re-read on every order so an
+        # approval or retirement takes effect without restarting the proxy.
+        self.rules_path = rules_path
+        self._closes = BrokerCloses(policy.account_id)
         self.state = state
         self.db = db
         self.agent_id = agent_id
@@ -207,32 +216,41 @@ class BrakeMiddleware(Middleware):
             )
             intent = collected.intent
 
-            decision = evaluation.decision
+            learned, checked = await self._learned_hits(evaluation, upstream)
+            decision = self._combine(evaluation.decision, learned)
+            # An approval covers the terms and the reasons the owner was shown: a learned rule
+            # that fires after an approval was given makes that approval stale.
+            approval_key = self._approval_key(fingerprint, learned)
             approved = False
-            if decision is Decision.ESCALATE and self.state.consume_approval(intent_key, fingerprint, now):
+            if decision is Decision.ESCALATE and self.state.consume_approval(intent_key, approval_key, now):
                 decision, approved = Decision.ALLOW, True
             flagged = [
                 {"code": r.code.value, "actual": _json_safe(r.actual), "limit": _json_safe(r.limit),
                  "subjects": list(r.subjects)}
                 for r in evaluation.rules if r.outcome in (RuleOutcome.DENY, RuleOutcome.ESCALATE)
-            ]
+            ] + learned
+            learned_extra = self._learned_extra(evaluation, learned, checked)
             if decision is Decision.DENY:
                 return self._deny(tool=tool, intent=intent, evaluation=evaluation, rules=flagged,
-                                  extra={"args": stored}, message="order refused by policy")
+                                  extra={"args": stored, **learned_extra},
+                                  message="order refused by a rule you approved" if learned
+                                  and evaluation.decision is not Decision.DENY else "order refused by policy")
             if decision is Decision.ESCALATE:
                 summary = alpaca.terms_summary(tool, args)
-                self.state.escalate(intent_key, fingerprint, now, summary=summary)
+                if learned:
+                    summary += " | held by " + "; ".join(h["message"] for h in learned)
+                self.state.escalate(intent_key, approval_key, now, summary=summary)
                 event_id = self._record(tool=tool, decision="ESCALATE", intent=intent, evaluation=evaluation,
                                         extra={"args": stored, "rules": flagged, "fingerprint": fingerprint,
-                                               "terms": summary},
+                                               "terms": summary, **learned_extra},
                                         note="human approval required")
                 structured = {
                     "decision": "ESCALATE", "order_placed": False, "intent_id": intent_key,
                     "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-                    "evaluation_hash": content_sha256(evaluation), "rules": flagged,
-                    "terms": summary, "terms_fingerprint": fingerprint,
+                    **self._hashes(evaluation, learned, event_id, checked is not None), "rules": flagged,
+                    "terms": summary, "terms_fingerprint": approval_key,
                     "how_to_approve": (
-                        f"owner runs: tradememory proxy approve {intent_key} --terms {fingerprint} "
+                        f"owner runs: tradememory proxy approve {intent_key} --terms {approval_key} "
                         "(the CLI shows the terms it is approving); then retry this call with the same "
                         "client_order_id and the same terms (any change is refused)"
                     ),
@@ -241,7 +259,8 @@ class BrakeMiddleware(Middleware):
 
             # ALLOW: record first, then forward exactly once.
             event_id = self._record(tool=tool, decision="ALLOW", intent=intent, evaluation=evaluation,
-                                    extra={"args": stored, "approved_by_owner": approved, "fingerprint": fingerprint},
+                                    extra={"args": stored, "approved_by_owner": approved, "fingerprint": fingerprint,
+                                           **learned_extra},
                                     note="forwarded to broker")
         except Exception as exc:  # fail closed, whatever broke
             log.warning("brake fail-closed on %s: %s", tool, exc)
@@ -287,7 +306,7 @@ class BrakeMiddleware(Middleware):
         structured = {
             "decision": "ALLOW", "order_placed": True, "intent_id": intent_key,
             "decision_event": event_id, "policy_hash": evaluation.policy_hash,
-            "evaluation_hash": content_sha256(evaluation), "approved_by_owner": approved,
+            **self._hashes(evaluation, learned, event_id, checked is not None), "approved_by_owner": approved,
             "prior_outcomes": prior,
             "upstream": getattr(upstream_result, "structured_content", None) or payload,
         }
@@ -358,6 +377,7 @@ class BrakeMiddleware(Middleware):
                     policy=self.policy, intent=collected.intent, account=collected.account,
                     market=collected.market, instruments=collected.instruments, evaluated_at=now,
                 )
+                learned, checked = await self._learned_hits(evaluation, upstream)
             except Exception as exc:
                 rules = [{"code": FAIL_CLOSED_CODE, "actual": f"{type(exc).__name__}: {exc}"[:300]}]
                 event_id = self._record_safe(tool=tool, decision="DRY_RUN", intent=None, evaluation=None,
@@ -370,17 +390,103 @@ class BrakeMiddleware(Middleware):
                 {"code": r.code.value, "actual": _json_safe(r.actual), "limit": _json_safe(r.limit),
                  "subjects": list(r.subjects)}
                 for r in evaluation.rules if r.outcome in (RuleOutcome.DENY, RuleOutcome.ESCALATE)
-            ]
+            ] + learned
+            decision = self._combine(evaluation.decision, learned)
             event_id = self._record_safe(tool=tool, decision="DRY_RUN", intent=collected.intent,
                                          evaluation=evaluation,
-                                         extra={"args": stored, "rules": flagged, "result": evaluation.decision.value},
+                                         extra={"args": stored, "rules": flagged, "result": decision.value,
+                                                **self._learned_extra(evaluation, learned, checked)},
                                          note="dry run; nothing forwarded")
             return {
-                "decision": evaluation.decision.value, "dry_run": True, "order_placed": False,
-                "rules": flagged, "denied_rules": flagged if evaluation.decision is Decision.DENY else [],
+                "decision": decision.value, "dry_run": True, "order_placed": False,
+                "rules": flagged, "denied_rules": flagged if decision is Decision.DENY else [],
                 "terms": alpaca.terms_summary(tool, args), "decision_event": event_id,
-                "policy_hash": evaluation.policy_hash, "evaluation_hash": content_sha256(evaluation),
+                "policy_hash": evaluation.policy_hash, **self._hashes(evaluation, learned, event_id, checked is not None),
             }
+
+    # ------------------------------------------------------------------ learned rules
+    async def _learned_hits(
+        self, evaluation: EvaluationResult, upstream: UpstreamCall
+    ) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+        """(the active owner-approved rules this order trips, what was checked).
+
+        Orders that reduce or close a position are never held and never read the rules
+        file. A broken rules file, or a broker history that cannot be read when an order
+        is big enough to trip a rule, raises: the brake refuses the order.
+        """
+        if self.rules_path is None or evaluation.decision is Decision.DENY:
+            return [], None
+        if evaluation.position_effect in (PositionEffect.REDUCE, PositionEffect.CLOSE):
+            return [], None
+        try:
+            rules = active_rules(self.rules_path)
+        except RulesError as exc:
+            # The reason goes to the owner's terminal, not to the agent: no local paths in the reply.
+            log.error("rules file refused: %s", exc)
+            raise RuntimeError("the rules file cannot be trusted; run `tradememory rules list` to see why") from None
+        if not rules:
+            return [], None
+        sizes = [v for v in (evaluation.order_notional, evaluation.worst_case_position_notional) if v is not None]
+        size = max(sizes) if sizes else None
+        checked: dict[str, Any] = {
+            "rules": [r["id"] for r in rules], "position_notional": str(size) if size is not None else None,
+        }
+        reachable = rules_in_reach(rules, size)
+        if not reachable:
+            checked["history"] = "not read: below every rule's limit"
+            return [], checked
+        closes = await self._closes.closes(upstream)
+        checked.update({
+            "history": "read from the broker",
+            "closes_seen": len(closes),
+            "latest_close": closes[0].closed_at.isoformat() if closes else None,
+        })
+        return check_order(reachable, size=size, closes=closes), checked
+
+    @staticmethod
+    def _approval_key(fingerprint: str, learned: list[dict[str, Any]]) -> str:
+        if not learned:
+            return fingerprint
+        return f"{fingerprint}+rules:{','.join(sorted(h['rule_id'] for h in learned))}"
+
+    @staticmethod
+    def _combine(control: Decision, learned: list[dict[str, Any]]) -> Decision:
+        """The stricter of Control's decision and the learned rules'. A rule never loosens."""
+        if control is Decision.DENY or not learned:
+            return control
+        if any(h["action"] == "deny" for h in learned):
+            return Decision.DENY
+        return Decision.ESCALATE
+
+    @staticmethod
+    def _learned_extra(
+        evaluation: EvaluationResult, learned: list[dict[str, Any]], checked: dict[str, Any] | None
+    ) -> dict[str, Any]:
+        extra: dict[str, Any] = {}
+        if checked is not None:
+            extra["learned_rules_checked"] = checked
+        if learned:
+            extra["learned_rules"] = learned
+            extra["control_decision"] = evaluation.decision.value
+        return extra
+
+    def _hashes(self, evaluation: EvaluationResult, learned: list[dict[str, Any]], event_id: str | None,
+                rules_checked: bool) -> dict[str, Any]:
+        """Hashes a verifier can use. Control's evaluation hash describes Control's decision only;
+        the decision record hash is what the audit chain anchored for this decision."""
+        control = content_sha256(evaluation)
+        out: dict[str, Any] = {"control_evaluation_hash": control}
+        record = None
+        if event_id is not None and self.last_decision is not None and self.last_decision.get("event_id") == event_id:
+            record = self.last_decision.get("content_hash")
+            out["decision_record_hash"] = record
+        if learned:
+            out["control_decision"] = evaluation.decision.value
+        # Kept with its old meaning when no learned rule was involved. Once rules were checked,
+        # the chain covers the whole record and only decision_record_hash matches the chain link.
+        if not rules_checked:
+            out["evaluation_hash"] = control
+        return out
 
     # ------------------------------------------------------------------ collection
     @staticmethod
@@ -560,7 +666,8 @@ class BrakeMiddleware(Middleware):
         if intent is not None:
             structured["intent_id"] = str(intent.intent_id)
         if evaluation is not None:
-            structured["evaluation_hash"] = content_sha256(evaluation)
+            structured.update(self._hashes(evaluation, extra.get("learned_rules") or [], event_id,
+                                           "learned_rules_checked" in extra))
         return ToolResult(content=json.dumps(structured), structured_content=structured)
 
     # ------------------------------------------------------------------ recording
@@ -581,7 +688,10 @@ class BrakeMiddleware(Middleware):
             "evaluation": _json_safe(evaluation.model_dump(mode="json")) if evaluation is not None else None,
             **_json_safe(extra),
         }
-        if evaluation is not None and decision in ("ALLOW", "DENY", "ESCALATE"):
+        # Control's evaluation hash anchors the decision only when Control alone made it;
+        # a learned rule changes the outcome, so the chain must cover the whole record.
+        if (evaluation is not None and decision in ("ALLOW", "DENY", "ESCALATE")
+                and "learned_rules" not in extra and "learned_rules_checked" not in extra):
             content_hash = content_sha256(evaluation)
         else:
             content_hash = hashlib.sha256(

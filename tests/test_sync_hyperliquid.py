@@ -123,3 +123,23 @@ def test_rebuilt_profit_matches_the_venues_closed_pnl():
     (trip,) = build_round_trips(fills).trips
     assert trip.gross_pnl == sum(D(f["closedPnl"]) for f in history)
     assert trip.fees == D("0.04")
+
+
+def test_an_outcome_contract_settling_at_zero_closes_as_a_full_loss():
+    # Live shape (2026-10-05): a "#..." outcome market closes the losing side with a
+    # Settlement fill at px 0.0; one address in ten in a leaderboard sample had one,
+    # and rejecting price 0 used to stop the whole sync.
+    history = [
+        raw(1, 1000, sz="1773", px="0.333", coin="#6951", start="0", dir_="Open Long", fee="0"),
+        raw(2, 2000, side="A", sz="1773", px="0.0", coin="#6951", start="1773", closed="-590.409",
+            dir_="Settlement", fee="0"),
+    ]
+    fills, spot = perp_fills(history, ADDR)
+    (trip,) = build_round_trips(fills).trips
+    assert spot == 0 and trip.symbol == "#6951"
+    assert trip.avg_exit == 0 and trip.gross_pnl == D("-590.409")
+
+
+def test_a_negative_price_is_still_refused():
+    with pytest.raises(ValueError, match="must not be negative"):
+        perp_fills([raw(1, 1000, px="-1")], ADDR)

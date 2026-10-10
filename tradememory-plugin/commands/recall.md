@@ -1,57 +1,41 @@
 ---
-description: Recall similar past trades using outcome-weighted memory
-argument-hint: "[market context or query]"
+description: Before an order, recall the losing trades from similar conditions first
+argument-hint: "[symbol] [current market conditions]"
 ---
 
-# Recall Similar Trades
+# Recall before the next order
 
-Search your trading memory for past trades that match the current market context. Results are ranked by Outcome-Weighted Memory (OWM) score — winning trades in similar contexts surface first.
+Show the trader what their own losing trades in similar conditions looked like before they place the next order.
 
 ## Workflow
 
-### Step 1: Define Query Context
+### Step 1: Get the context
 
-If context is provided, use it. Otherwise ask:
-- **Symbol**: What are you trading?
-- **Market conditions**: Trending/ranging, volatility level, session
-- **Strategy**: Which strategy are you considering?
-- **Timeframe**: What timeframe are you analyzing?
+Use the arguments if given. Otherwise ask for the symbol and a short description of current conditions (trend or range, volatility, session). Ask for the strategy name only if the trader uses named strategies.
 
-### Step 2: Execute Recall
+### Step 2: Recall, losses first
 
-Use the `recall_memories` MCP tool:
+Call the `recall_memories` tool with `order: "losses_first"`:
 
 ```
 recall_memories({
-  query: "market context description",
-  memory_types: ["episodic", "semantic", "procedural"],
+  symbol: "XAUUSD",
+  market_context: "ranging, low volatility, Asian session",
+  order: "losses_first",
   limit: 10
 })
 ```
 
-OWM scoring formula weights:
-- **P&L outcome** (40%) — profitable trades score higher
-- **Context similarity** (30%) — matching market conditions
-- **Recency** (20%) — recent trades weighted more
-- **Confidence calibration** (10%) — well-calibrated confidence scores weighted more
+With `losses_first`, every losing trade ranks above every winning one, bigger losses in similar conditions first, and the trader's current losing streak does not push losses down.
 
-### Step 3: Present Results
+### Step 3: Present
 
-For each recalled trade, show:
-1. **OWM Score** — composite relevance score
-2. **Trade summary** — symbol, direction, entry/exit, P&L
-3. **Context match** — what made this trade similar
-4. **Lesson** — the reflection/takeaway from that trade
+For each recalled trade show the symbol, direction, size (`lot_size` when recorded), P&L and R multiple when recorded, and the reflection that was written at the time. Then say in one or two sentences what the losing trades have in common, using only what the records show.
 
-### Step 4: Synthesize
-
-After listing individual trades, provide:
-- **Pattern summary**: What do the top results have in common?
-- **Win rate** in similar contexts
-- **Average P&L** in similar contexts
-- **Recommendation**: Based on past experience, should you take this trade?
+Do not tell the trader whether to take the trade. These are their own past results, not a forecast.
 
 ## Example
 
 ```
-User: /recall ranging market, low volatility, Asian session, XAUUSD
+User: /recall XAUUSD ranging, low volatility, Asian session
+```

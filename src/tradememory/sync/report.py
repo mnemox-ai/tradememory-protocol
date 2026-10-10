@@ -6,6 +6,7 @@ Nothing in it says what to trade next.
 
 from __future__ import annotations
 
+import math
 from collections import defaultdict
 from decimal import Decimal
 from statistics import median
@@ -16,6 +17,9 @@ from .fills import RoundTrip
 STREAK = 2  # losses in a row before the next trade counts as "after a losing streak"
 SIZE_UP = 1.5  # notional at least this many times the trader's median counts as sizing up
 MIN_SAMPLE = 5  # below this a pattern is reported as "not enough trades"
+MORE_THAN_USUAL_P = 0.10  # below this, sizing up after a streak is called "more often than usual"
+MIN_LIFT = 0.05  # ...and only when it is at least 5 points above the usual share: a huge history
+                 # makes a 2-point difference "significant" without it meaning anything
 
 
 def _f(x: Decimal) -> float:
@@ -31,6 +35,30 @@ def _summary(trips: list[RoundTrip]) -> dict[str, Any]:
         "win_rate": wins / len(trips),
         "net_pnl": _f(sum((t.net_pnl for t in trips), Decimal(0))),
     }
+
+
+def binomial_tail(successes: int, trials: int, rate: float) -> float | None:
+    """P(X >= successes) for X ~ Binomial(trials, rate), summed in log space so long histories do not underflow.
+
+    The mnemox.ai address page ports this line for line; keep the operations in this order.
+    """
+    if trials <= 0:
+        return None
+    if successes <= 0:
+        return 1.0
+    if rate <= 0:
+        return 0.0
+    if rate >= 1:
+        return 1.0
+    log_p, log_q = math.log(rate), math.log1p(-rate)
+    log_pmf = trials * log_q  # k = 0
+    tail = 0.0
+    for k in range(trials + 1):
+        if k >= successes:
+            tail += math.exp(log_pmf)
+        if k < trials:
+            log_pmf += math.log(trials - k) - math.log(k + 1) + log_p - log_q
+    return min(1.0, tail)
 
 
 def loss_patterns(trips: list[RoundTrip]) -> dict[str, Any]:
@@ -52,14 +80,26 @@ def loss_patterns(trips: list[RoundTrip]) -> dict[str, Any]:
         if len(recent) == STREAK and all(t.net_pnl < 0 for t in recent):
             after_streak.append(trip)
     sized_up = [t for t in after_streak if median_notional and _f(t.notional) >= SIZE_UP * median_notional]
+    # How often the trader sizes up at all: a streak only says something if it moves this.
+    baseline = sum(1 for t in trips if median_notional and _f(t.notional) >= SIZE_UP * median_notional)
     streak = {
         "trades_after_streak": len(after_streak),
         "sized_up": len(sized_up),
         "sized_up_share": len(sized_up) / len(after_streak) if after_streak else None,
+        "baseline_sized_up_share": baseline / len(trips),
+        # Chance of sizing up this often after a streak if streaks changed nothing.
+        "sized_up_p_value": binomial_tail(len(sized_up), len(after_streak), baseline / len(trips)),
         "sized_up_result": _summary(sized_up),
         "after_streak_result": _summary(after_streak),
         "enough_data": len(after_streak) >= MIN_SAMPLE,
     }
+    p_value = streak["sized_up_p_value"]
+    streak["more_often_than_usual"] = bool(
+        streak["enough_data"]
+        and p_value is not None
+        and p_value <= MORE_THAN_USUAL_P
+        and streak["sized_up_share"] - streak["baseline_sized_up_share"] >= MIN_LIFT
+    )
 
     # 2. Holding losers longer than winners.
     winners = [t.hold_seconds for t in trips if t.net_pnl > 0]
@@ -144,7 +184,13 @@ def render_report(stats: dict[str, Any], *, title: str) -> str:
     else:
         r = s["after_streak_result"]
         lines.append(
-            f"  {s['sized_up']} of them ({s['sized_up_share']:.0%}) were {SIZE_UP:g}x your usual size or more."
+            f"  {s['sized_up']} of them ({s['sized_up_share']:.0%}) were {SIZE_UP:g}x your usual size or more"
+            f" (across all your trades: {s['baseline_sized_up_share']:.0%})."
+        )
+        lines.append(
+            "  That is more often than usual."
+            if s["more_often_than_usual"]
+            else "  Not clearly more often than usual: no sign that losses make you size up."
         )
         lines.append(f"  All {s['trades_after_streak']} won {r['win_rate']:.0%} and made {_money(r['net_pnl'])}.")
         if s["sized_up"]:

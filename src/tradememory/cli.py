@@ -53,6 +53,11 @@ from .sync.cli import sync as _sync_group  # noqa: E402
 
 cli.add_command(_sync_group, name="sync")
 
+# Rules learned from your history, enforced by the brake: `tradememory rules list|approve|retire`.
+from .rules.cli import rules as _rules_group  # noqa: E402
+
+cli.add_command(_rules_group, name="rules")
+
 
 if __name__ == "__main__":
     cli()

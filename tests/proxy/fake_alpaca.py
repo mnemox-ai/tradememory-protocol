@@ -81,7 +81,11 @@ class FakeAlpaca:
         self.fail_place_after_accept = False
         self.positions_payload_override: Any = None
         self.calls: list[tuple[str, dict[str, Any]]] = []
+        # FILL activities, oldest first, in the live shape (2026-10-05 probe of get_account_activities_by_type).
+        self.activities: list[dict[str, Any]] = []
+        self.fail_activities = False
         self._n = 0
+        self._fill_n = 0
 
     # ------------------------------------------------------------------ helpers
     def _canon(self, symbol: str) -> str:
@@ -93,7 +97,29 @@ class FakeAlpaca:
                 return s
         return symbol
 
-    def _apply_fill(self, symbol: str, side: str, qty: Decimal) -> None:
+    def record_fill(self, symbol: str, side: str, qty: Decimal | str, price: Decimal | str,
+                    at: datetime | None = None, order_id: str | None = None) -> None:
+        self._fill_n += 1
+        when = (at or datetime.now(UTC)).astimezone(UTC)
+        self.activities.append({
+            "id": f"{when.strftime('%Y%m%d%H%M%S%f')}::fill-{self._fill_n:06d}",
+            "activity_type": "FILL", "transaction_time": when.isoformat().replace("+00:00", "Z"), "type": "fill",
+            "price": str(price), "qty": str(qty), "side": side, "symbol": symbol, "leaves_qty": "0",
+            "order_id": order_id or f"hist-{self._fill_n}", "cum_qty": str(qty), "order_status": "filled",
+        })
+
+    def closed_trades(self, *pnls: float, symbol: str = "AAPL", qty: str = "1", entry: str = "190") -> None:
+        """Past round trips that ended flat, oldest first: buy at ``entry``, sell at entry + pnl/qty."""
+        start = datetime.now(UTC) - timedelta(hours=2 * len(pnls) + 2)
+        for i, pnl in enumerate(pnls):
+            exit_price = Decimal(entry) + Decimal(str(pnl)) / Decimal(qty)
+            self.record_fill(symbol, "buy", qty, entry, at=start + timedelta(hours=2 * i))
+            self.record_fill(symbol, "sell", qty, exit_price, at=start + timedelta(hours=2 * i, minutes=30))
+
+    def _apply_fill(self, symbol: str, side: str, qty: Decimal, price: Decimal | str | None = None,
+                    order_id: str | None = None) -> None:
+        if price is not None:
+            self.record_fill(symbol, side, qty, price, order_id=order_id)
         signed = qty if side == "buy" else -qty
         for p in self.positions:
             if self._canon(p["symbol"]) == symbol:
@@ -257,7 +283,8 @@ class FakeAlpaca:
                 filled_qty = Decimal(qty) if qty else Decimal(notional) / Decimal(fake.quotes[symbol][1])
                 order["status"] = "filled"
                 order["filled_qty"] = str(filled_qty)
-                fake._apply_fill(symbol, side, filled_qty)
+                fake._apply_fill(symbol, side, filled_qty,
+                                 fake.quotes[symbol][1] if side == "buy" else fake.quotes[symbol][0], order["id"])
                 if order_class in ("bracket", "oto"):
                     legs = []
                     opposite = "sell" if side == "buy" else "buy"
@@ -325,8 +352,35 @@ class FakeAlpaca:
         def close_position(symbol_or_asset_id: str, qty: str | None = None, percentage: str | None = None) -> dict:
             fake.calls.append(("close_position", {"symbol_or_asset_id": symbol_or_asset_id}))
             canon = fake._canon(symbol_or_asset_id)
+            for p in [p for p in fake.positions if fake._canon(p["symbol"]) == canon]:
+                bid, ask = fake.quotes.get(canon, ("0", "0"))
+                closing_side = "sell" if p["side"] == "long" else "buy"
+                fake.record_fill(canon, closing_side, p["qty"], bid if closing_side == "sell" else ask)
             fake.positions = [p for p in fake.positions if fake._canon(p["symbol"]) != canon]
             return envelope({"symbol": canon, "status": "closed"})
+
+        @mcp.tool
+        def get_account_activities_by_type(
+            activity_type: str,
+            after: str | None = None,
+            until: str | None = None,
+            direction: str = "desc",
+            page_size: int = 100,
+            page_token: str | None = None,
+        ) -> dict:
+            fake.calls.append(("get_account_activities_by_type", {"activity_type": activity_type, "after": after,
+                                                                  "page_token": page_token}))
+            if fake.fail_activities:
+                raise RuntimeError("HTTP error 500: activities unavailable")
+            rows = [a for a in fake.activities if a["activity_type"] == activity_type]
+            if after:
+                cut = datetime.fromisoformat(after.replace("Z", "+00:00"))
+                rows = [a for a in rows if datetime.fromisoformat(a["transaction_time"].replace("Z", "+00:00")) > cut]
+            rows.sort(key=lambda a: a["id"], reverse=direction == "desc")
+            if page_token:
+                ids = [a["id"] for a in rows]
+                rows = rows[ids.index(page_token) + 1:] if page_token in ids else []
+            return envelope({"result": rows[:page_size]})
 
         @mcp.tool
         def create_watchlist(name: str, symbols: list[str] | None = None) -> dict:
