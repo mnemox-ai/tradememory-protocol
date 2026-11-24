@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "i18next": "^25.8.17",
+    "i18next": "^27.2.7",
     "lightweight-charts": "^5.1.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
